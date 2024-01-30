@@ -11,35 +11,100 @@ import (
 )
 
 func TestRunner(t *testing.T) {
-	l := &Loader{
-		FS: os.DirFS("."),
+	loader := &Loader{
+		FS: os.DirFS("testdata/runner"),
 	}
 
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	formatJSON := func(a Assertion) (string, error) {
+		input := []byte(a.Input)
+
+		var v any
+		if err := json.Unmarshal(input, &v); err != nil {
+			return "", err
+		}
+
+		output, err := json.MarshalIndent(v, "", "  ")
+		if err != nil {
+			return "", err
+		}
+
+		return string(output) + "\n", nil
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
-	test, err := l.Load(ctx, "testdata")
-	if err != nil {
-		t.Fatal(err)
+	// expected to pass
+	{
+		test, err := loader.Load(ctx, "pass")
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		runner := &NativeRunner{
+			Output: formatJSON,
+		}
+
+		runner.Run(t, test)
 	}
 
-	r := &NativeRunner{
-		Output: func(a Assertion) (string, error) {
-			input := []byte(a.Input)
+	// expected to fail
+	{
+		test, err := loader.Load(ctx, "fail")
+		if err != nil {
+			t.Fatal(err)
+		}
 
-			var v any
-			if err := json.Unmarshal(input, &v); err != nil {
-				return "", err
+		runner := &Runner[*testingT]{
+			Output: formatJSON,
+		}
+
+		x := &testingT{T: t}
+		runner.Run(x, test)
+
+		for _, leaf := range x.leaves() {
+			if !leaf.Failed {
+				t.Errorf("expected %q to fail", leaf.Name())
+			}
+		}
+	}
+}
+
+type testingT struct {
+	*testing.T
+	Children []*testingT
+	Failed   bool
+}
+
+func (t *testingT) Run(name string, fn func(*testingT)) bool {
+	return t.T.Run(
+		name,
+		func(x *testing.T) {
+			child := &testingT{
+				T: x,
 			}
 
-			output, err := json.MarshalIndent(v, "", "  ")
-			if err != nil {
-				return "", err
-			}
+			t.Children = append(t.Children, child)
 
-			return string(output) + "\n", nil
+			fn(child)
 		},
+	)
+}
+
+func (t *testingT) Fail() {
+	t.Failed = true
+}
+
+func (t *testingT) leaves() []*testingT {
+	var leaves []*testingT
+
+	if len(t.Children) == 0 {
+		leaves = append(leaves, t)
+	} else {
+		for _, child := range t.Children {
+			leaves = append(leaves, child.leaves()...)
+		}
 	}
 
-	r.Run(t, test)
+	return leaves
 }

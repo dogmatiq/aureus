@@ -29,7 +29,6 @@ type Document struct {
 	File       string
 	Skip       bool
 	Assertions []Assertion
-	Errors     []error
 }
 
 // AcceptVisitor calls the method on v that corresponds to t's type.

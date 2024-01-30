@@ -14,7 +14,7 @@ type TestingT[T any] interface {
 	Run(string, func(T)) bool
 	Log(...any)
 	SkipNow()
-	FailNow()
+	Fail()
 }
 
 // NativeRunner runs Aureus tests under Go's native testing framework.
@@ -46,10 +46,10 @@ func (r *runner[T]) VisitSuite(s Suite) {
 		s.Name,
 		func(t T) {
 			t.Helper()
-			t.Parallel()
 
 			if s.Skip {
 				t.SkipNow()
+				return // return in case stubbed SkipNow() impementation does not panic
 			}
 
 			for _, sub := range s.Tests {
@@ -65,21 +65,14 @@ func (r *runner[T]) VisitDocument(d Document) {
 		d.Name,
 		func(t T) {
 			t.Helper()
-			t.Parallel()
 
 			if d.Skip {
 				t.SkipNow()
+				return // return in case stubbed SkipNow() impementation does not panic
 			}
 
 			for _, a := range d.Assertions {
 				r.Runner.Run(t, a)
-			}
-
-			if len(d.Errors) != 0 {
-				for _, err := range d.Errors {
-					t.Log(err)
-				}
-				t.FailNow()
 			}
 		},
 	)
@@ -92,10 +85,9 @@ func (r *runner[T]) VisitAssertion(a Assertion) {
 		func(t T) {
 			t.Helper()
 
-			// NOTE: not parallel, we want to see the results within a single
-			// document in order
 			if a.Skip {
 				t.SkipNow()
+				return // return in case stubbed SkipNow() impementation does not panic
 			}
 
 			var m strings.Builder
@@ -108,9 +100,11 @@ func (r *runner[T]) VisitAssertion(a Assertion) {
 
 			output, err := r.Runner.Output(a)
 			if err != nil {
+				t.Fail()
 				m.WriteString("--- OUTPUT (error) ---\n")
 				m.WriteString(err.Error())
 			} else if output != a.ExpectedOutput {
+				t.Fail()
 				m.WriteString("--- OUTPUT (")
 				m.WriteString(a.OutputLanguage)
 				m.WriteString(" diff, -want +got) ---\n")

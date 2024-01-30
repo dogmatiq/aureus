@@ -133,8 +133,17 @@ func (l *Loader) loadDocument(ctx context.Context, dir, name string) (Document, 
 				return ast.WalkContinue, nil
 			}
 
-			info := l.parseCodeInfo(code, source)
 			line := lineNumberOf(code, source)
+
+			info, err := l.parseCodeInfo(code, source)
+			if err != nil {
+				return ast.WalkStop, fmt.Errorf(
+					"aureus assertion at %s:%d is invalid: %s",
+					qual,
+					line,
+					err,
+				)
+			}
 
 			if !info.IsAssertion {
 				assertion = &Assertion{
@@ -146,13 +155,10 @@ func (l *Loader) loadDocument(ctx context.Context, dir, name string) (Document, 
 				}
 				return ast.WalkContinue, nil
 			} else if assertion == nil {
-				test.Errors = append(
-					test.Errors,
-					fmt.Errorf(
-						"aureus assertion at %s:%d does not have a preceding code block containing the input value",
-						qual,
-						line,
-					),
+				return ast.WalkStop, fmt.Errorf(
+					"assertion in %s on line %d: preceding code block containing the input value was not found",
+					qual,
+					line,
 				)
 			} else {
 				assertion.OutputLanguage = info.Language
