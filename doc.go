@@ -1,1 +1,2 @@
-package GITHUB_REPO_NAME
+// Package aureus runs "golden file" style tests defined in Markdown documents.
+package aureus
