@@ -15,7 +15,7 @@ func TestRunner(t *testing.T) {
 		FS: os.DirFS("testdata/runner"),
 	}
 
-	formatJSON := func(a Assertion) (string, error) {
+	formatJSON := func(a EqualAssertion) (string, error) {
 		input := []byte(a.Input)
 
 		var v any

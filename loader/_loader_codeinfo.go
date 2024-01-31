@@ -26,10 +26,7 @@ type codeInfo struct {
 // language) of a code block.
 func (l *Loader) parseCodeInfo(n *ast.FencedCodeBlock, source []byte) (codeInfo, error) {
 	info := codeInfo{
-		Language: l.DefaultLanguage,
-	}
-	if info.Language == "" {
-		info.Language = defaultLanguage
+		Language: defaultLanguage,
 	}
 
 	if n.Info == nil {

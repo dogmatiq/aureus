@@ -1,4 +1,4 @@
-# JSON Pretty Printer (diff)
+# Difference
 
 This document shows how to configure an assertion to expect a difference between
 an input and output.
@@ -15,7 +15,7 @@ an input and output.
 }
 ```
 
-```diff au:assertion="diff"
+```diff au:assertion
  {
 -  "value": 1
 +  "value": 2

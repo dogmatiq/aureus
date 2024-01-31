@@ -23,26 +23,13 @@ type NativeRunner = Runner[*testing.T]
 // Runner executes Aureus tests under any test framework with an interface
 // similar to Go's native [*testing.T].
 type Runner[T TestingT[T]] struct {
-	Output func(Assertion) (string, error)
+	Output func(EqualAssertion) (string, error)
 }
 
-// Run executes performs the assertions within the given [Test] using t.
-func (r *Runner[T]) Run(t T, test Test) {
+// Run makes the assertions described by all documents within a [TestSuite].
+func (r *Runner[T]) Run(t T, s Node) {
 	t.Helper()
-	test.AcceptVisitor(&runner[T]{
-		Runner:   r,
-		TestingT: t,
-	})
-}
-
-type runner[T TestingT[T]] struct {
-	Runner   *Runner[T]
-	TestingT T
-}
-
-func (r *runner[T]) VisitSuite(s Suite) {
-	r.TestingT.Helper()
-	r.TestingT.Run(
+	t.Run(
 		s.Name,
 		func(t T) {
 			t.Helper()
@@ -52,16 +39,21 @@ func (r *runner[T]) VisitSuite(s Suite) {
 				return // return in case stubbed SkipNow() impementation does not panic
 			}
 
-			for _, sub := range s.Tests {
-				r.Runner.Run(t, sub)
+			for _, c := range s.Children {
+				r.Run(t, c)
+			}
+
+			for _, d := range s.Documents {
+				r.RunDocument(t, d)
 			}
 		},
 	)
 }
 
-func (r *runner[T]) VisitDocument(d Document) {
-	r.TestingT.Helper()
-	r.TestingT.Run(
+// RunDocument makes the assertions described within a single [TestDocument].
+func (r *Runner[T]) RunDocument(t T, d TestDocument) {
+	t.Helper()
+	t.Run(
 		d.Name,
 		func(t T) {
 			t.Helper()
@@ -72,15 +64,15 @@ func (r *runner[T]) VisitDocument(d Document) {
 			}
 
 			for _, a := range d.Assertions {
-				r.Runner.Run(t, a)
+				r.assert(t, a)
 			}
 		},
 	)
 }
 
-func (r *runner[T]) VisitAssertion(a Assertion) {
-	r.TestingT.Helper()
-	r.TestingT.Run(
+func (r *Runner[T]) assert(t T, a EqualAssertion) {
+	t.Helper()
+	t.Run(
 		a.Name,
 		func(t T) {
 			t.Helper()
@@ -98,7 +90,7 @@ func (r *runner[T]) VisitAssertion(a Assertion) {
 			m.WriteString(") ---\n")
 			m.WriteString(a.Input)
 
-			output, err := r.Runner.Output(a)
+			output, err := r.Output(a)
 			if err != nil {
 				t.Fail()
 				m.WriteString("--- OUTPUT (error) ---\n")
