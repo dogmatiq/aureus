@@ -12,26 +12,28 @@ type AssertionVisitor interface {
 	VisitDiffAssertion(*DiffAssertion)
 }
 
-// EqualAssertion is an [Assertion] that asserts that asserts two values are equal.
+// EqualAssertion is an [Assertion] that asserts that asserts two values are
+// equal.
 type EqualAssertion struct {
 	Input  Content
 	Output Content
 }
 
 // AcceptVisitor dispatches to the appropriate method on v based on the concrete
-// type of n.
+// type of a.
 func (a *EqualAssertion) AcceptVisitor(v AssertionVisitor) {
 	v.VisitEqualAssertion(a)
 }
 
-// DiffAssertion is an [Assertion] that asserts that two values differ in a specific way.
+// DiffAssertion is an [Assertion] that asserts that two values differ in a
+// specific way.
 type DiffAssertion struct {
 	Input Content
 	Diff  Content
 }
 
 // AcceptVisitor dispatches to the appropriate method on v based on the concrete
-// type of n.
+// type of a.
 func (a *DiffAssertion) AcceptVisitor(v AssertionVisitor) {
 	v.VisitDiffAssertion(a)
 }
