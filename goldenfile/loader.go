@@ -179,7 +179,7 @@ func (l *loader) loadInputFile(
 		Flags:  inherited,
 		Origin: input.Origin,
 		Assertions: []test.Assertion{
-			&test.EqualAssertion{
+			test.EqualAssertion{
 				Input:  input,
 				Output: output,
 			},

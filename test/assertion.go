@@ -2,14 +2,14 @@ package test
 
 // Assertion is an interface for an assertion made by a [Test].
 type Assertion interface {
-	AcceptVisitor(AssertionVisitor)
+	AcceptVisitor(AssertionVisitor, ...VisitOption)
 }
 
 // AssertionVisitor is an interface for dispatching based on the concrete type
 // of an [Assertion].
 type AssertionVisitor interface {
-	VisitEqualAssertion(*EqualAssertion)
-	VisitDiffAssertion(*DiffAssertion)
+	VisitEqualAssertion(EqualAssertion)
+	VisitDiffAssertion(DiffAssertion)
 }
 
 // EqualAssertion is an [Assertion] that asserts that asserts two values are
@@ -21,7 +21,11 @@ type EqualAssertion struct {
 
 // AcceptVisitor dispatches to the appropriate method on v based on the concrete
 // type of a.
-func (a *EqualAssertion) AcceptVisitor(v AssertionVisitor) {
+func (a EqualAssertion) AcceptVisitor(v AssertionVisitor, options ...VisitOption) {
+	cfg := newVisitConfig(options)
+	if cfg.TestingT != nil {
+		cfg.TestingT.Helper()
+	}
 	v.VisitEqualAssertion(a)
 }
 
@@ -34,6 +38,10 @@ type DiffAssertion struct {
 
 // AcceptVisitor dispatches to the appropriate method on v based on the concrete
 // type of a.
-func (a *DiffAssertion) AcceptVisitor(v AssertionVisitor) {
+func (a DiffAssertion) AcceptVisitor(v AssertionVisitor, options ...VisitOption) {
+	cfg := newVisitConfig(options)
+	if cfg.TestingT != nil {
+		cfg.TestingT.Helper()
+	}
 	v.VisitDiffAssertion(a)
 }

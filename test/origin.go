@@ -6,28 +6,22 @@ import (
 
 // Origin describes the "source" of a [Test].
 type Origin interface {
-	AcceptVisitor(OriginVisitor)
 	Path() string
 	String() string
+	AcceptVisitor(OriginVisitor, ...VisitOption)
 }
 
 // OriginVisitor is an interface for dispatching based on the concrete type of
 // an [Origin].
 type OriginVisitor interface {
 	VisitDirectoryOrigin(DirectoryOrigin)
-	VisitDocumentOrigin(FileOrigin)
-	VisitDocumentLineOrigin(FileLineOrigin)
+	VisitFileOrigin(FileOrigin)
+	VisitFileLineOrigin(FileLineOrigin)
 }
 
 // DirectoryOrigin is an [Origin] that refers to a filesystem directory.
 type DirectoryOrigin struct {
 	DirPath string
-}
-
-// AcceptVisitor dispatches to the appropriate method on v based on the concrete
-// type of o.
-func (o DirectoryOrigin) AcceptVisitor(v OriginVisitor) {
-	v.VisitDirectoryOrigin(o)
 }
 
 // Path returns the path to the directory.
@@ -39,6 +33,16 @@ func (o DirectoryOrigin) String() string {
 	return string(o.DirPath + "/")
 }
 
+// AcceptVisitor dispatches to the appropriate method on v based on the concrete
+// type of o.
+func (o DirectoryOrigin) AcceptVisitor(v OriginVisitor, options ...VisitOption) {
+	cfg := newVisitConfig(options)
+	if cfg.TestingT != nil {
+		cfg.TestingT.Helper()
+	}
+	v.VisitDirectoryOrigin(o)
+}
+
 // DapperString returns the string used to represent o in
 // [github.com/dogmatiq/dapper] output.
 func (o DirectoryOrigin) DapperString() string {
@@ -48,12 +52,6 @@ func (o DirectoryOrigin) DapperString() string {
 // FileOrigin is an [Origin] that refers to a specific file.
 type FileOrigin struct {
 	FilePath string
-}
-
-// AcceptVisitor dispatches to the appropriate method on v based on the concrete
-// type of o.
-func (o FileOrigin) AcceptVisitor(v OriginVisitor) {
-	v.VisitDocumentOrigin(o)
 }
 
 // Path returns the path to the document file.
@@ -71,16 +69,20 @@ func (o FileOrigin) DapperString() string {
 	return o.String()
 }
 
+// AcceptVisitor dispatches to the appropriate method on v based on the concrete
+// type of o.
+func (o FileOrigin) AcceptVisitor(v OriginVisitor, options ...VisitOption) {
+	cfg := newVisitConfig(options)
+	if cfg.TestingT != nil {
+		cfg.TestingT.Helper()
+	}
+	v.VisitFileOrigin(o)
+}
+
 // FileLineOrigin is an [Origin] that describes a specific line within a file.
 type FileLineOrigin struct {
 	FilePath string
 	Line     int
-}
-
-// AcceptVisitor dispatches to the appropriate method on v based on the concrete
-// type of o.
-func (o FileLineOrigin) AcceptVisitor(v OriginVisitor) {
-	v.VisitDocumentLineOrigin(o)
 }
 
 // Path returns the path to the file.
@@ -96,4 +98,14 @@ func (o FileLineOrigin) String() string {
 // [github.com/dogmatiq/dapper] output.
 func (o FileLineOrigin) DapperString() string {
 	return o.String()
+}
+
+// AcceptVisitor dispatches to the appropriate method on v based on the concrete
+// type of o.
+func (o FileLineOrigin) AcceptVisitor(v OriginVisitor, options ...VisitOption) {
+	cfg := newVisitConfig(options)
+	if cfg.TestingT != nil {
+		cfg.TestingT.Helper()
+	}
+	v.VisitFileLineOrigin(o)
 }

@@ -1,7 +1,6 @@
 package runner
 
 import (
-	"fmt"
 	"strings"
 	"testing"
 
@@ -36,38 +35,37 @@ func (r *Runner[T]) Run(t T, x test.Test) {
 				r.Run(t, s)
 			}
 
+			assert := assertionExecutor[T]{r.Output, t}
 			for _, a := range x.Assertions {
-				// NOTE: We don't use [test.AssertionVisitor] here because it
-				// adds an extra method call (AcceptVisitor) that we're unable
-				// to mark as a helper with t.Helper().
-				switch a := a.(type) {
-				case *test.EqualAssertion:
-					r.equal(t, a)
-				// case *test.DiffAssertion:
-				// 	r.diff(t, a)
-				default:
-					panic(fmt.Sprintf("unsupported assertion type (%T)", a))
-				}
+				a.AcceptVisitor(assert, test.WithT(t))
 			}
 		},
 	)
 }
 
-func (r *Runner[T]) equal(t T, a *test.EqualAssertion) {
-	t.Helper()
+// assertionExecutor is an impelmentation of [test.AssertionVisitor] that
+// performs assertions within the context of a test.
+type assertionExecutor[T TestingT[T]] struct {
+	Output   func(input test.Content) (string, error)
+	TestingT T
+}
+
+func (x assertionExecutor[T]) VisitEqualAssertion(a test.EqualAssertion) {
+	x.TestingT.Helper()
+
 	var m strings.Builder
 
 	m.WriteString("\n")
 	m.WriteString("--- INPUT ---\n")
 	m.WriteString(a.Input.Data)
 
-	output, err := r.Output(a.Input)
+	output, err := x.Output(a.Input)
 	if err != nil {
-		t.Fail()
+		x.TestingT.Fail()
 		m.WriteString("--- OUTPUT (error) ---\n")
 		m.WriteString(err.Error())
 	} else if output != a.Output.Data {
-		t.Fail()
+		x.TestingT.Fail()
 		m.WriteString("--- OUTPUT (-want +got) ---\n")
 		m.WriteString(diff.LineDiff(a.Output.Data, output))
 	} else {
@@ -75,5 +73,9 @@ func (r *Runner[T]) equal(t T, a *test.EqualAssertion) {
 		m.WriteString(output)
 	}
 
-	t.Log(m.String())
+	x.TestingT.Log(m.String())
+}
+
+func (x assertionExecutor[T]) VisitDiffAssertion(test.DiffAssertion) {
+	panic("not implemented")
 }
