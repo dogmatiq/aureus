@@ -31,7 +31,10 @@ func NewLoader(options ...LoadOption) *Loader {
 	return l
 }
 
-// Load returns tests based on the golden files in the given directory.
+// Load returns a test build from the golden files in the given directory.
+//
+// Any directory or file that begins with an underscore produces a test that is
+// marked as skipped.
 func (l *Loader) Load(dir string, options ...LoadOption) (test.Test, error) {
 	opts := l.options
 	for _, opt := range options {
@@ -45,19 +48,10 @@ func loadDir(
 	dirPath string,
 	inherited test.FlagSet,
 ) (test.Test, error) {
-	name := path.Base(dirPath)
-	name, skip := strings.CutPrefix(name, "_")
-
-	t := test.Test{
-		Name:   name,
-		Flags:  inherited,
-		Origin: test.DirectoryOrigin{DirPath: dirPath},
-	}
-
-	if skip {
-		t.Flags.Add(test.FlagSkipped)
-		inherited.Add(test.FlagAncestorSkipped)
-	}
+	t, inherited := test.New(
+		test.DirectoryOrigin{DirPath: dirPath},
+		inherited,
+	)
 
 	entries, err := fs.ReadDir(opts.FS, dirPath)
 	if err != nil {
@@ -117,19 +111,10 @@ func loadGoldenFile(
 	inputs []string,
 	inherited test.FlagSet,
 ) (test.Test, error) {
-	name := path.Base(filePath)
-	name, skip := strings.CutPrefix(name, "_")
-
-	t := test.Test{
-		Name:   name,
-		Flags:  inherited,
-		Origin: test.FileOrigin{FilePath: filePath},
-	}
-
-	if skip {
-		t.Flags.Add(test.FlagSkipped)
-		inherited.Add(test.FlagAncestorSkipped)
-	}
+	t, inherited := test.New(
+		test.FileOrigin{FilePath: filePath},
+		inherited,
+	)
 
 	output, err := loadContent(opts, filePath)
 	if err != nil {
@@ -153,28 +138,21 @@ func loadInputFile(
 	inherited test.FlagSet,
 	output test.Content,
 ) (test.Test, error) {
-	name := path.Base(filePath)
-	name, skip := strings.CutPrefix(name, "_")
-
 	input, err := loadContent(opts, filePath)
 	if err != nil {
 		return test.Test{}, err
 	}
 
-	t := test.Test{
-		Name:   name,
-		Flags:  inherited,
-		Origin: input.Origin,
-		Assertions: []test.Assertion{
-			test.EqualAssertion{
-				Input:  input,
-				Output: output,
-			},
-		},
-	}
+	t, inherited := test.New(
+		input.Origin,
+		inherited,
+	)
 
-	if skip {
-		t.Flags.Add(test.FlagSkipped)
+	t.Assertions = []test.Assertion{
+		test.EqualAssertion{
+			Input:  input,
+			Output: output,
+		},
 	}
 
 	return t, nil
