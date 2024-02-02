@@ -45,7 +45,7 @@ func NewLoader(options ...LoadOption) *Loader {
 }
 
 // Load returns tests based on the golden files in the given directory.
-func (l *Loader) Load(dir string, options ...LoadOption) (test.Runnable, error) {
+func (l *Loader) Load(dir string, options ...LoadOption) (test.Test, error) {
 	loader := l.prototype
 	for _, opt := range options {
 		opt(&loader)
@@ -59,27 +59,27 @@ type loader struct {
 	isGoldenFile Predicate
 }
 
-func (l *loader) loadDir(dirPath string, inherited test.FlagSet) (test.Runnable, error) {
+func (l *loader) loadDir(dirPath string, inherited test.FlagSet) (test.Test, error) {
 	name := path.Base(dirPath)
 	name, skip := strings.CutPrefix(name, "_")
 
-	suite := &test.Suite{
+	t := test.Test{
 		Name:   name,
 		Flags:  inherited,
 		Origin: test.DirectoryOrigin{DirPath: dirPath},
 	}
 
 	if skip {
-		suite.Flags.Add(test.FlagSkipped)
+		t.Flags.Add(test.FlagSkipped)
 		inherited.Add(test.FlagAncestorSkipped)
 	}
 
 	entries, err := fs.ReadDir(l.filesytem, dirPath)
 	if err != nil {
-		return nil, err
+		return test.Test{}, err
 	}
 
-	var loaders []func() (test.Runnable, error)
+	var loaders []func() (test.Test, error)
 	var inputs []string
 
 	for _, e := range entries {
@@ -93,14 +93,14 @@ func (l *loader) loadDir(dirPath string, inherited test.FlagSet) (test.Runnable,
 			if l.isRecursive {
 				sub, err := l.loadDir(n, inherited)
 				if err != nil {
-					return nil, err
+					return test.Test{}, err
 				}
-				suite.Tests = append(suite.Tests, sub)
+				t.SubTests = append(t.SubTests, sub)
 			}
 		} else if isInputFile, ok := l.isGoldenFile(e.Name()); ok {
 			loaders = append(
 				loaders,
-				func() (test.Runnable, error) {
+				func() (test.Test, error) {
 					var ins []string
 					for _, filename := range inputs {
 						if isInputFile(path.Base(filename)) {
@@ -118,63 +118,63 @@ func (l *loader) loadDir(dirPath string, inherited test.FlagSet) (test.Runnable,
 	for _, load := range loaders {
 		sub, err := load()
 		if err != nil {
-			return nil, err
+			return test.Test{}, err
 		}
-		suite.Tests = append(suite.Tests, sub)
+		t.SubTests = append(t.SubTests, sub)
 	}
 
-	return suite, nil
+	return t, nil
 }
 
 func (l *loader) loadGoldenFile(
 	filePath string,
 	inputs []string,
 	inherited test.FlagSet,
-) (test.Runnable, error) {
+) (test.Test, error) {
 	name := path.Base(filePath)
 	name, skip := strings.CutPrefix(name, "_")
 
-	suite := &test.Suite{
+	t := test.Test{
 		Name:   name,
 		Flags:  inherited,
 		Origin: test.FileOrigin{FilePath: filePath},
 	}
 
 	if skip {
-		suite.Flags.Add(test.FlagSkipped)
+		t.Flags.Add(test.FlagSkipped)
 		inherited.Add(test.FlagAncestorSkipped)
 	}
 
 	ouptut, err := l.loadContent(filePath)
 	if err != nil {
-		return nil, err
+		return test.Test{}, err
 	}
 
 	for _, filePath := range inputs {
 		sub, err := l.loadInputFile(filePath, inherited, ouptut)
 		if err != nil {
-			return nil, err
+			return test.Test{}, err
 		}
-		suite.Tests = append(suite.Tests, sub)
+		t.SubTests = append(t.SubTests, sub)
 	}
 
-	return suite, nil
+	return t, nil
 }
 
 func (l *loader) loadInputFile(
 	filePath string,
 	inherited test.FlagSet,
 	output test.Content,
-) (test.Runnable, error) {
+) (test.Test, error) {
 	name := path.Base(filePath)
 	name, skip := strings.CutPrefix(name, "_")
 
 	input, err := l.loadContent(filePath)
 	if err != nil {
-		return nil, err
+		return test.Test{}, err
 	}
 
-	t := &test.Test{
+	t := test.Test{
 		Name:   name,
 		Flags:  inherited,
 		Origin: input.Origin,

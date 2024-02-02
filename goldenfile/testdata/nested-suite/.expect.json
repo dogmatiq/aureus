@@ -4,21 +4,21 @@
   "Origin": {
     "DirPath": "testdata/nested-suite"
   },
-  "Tests": [
+  "SubTests": [
     {
       "Name": "child",
       "Flags": 0,
       "Origin": {
         "DirPath": "testdata/nested-suite/child"
       },
-      "Tests": [
+      "SubTests": [
         {
           "Name": "pretty-print.au.json",
           "Flags": 0,
           "Origin": {
             "FilePath": "testdata/nested-suite/child/pretty-print.au.json"
           },
-          "Tests": [
+          "SubTests": [
             {
               "Name": "pretty-print.json",
               "Flags": 0,

@@ -4,14 +4,14 @@
   "Origin": {
     "DirPath": "testdata/single-extension"
   },
-  "Tests": [
+  "SubTests": [
     {
       "Name": "pretty-print.au",
       "Flags": 0,
       "Origin": {
         "FilePath": "testdata/single-extension/pretty-print.au"
       },
-      "Tests": [
+      "SubTests": [
         {
           "Name": "pretty-print.json",
           "Flags": 0,

@@ -4,14 +4,14 @@
   "Origin": {
     "DirPath": "testdata/skipped-input-file"
   },
-  "Tests": [
+  "SubTests": [
     {
       "Name": "pretty-print.au.json",
       "Flags": 0,
       "Origin": {
         "FilePath": "testdata/skipped-input-file/pretty-print.au.json"
       },
-      "Tests": [
+      "SubTests": [
         {
           "Name": "pretty-print.json",
           "Flags": 1,
