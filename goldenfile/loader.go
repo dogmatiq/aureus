@@ -201,6 +201,6 @@ func (l *loader) loadContent(filePath string) (test.Content, error) {
 
 	return test.Content{
 		Origin: test.FileOrigin{FilePath: filePath},
-		Data:   data,
+		Data:   string(data),
 	}, nil
 }

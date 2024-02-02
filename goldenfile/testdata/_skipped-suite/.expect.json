@@ -25,14 +25,14 @@
                   "FilePath": "testdata/_skipped-suite/pretty-print.json"
                 },
                 "MetaData": null,
-                "Data": "eyAiZm9vIjogMSwgImJhciI6IDIsICJiYXoiOiAzIH0K"
+                "Data": "{ \"foo\": 1, \"bar\": 2, \"baz\": 3 }\n"
               },
               "Output": {
                 "Origin": {
                   "FilePath": "testdata/_skipped-suite/pretty-print.au.json"
                 },
                 "MetaData": null,
-                "Data": "ewogICJmb28iOiAxLAogICJiYXIiOiAyLAogICJiYXoiOiAzCn0K"
+                "Data": "{\n  \"foo\": 1,\n  \"bar\": 2,\n  \"baz\": 3\n}\n"
               }
             }
           ]

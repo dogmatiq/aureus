@@ -4,5 +4,5 @@ package test
 type Content struct {
 	Origin   Origin
 	MetaData map[string]string
-	Data     []byte
+	Data     string
 }
