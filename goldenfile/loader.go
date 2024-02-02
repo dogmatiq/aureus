@@ -20,9 +20,9 @@ type Loader struct {
 func NewLoader(options ...LoadOption) *Loader {
 	l := &Loader{
 		options: loadOptions{
-			FileSystem:   rootfs.FS,
-			Recursive:    true,
-			IsGoldenFile: DefaultPredicate,
+			FS:       rootfs.FS,
+			Recurse:  true,
+			IsGolden: DefaultPredicate,
 		},
 	}
 	for _, opt := range options {
@@ -59,7 +59,7 @@ func loadDir(
 		inherited.Add(test.FlagAncestorSkipped)
 	}
 
-	entries, err := fs.ReadDir(opts.FileSystem, dirPath)
+	entries, err := fs.ReadDir(opts.FS, dirPath)
 	if err != nil {
 		return test.Test{}, err
 	}
@@ -75,20 +75,20 @@ func loadDir(
 		n := path.Join(dirPath, e.Name())
 
 		if e.IsDir() {
-			if opts.Recursive {
+			if opts.Recurse {
 				sub, err := loadDir(opts, n, inherited)
 				if err != nil {
 					return test.Test{}, err
 				}
 				t.SubTests = append(t.SubTests, sub)
 			}
-		} else if isInputFile, ok := opts.IsGoldenFile(e.Name()); ok {
+		} else if isInput, ok := opts.IsGolden(e.Name()); ok {
 			loaders = append(
 				loaders,
 				func() (test.Test, error) {
 					var ins []string
 					for _, filename := range inputs {
-						if isInputFile(path.Base(filename)) {
+						if isInput(path.Base(filename)) {
 							ins = append(ins, filename)
 						}
 					}
@@ -185,7 +185,7 @@ func loadContent(
 	opts loadOptions,
 	filePath string,
 ) (test.Content, error) {
-	data, err := fs.ReadFile(opts.FileSystem, filePath)
+	data, err := fs.ReadFile(opts.FS, filePath)
 	if err != nil {
 		return test.Content{}, err
 	}
