@@ -8,30 +8,30 @@ type Assertion interface {
 // AssertionVisitor is an interface for dispatching based on the concrete type
 // of an [Assertion].
 type AssertionVisitor interface {
-	VisitEqual(*Equal)
-	VisitDiff(*Diff)
+	VisitEqualAssertion(*EqualAssertion)
+	VisitDiffAssertion(*DiffAssertion)
 }
 
-// Equal is an [Assertion] that asserts that asserts two values are equal.
-type Equal struct {
+// EqualAssertion is an [Assertion] that asserts that asserts two values are equal.
+type EqualAssertion struct {
 	Input  Content
 	Output Content
 }
 
 // AcceptVisitor dispatches to the appropriate method on v based on the concrete
 // type of n.
-func (a *Equal) AcceptVisitor(v AssertionVisitor) {
-	v.VisitEqual(a)
+func (a *EqualAssertion) AcceptVisitor(v AssertionVisitor) {
+	v.VisitEqualAssertion(a)
 }
 
-// Diff is an [Assertion] that asserts that two values differ in a specific way.
-type Diff struct {
+// DiffAssertion is an [Assertion] that asserts that two values differ in a specific way.
+type DiffAssertion struct {
 	Input Content
 	Diff  Content
 }
 
 // AcceptVisitor dispatches to the appropriate method on v based on the concrete
 // type of n.
-func (a *Diff) AcceptVisitor(v AssertionVisitor) {
-	v.VisitDiff(a)
+func (a *DiffAssertion) AcceptVisitor(v AssertionVisitor) {
+	v.VisitDiffAssertion(a)
 }
