@@ -22,20 +22,27 @@
             {
               "Name": "pretty-print.json",
               "Flags": 0,
-              "Input": {
-                "Origin": {
-                  "FilePath": "testdata/nested-suite/child/pretty-print.json"
-                },
-                "MetaData": null,
-                "Data": "eyAiZm9vIjogMSwgImJhciI6IDIsICJiYXoiOiAzIH0K"
+              "Origin": {
+                "FilePath": "testdata/nested-suite/child/pretty-print.json"
               },
-              "Output": {
-                "Origin": {
-                  "FilePath": "testdata/nested-suite/child/pretty-print.au.json"
-                },
-                "MetaData": null,
-                "Data": "ewogICJmb28iOiAxLAogICJiYXIiOiAyLAogICJiYXoiOiAzCn0K"
-              }
+              "Assertions": [
+                {
+                  "Input": {
+                    "Origin": {
+                      "FilePath": "testdata/nested-suite/child/pretty-print.json"
+                    },
+                    "MetaData": null,
+                    "Data": "eyAiZm9vIjogMSwgImJhciI6IDIsICJiYXoiOiAzIH0K"
+                  },
+                  "Output": {
+                    "Origin": {
+                      "FilePath": "testdata/nested-suite/child/pretty-print.au.json"
+                    },
+                    "MetaData": null,
+                    "Data": "ewogICJmb28iOiAxLAogICJiYXIiOiAyLAogICJiYXoiOiAzCn0K"
+                  }
+                }
+              ]
             }
           ]
         }

@@ -1,24 +1,23 @@
 package test
 
-// Test is an interface for a test.
-type Test interface {
+// Runnable is an interface for a test.
+type Runnable interface {
 	AcceptVisitor(Visitor)
 }
 
 // Visitor is an interface for dispatching based on the concrete type of a
-// [Test].
+// [Runnable].
 type Visitor interface {
 	VisitSuite(*Suite)
-	VisitEqual(*Equal)
-	VisitDiff(*Diff)
+	VisitTest(*Test)
 }
 
-// Suite is a [Test] that contains a collection of sub-tests.
+// Suite is a [Runnable] that contains a collection of sub-tests.
 type Suite struct {
 	Name   string
 	Flags  FlagSet
 	Origin Origin
-	Tests  []Test `json:",omitempty"`
+	Tests  []Runnable `json:",omitempty"`
 }
 
 // AcceptVisitor dispatches to the appropriate method on v based on the concrete
@@ -27,31 +26,16 @@ func (n *Suite) AcceptVisitor(v Visitor) {
 	v.VisitSuite(n)
 }
 
-// Equal is a [Test] that asserts that its output is equal to a specific value.
-type Equal struct {
-	Name   string
-	Flags  FlagSet
-	Input  Content
-	Output Content
+// Test is a [Runnable] that makes one or more assertions.
+type Test struct {
+	Name       string
+	Flags      FlagSet
+	Origin     Origin
+	Assertions []Assertion `json:",omitempty"`
 }
 
 // AcceptVisitor dispatches to the appropriate method on v based on the concrete
 // type of n.
-func (n *Equal) AcceptVisitor(v Visitor) {
-	v.VisitEqual(n)
-}
-
-// Diff is a [Test] that asserts that its output is different to a specific
-// value, specified as a diff.
-type Diff struct {
-	Name  string
-	Flags FlagSet
-	Input Content
-	Diff  Content
-}
-
-// AcceptVisitor dispatches to the appropriate method on v based on the concrete
-// type of n.
-func (n *Diff) AcceptVisitor(v Visitor) {
-	v.VisitDiff(n)
+func (n *Test) AcceptVisitor(v Visitor) {
+	v.VisitTest(n)
 }

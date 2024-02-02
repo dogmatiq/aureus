@@ -15,20 +15,27 @@
         {
           "Name": "pretty-print.json",
           "Flags": 1,
-          "Input": {
-            "Origin": {
-              "FilePath": "testdata/skipped-input-file/_pretty-print.json"
-            },
-            "MetaData": null,
-            "Data": "eyAiZm9vIjogMSwgImJhciI6IDIsICJiYXoiOiAzIH0K"
+          "Origin": {
+            "FilePath": "testdata/skipped-input-file/_pretty-print.json"
           },
-          "Output": {
-            "Origin": {
-              "FilePath": "testdata/skipped-input-file/pretty-print.au.json"
-            },
-            "MetaData": null,
-            "Data": "ewogICJmb28iOiAxLAogICJiYXIiOiAyLAogICJiYXoiOiAzCn0K"
-          }
+          "Assertions": [
+            {
+              "Input": {
+                "Origin": {
+                  "FilePath": "testdata/skipped-input-file/_pretty-print.json"
+                },
+                "MetaData": null,
+                "Data": "eyAiZm9vIjogMSwgImJhciI6IDIsICJiYXoiOiAzIH0K"
+              },
+              "Output": {
+                "Origin": {
+                  "FilePath": "testdata/skipped-input-file/pretty-print.au.json"
+                },
+                "MetaData": null,
+                "Data": "ewogICJmb28iOiAxLAogICJiYXIiOiAyLAogICJiYXoiOiAzCn0K"
+              }
+            }
+          ]
         }
       ]
     }

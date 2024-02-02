@@ -45,7 +45,7 @@ func NewLoader(options ...LoadOption) *Loader {
 }
 
 // Load returns tests based on the golden files in the given directory.
-func (l *Loader) Load(dir string, options ...LoadOption) (test.Test, error) {
+func (l *Loader) Load(dir string, options ...LoadOption) (test.Runnable, error) {
 	loader := l.prototype
 	for _, opt := range options {
 		opt(&loader)
@@ -59,7 +59,7 @@ type loader struct {
 	isGoldenFile Predicate
 }
 
-func (l *loader) loadDir(dirPath string, inherited test.FlagSet) (test.Test, error) {
+func (l *loader) loadDir(dirPath string, inherited test.FlagSet) (test.Runnable, error) {
 	name := path.Base(dirPath)
 	name, skip := strings.CutPrefix(name, "_")
 
@@ -79,7 +79,7 @@ func (l *loader) loadDir(dirPath string, inherited test.FlagSet) (test.Test, err
 		return nil, err
 	}
 
-	var loaders []func() (test.Test, error)
+	var loaders []func() (test.Runnable, error)
 	var inputs []string
 
 	for _, e := range entries {
@@ -100,7 +100,7 @@ func (l *loader) loadDir(dirPath string, inherited test.FlagSet) (test.Test, err
 		} else if isInputFile, ok := l.isGoldenFile(e.Name()); ok {
 			loaders = append(
 				loaders,
-				func() (test.Test, error) {
+				func() (test.Runnable, error) {
 					var ins []string
 					for _, filename := range inputs {
 						if isInputFile(path.Base(filename)) {
@@ -130,7 +130,7 @@ func (l *loader) loadGoldenFile(
 	filePath string,
 	inputs []string,
 	inherited test.FlagSet,
-) (test.Test, error) {
+) (test.Runnable, error) {
 	name := path.Base(filePath)
 	name, skip := strings.CutPrefix(name, "_")
 
@@ -165,7 +165,7 @@ func (l *loader) loadInputFile(
 	filePath string,
 	inherited test.FlagSet,
 	output test.Content,
-) (test.Test, error) {
+) (test.Runnable, error) {
 	name := path.Base(filePath)
 	name, skip := strings.CutPrefix(name, "_")
 
@@ -174,11 +174,16 @@ func (l *loader) loadInputFile(
 		return nil, err
 	}
 
-	t := &test.Equal{
+	t := &test.Test{
 		Name:   name,
 		Flags:  inherited,
-		Input:  input,
-		Output: output,
+		Origin: input.Origin,
+		Assertions: []test.Assertion{
+			&test.Equal{
+				Input:  input,
+				Output: output,
+			},
+		},
 	}
 
 	if skip {
