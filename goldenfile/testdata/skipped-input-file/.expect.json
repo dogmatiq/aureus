@@ -24,14 +24,12 @@
                 "Origin": {
                   "FilePath": "testdata/skipped-input-file/_pretty-print.json"
                 },
-                "MetaData": null,
                 "Data": "{ \"foo\": 1, \"bar\": 2, \"baz\": 3 }\n"
               },
               "Output": {
                 "Origin": {
                   "FilePath": "testdata/skipped-input-file/pretty-print.au.json"
                 },
-                "MetaData": null,
                 "Data": "{\n  \"foo\": 1,\n  \"bar\": 2,\n  \"baz\": 3\n}\n"
               }
             }
