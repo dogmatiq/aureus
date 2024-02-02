@@ -1,0 +1,36 @@
+{
+  "Name": "single-extension",
+  "Flags": 0,
+  "Origin": {
+    "DirPath": "testdata/single-extension"
+  },
+  "Tests": [
+    {
+      "Name": "pretty-print.au",
+      "Flags": 0,
+      "Origin": {
+        "FilePath": "testdata/single-extension/pretty-print.au"
+      },
+      "Tests": [
+        {
+          "Name": "pretty-print.json",
+          "Flags": 0,
+          "Input": {
+            "Origin": {
+              "FilePath": "testdata/single-extension/pretty-print.json"
+            },
+            "MetaData": null,
+            "Data": "eyAiZm9vIjogMSwgImJhciI6IDIsICJiYXoiOiAzIH0K"
+          },
+          "Output": {
+            "Origin": {
+              "FilePath": "testdata/single-extension/pretty-print.au"
+            },
+            "MetaData": null,
+            "Data": "ewogICJmb28iOiAxLAogICJiYXIiOiAyLAogICJiYXoiOiAzCn0K"
+          }
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,36 @@
+{
+  "Name": "double-extension",
+  "Flags": 0,
+  "Origin": {
+    "DirPath": "testdata/double-extension"
+  },
+  "Tests": [
+    {
+      "Name": "pretty-print.au.json",
+      "Flags": 0,
+      "Origin": {
+        "FilePath": "testdata/double-extension/pretty-print.au.json"
+      },
+      "Tests": [
+        {
+          "Name": "pretty-print.json",
+          "Flags": 0,
+          "Input": {
+            "Origin": {
+              "FilePath": "testdata/double-extension/pretty-print.json"
+            },
+            "MetaData": null,
+            "Data": "eyAiZm9vIjogMSwgImJhciI6IDIsICJiYXoiOiAzIH0K"
+          },
+          "Output": {
+            "Origin": {
+              "FilePath": "testdata/double-extension/pretty-print.au.json"
+            },
+            "MetaData": null,
+            "Data": "ewogICJmb28iOiAxLAogICJiYXIiOiAyLAogICJiYXoiOiAzCn0K"
+          }
+        }
+      ]
+    }
+  ]
+}

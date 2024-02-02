@@ -1,0 +1,7 @@
+{
+  "Name": "nested-suite",
+  "Flags": 0,
+  "Origin": {
+    "DirPath": "testdata/nested-suite"
+  }
+}

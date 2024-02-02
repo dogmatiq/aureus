@@ -1,0 +1,36 @@
+{
+  "Name": "skipped-suite",
+  "Flags": 1,
+  "Origin": {
+    "DirPath": "testdata/_skipped-suite"
+  },
+  "Tests": [
+    {
+      "Name": "pretty-print.au.json",
+      "Flags": 2,
+      "Origin": {
+        "FilePath": "testdata/_skipped-suite/pretty-print.au.json"
+      },
+      "Tests": [
+        {
+          "Name": "pretty-print.json",
+          "Flags": 2,
+          "Input": {
+            "Origin": {
+              "FilePath": "testdata/_skipped-suite/pretty-print.json"
+            },
+            "MetaData": null,
+            "Data": "eyAiZm9vIjogMSwgImJhciI6IDIsICJiYXoiOiAzIH0K"
+          },
+          "Output": {
+            "Origin": {
+              "FilePath": "testdata/_skipped-suite/pretty-print.au.json"
+            },
+            "MetaData": null,
+            "Data": "ewogICJmb28iOiAxLAogICJiYXIiOiAyLAogICJiYXoiOiAzCn0K"
+          }
+        }
+      ]
+    }
+  ]
+}

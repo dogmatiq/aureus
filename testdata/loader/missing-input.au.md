@@ -1,3 +1,0 @@
-```json au:assertion
-
-```

@@ -8,50 +8,50 @@ type Test interface {
 // Visitor is an interface for dispatching based on the concrete type of a
 // [Test].
 type Visitor interface {
-	VisitSuite(Suite)
-	VisitEqual(Equal)
-	VisitDiff(Diff)
+	VisitSuite(*Suite)
+	VisitEqual(*Equal)
+	VisitDiff(*Diff)
 }
 
 // Suite is a [Test] that contains a collection of sub-tests.
 type Suite struct {
 	Name   string
-	Flags  Flags
+	Flags  FlagSet
 	Origin Origin
-	Tests  []Test
+	Tests  []Test `json:",omitempty"`
 }
 
 // AcceptVisitor dispatches to the appropriate method on v based on the concrete
 // type of n.
-func (n Suite) AcceptVisitor(v Visitor) {
+func (n *Suite) AcceptVisitor(v Visitor) {
 	v.VisitSuite(n)
 }
 
 // Equal is a [Test] that asserts that its output is equal to a specific value.
 type Equal struct {
 	Name   string
-	Flags  Flags
-	Input  CodeBlock
-	Expect CodeBlock
+	Flags  FlagSet
+	Input  Content
+	Output Content
 }
 
 // AcceptVisitor dispatches to the appropriate method on v based on the concrete
 // type of n.
-func (n Equal) AcceptVisitor(v Visitor) {
+func (n *Equal) AcceptVisitor(v Visitor) {
 	v.VisitEqual(n)
 }
 
 // Diff is a [Test] that asserts that its output is different to a specific
 // value, specified as a diff.
 type Diff struct {
-	Name   string
-	Flags  Flags
-	Input  CodeBlock
-	Expect CodeBlock
+	Name  string
+	Flags FlagSet
+	Input Content
+	Diff  Content
 }
 
 // AcceptVisitor dispatches to the appropriate method on v based on the concrete
 // type of n.
-func (n Diff) AcceptVisitor(v Visitor) {
+func (n *Diff) AcceptVisitor(v Visitor) {
 	v.VisitDiff(n)
 }

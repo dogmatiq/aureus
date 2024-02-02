@@ -1,4 +1,4 @@
-package loader
+package rootfs
 
 import (
 	"io/fs"
@@ -7,6 +7,11 @@ import (
 )
 
 var underlying = os.DirFS("/")
+
+// FS is the root OS file system.
+//
+// It respects the current working directory when referencing relative paths.
+var FS fs.FS = rootFS{}
 
 type rootFS struct{}
 

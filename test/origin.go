@@ -1,6 +1,8 @@
 package test
 
-import "fmt"
+import (
+	"fmt"
+)
 
 // Origin describes the "source" of a [Test].
 type Origin interface {
@@ -12,69 +14,86 @@ type Origin interface {
 // OriginVisitor is an interface for dispatching based on the concrete type of
 // an [Origin].
 type OriginVisitor interface {
-	VisitDirectory(Directory)
-	VisitDocument(Document)
-	VisitDocumentLocation(DocumentLocation)
+	VisitDirectoryOrigin(DirectoryOrigin)
+	VisitDocumentOrigin(FileOrigin)
+	VisitDocumentLineOrigin(FileLineOrigin)
 }
 
-// Directory is an [Origin] that refers to a filesystem directory.
-type Directory struct {
-	Name string
+// DirectoryOrigin is an [Origin] that refers to a filesystem directory.
+type DirectoryOrigin struct {
+	DirPath string
 }
 
 // AcceptVisitor dispatches to the appropriate method on v based on the concrete
 // type of o.
-func (o Directory) AcceptVisitor(v OriginVisitor) {
-	v.VisitDirectory(o)
+func (o DirectoryOrigin) AcceptVisitor(v OriginVisitor) {
+	v.VisitDirectoryOrigin(o)
 }
 
 // Path returns the path to the directory.
-func (o Directory) Path() string {
-	return string(o.Name)
+func (o DirectoryOrigin) Path() string {
+	return string(o.DirPath)
 }
 
-func (o Directory) String() string {
-	return string(o.Name + "/")
+func (o DirectoryOrigin) String() string {
+	return string(o.DirPath + "/")
 }
 
-// Document is an [Origin] that refers to a specific Markdown document file.
-type Document struct {
-	Name string
+// DapperString returns the string used to represent o in
+// [github.com/dogmatiq/dapper] output.
+func (o DirectoryOrigin) DapperString() string {
+	return o.String()
+}
+
+// FileOrigin is an [Origin] that refers to a specific file.
+type FileOrigin struct {
+	FilePath string
 }
 
 // AcceptVisitor dispatches to the appropriate method on v based on the concrete
 // type of o.
-func (o Document) AcceptVisitor(v OriginVisitor) {
-	v.VisitDocument(o)
+func (o FileOrigin) AcceptVisitor(v OriginVisitor) {
+	v.VisitDocumentOrigin(o)
 }
 
 // Path returns the path to the document file.
-func (o Document) Path() string {
-	return string(o.Name)
+func (o FileOrigin) Path() string {
+	return string(o.FilePath)
 }
 
-func (o Document) String() string {
-	return string(o.Name)
+func (o FileOrigin) String() string {
+	return string(o.FilePath)
 }
 
-// DocumentLocation is an [Origin] that describes a specific line within a
-// Markdown document.
-type DocumentLocation struct {
-	File string
-	Line int
+// DapperString returns the string used to represent o in
+// [github.com/dogmatiq/dapper] output.
+func (o FileOrigin) DapperString() string {
+	return o.String()
+}
+
+// FileLineOrigin is an [Origin] that describes a specific line within a file.
+type FileLineOrigin struct {
+	FilePath string
+	Line     int
 }
 
 // AcceptVisitor dispatches to the appropriate method on v based on the concrete
 // type of o.
-func (o DocumentLocation) AcceptVisitor(v OriginVisitor) {
-	v.VisitDocumentLocation(o)
+func (o FileLineOrigin) AcceptVisitor(v OriginVisitor) {
+	v.VisitDocumentLineOrigin(o)
 }
 
 // Path returns the path to the file.
-func (o DocumentLocation) Path() string {
-	return o.File
+func (o FileLineOrigin) Path() string {
+	return o.FilePath
 }
 
-func (o DocumentLocation) String() string {
-	return fmt.Sprintf("%s:%d", o.File, o.Line)
+func (o FileLineOrigin) String() string {
+	return fmt.Sprintf("%s:%d", o.FilePath, o.Line)
+}
+
+// DapperString returns the string used to represent o in
+// [github.com/dogmatiq/dapper] output.
+func (o FileLineOrigin) DapperString() string {
+	return o.String()
 }
