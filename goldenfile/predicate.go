@@ -5,9 +5,8 @@ import (
 	"strings"
 )
 
-// Predicate is a predicate that determines whether a file is a
-// "golden file", that is, a file that contains the expected output for some set
-// of inputs.
+// A Predicate is a function that determines whether a file is a "golden file",
+// that is, a file that contains the expected output for some set of inputs.
 //
 // If ok is true, the file is a golden-file and p is an [InputFilePredicate]
 // that that matches input files that are expected to produce output equal to
@@ -18,7 +17,7 @@ type Predicate func(filename string) (p InputPredicate, ok bool)
 // data for a test.
 type InputPredicate func(filename string) bool
 
-// DefaultPredicate is the default implementation of an [OutputPredicate].
+// DefaultPredicate is the default [Predicate] implementation.
 //
 // It matches any files with a ".au" extension, or a ".au.*" extension.
 //

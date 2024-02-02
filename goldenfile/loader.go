@@ -12,54 +12,39 @@ import (
 // Loader loads [test.Test] values from directories containing pairs of files
 // representing input and expected output.
 type Loader struct {
-	prototype loader
-}
-
-// LoadOption is an option that changes the behavior of a [Loader].
-type LoadOption func(*loader)
-
-// WithRecursion if a [LoadOption] that enables or disables recursive scanning
-// of sub-directories.
-//
-// Recursion is enabled by default.
-func WithRecursion(on bool) LoadOption {
-	return func(l *loader) {
-		l.isRecursive = on
-	}
+	options loadOptions
 }
 
 // NewLoader returns a new [Loader], which loads golden file tests from the
 // filesystem.
 func NewLoader(options ...LoadOption) *Loader {
 	l := &Loader{
-		prototype: loader{
-			filesytem:    rootfs.FS,
-			isRecursive:  true,
-			isGoldenFile: DefaultPredicate,
+		options: loadOptions{
+			FileSystem:   rootfs.FS,
+			Recursive:    true,
+			IsGoldenFile: DefaultPredicate,
 		},
 	}
 	for _, opt := range options {
-		opt(&l.prototype)
+		opt(&l.options)
 	}
 	return l
 }
 
 // Load returns tests based on the golden files in the given directory.
 func (l *Loader) Load(dir string, options ...LoadOption) (test.Test, error) {
-	loader := l.prototype
+	opts := l.options
 	for _, opt := range options {
-		opt(&loader)
+		opt(&opts)
 	}
-	return loader.loadDir(dir, test.EmptyFlagSet)
+	return loadDir(opts, dir, test.EmptyFlagSet)
 }
 
-type loader struct {
-	filesytem    fs.FS
-	isRecursive  bool
-	isGoldenFile Predicate
-}
-
-func (l *loader) loadDir(dirPath string, inherited test.FlagSet) (test.Test, error) {
+func loadDir(
+	opts loadOptions,
+	dirPath string,
+	inherited test.FlagSet,
+) (test.Test, error) {
 	name := path.Base(dirPath)
 	name, skip := strings.CutPrefix(name, "_")
 
@@ -74,7 +59,7 @@ func (l *loader) loadDir(dirPath string, inherited test.FlagSet) (test.Test, err
 		inherited.Add(test.FlagAncestorSkipped)
 	}
 
-	entries, err := fs.ReadDir(l.filesytem, dirPath)
+	entries, err := fs.ReadDir(opts.FileSystem, dirPath)
 	if err != nil {
 		return test.Test{}, err
 	}
@@ -90,14 +75,14 @@ func (l *loader) loadDir(dirPath string, inherited test.FlagSet) (test.Test, err
 		n := path.Join(dirPath, e.Name())
 
 		if e.IsDir() {
-			if l.isRecursive {
-				sub, err := l.loadDir(n, inherited)
+			if opts.Recursive {
+				sub, err := loadDir(opts, n, inherited)
 				if err != nil {
 					return test.Test{}, err
 				}
 				t.SubTests = append(t.SubTests, sub)
 			}
-		} else if isInputFile, ok := l.isGoldenFile(e.Name()); ok {
+		} else if isInputFile, ok := opts.IsGoldenFile(e.Name()); ok {
 			loaders = append(
 				loaders,
 				func() (test.Test, error) {
@@ -107,7 +92,7 @@ func (l *loader) loadDir(dirPath string, inherited test.FlagSet) (test.Test, err
 							ins = append(ins, filename)
 						}
 					}
-					return l.loadGoldenFile(n, ins, inherited)
+					return loadGoldenFile(opts, n, ins, inherited)
 				},
 			)
 		} else {
@@ -126,7 +111,8 @@ func (l *loader) loadDir(dirPath string, inherited test.FlagSet) (test.Test, err
 	return t, nil
 }
 
-func (l *loader) loadGoldenFile(
+func loadGoldenFile(
+	opts loadOptions,
 	filePath string,
 	inputs []string,
 	inherited test.FlagSet,
@@ -145,13 +131,13 @@ func (l *loader) loadGoldenFile(
 		inherited.Add(test.FlagAncestorSkipped)
 	}
 
-	ouptut, err := l.loadContent(filePath)
+	output, err := loadContent(opts, filePath)
 	if err != nil {
 		return test.Test{}, err
 	}
 
 	for _, filePath := range inputs {
-		sub, err := l.loadInputFile(filePath, inherited, ouptut)
+		sub, err := loadInputFile(opts, filePath, inherited, output)
 		if err != nil {
 			return test.Test{}, err
 		}
@@ -161,7 +147,8 @@ func (l *loader) loadGoldenFile(
 	return t, nil
 }
 
-func (l *loader) loadInputFile(
+func loadInputFile(
+	opts loadOptions,
 	filePath string,
 	inherited test.FlagSet,
 	output test.Content,
@@ -169,7 +156,7 @@ func (l *loader) loadInputFile(
 	name := path.Base(filePath)
 	name, skip := strings.CutPrefix(name, "_")
 
-	input, err := l.loadContent(filePath)
+	input, err := loadContent(opts, filePath)
 	if err != nil {
 		return test.Test{}, err
 	}
@@ -193,8 +180,12 @@ func (l *loader) loadInputFile(
 	return t, nil
 }
 
-func (l *loader) loadContent(filePath string) (test.Content, error) {
-	data, err := fs.ReadFile(l.filesytem, filePath)
+// loadContent loads the content of a golden file or input file.
+func loadContent(
+	opts loadOptions,
+	filePath string,
+) (test.Content, error) {
+	data, err := fs.ReadFile(opts.FileSystem, filePath)
 	if err != nil {
 		return test.Content{}, err
 	}
