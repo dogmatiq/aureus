@@ -53,7 +53,7 @@ func loadDir(
 ) (test.Test, error) {
 	parent, inherited := test.New(
 		test.DirectoryOrigin{DirPath: dirPath},
-		inherited,
+		test.WithInheritedFlags(inherited),
 	)
 
 	entries, err := fs.ReadDir(opts.FS, dirPath)
@@ -136,7 +136,7 @@ func loadOutput(
 ) (test.Test, error) {
 	parent, inherited := test.New(
 		test.FileOrigin{FilePath: filePath},
-		inherited,
+		test.WithInheritedFlags(inherited),
 	)
 
 	output, err := loadContent(opts, filePath)
@@ -168,13 +168,14 @@ func loadInput(
 
 	t, _ := test.New(
 		test.FileOrigin{FilePath: filePath},
-		inherited,
+		test.WithInheritedFlags(inherited),
+		test.WithAssertion(
+			test.EqualAssertion{
+				Input:  input,
+				Output: output,
+			},
+		),
 	)
-
-	t.Assertion = test.EqualAssertion{
-		Input:  input,
-		Output: output,
-	}
 
 	return t, nil
 }

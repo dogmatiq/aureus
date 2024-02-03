@@ -37,19 +37,23 @@ type FlagSet int
 // EmptyFlagSet is a [FlagSet] containing no flags.
 const EmptyFlagSet FlagSet = 0
 
-// Has returns true if f contains the given flag.
+// Has returns true if s contains the given flag.
 func (s FlagSet) Has(f Flag) bool {
 	return s&FlagSet(f) != 0
 }
 
-// Add adds the given flag to f.
-func (s *FlagSet) Add(f Flag) {
-	*s |= FlagSet(f)
+// Add adds the given flags to s.
+func (s *FlagSet) Add(flags ...Flag) {
+	for _, f := range flags {
+		*s |= FlagSet(f)
+	}
 }
 
-// Remove removes the given flag from f.
-func (s *FlagSet) Remove(f Flag) {
-	*s &^= FlagSet(f)
+// Remove removes the given flags from s.
+func (s *FlagSet) Remove(flags ...Flag) {
+	for _, f := range flags {
+		*s &^= FlagSet(f)
+	}
 }
 
 func (s FlagSet) String() string {
