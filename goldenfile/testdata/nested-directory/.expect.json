@@ -1,0 +1,78 @@
+{
+  "Name": "nested-directory",
+  "Flags": 0,
+  "Origin": {
+    "DirPath": "testdata/nested-directory"
+  },
+  "SubTests": [
+    {
+      "Name": "child",
+      "Flags": 0,
+      "Origin": {
+        "DirPath": "testdata/nested-directory/child"
+      },
+      "SubTests": [
+        {
+          "Name": "test.output",
+          "Flags": 0,
+          "Origin": {
+            "FilePath": "testdata/nested-directory/child/test.output"
+          },
+          "SubTests": [
+            {
+              "Name": "test.input",
+              "Flags": 0,
+              "Origin": {
+                "FilePath": "testdata/nested-directory/child/test.input"
+              },
+              "Assertion": {
+                "Input": {
+                  "Origin": {
+                    "FilePath": "testdata/nested-directory/child/test.input"
+                  },
+                  "Data": "CHILD INPUT\n"
+                },
+                "Output": {
+                  "Origin": {
+                    "FilePath": "testdata/nested-directory/child/test.output"
+                  },
+                  "Data": "CHILD OUTPUT\n"
+                }
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "Name": "test.output",
+      "Flags": 0,
+      "Origin": {
+        "FilePath": "testdata/nested-directory/test.output"
+      },
+      "SubTests": [
+        {
+          "Name": "test.input",
+          "Flags": 0,
+          "Origin": {
+            "FilePath": "testdata/nested-directory/test.input"
+          },
+          "Assertion": {
+            "Input": {
+              "Origin": {
+                "FilePath": "testdata/nested-directory/test.input"
+              },
+              "Data": "INPUT\n"
+            },
+            "Output": {
+              "Origin": {
+                "FilePath": "testdata/nested-directory/test.output"
+              },
+              "Data": "OUTPUT\n"
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

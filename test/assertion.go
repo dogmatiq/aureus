@@ -9,7 +9,6 @@ type Assertion interface {
 // of an [Assertion].
 type AssertionVisitor interface {
 	VisitEqualAssertion(EqualAssertion)
-	VisitDiffAssertion(DiffAssertion)
 }
 
 // EqualAssertion is an [Assertion] that asserts that asserts two values are
@@ -27,21 +26,4 @@ func (a EqualAssertion) AcceptVisitor(v AssertionVisitor, options ...VisitOption
 		cfg.TestingT.Helper()
 	}
 	v.VisitEqualAssertion(a)
-}
-
-// DiffAssertion is an [Assertion] that asserts that two values differ in a
-// specific way.
-type DiffAssertion struct {
-	Input Content
-	Diff  Content
-}
-
-// AcceptVisitor dispatches to the appropriate method on v based on the concrete
-// type of a.
-func (a DiffAssertion) AcceptVisitor(v AssertionVisitor, options ...VisitOption) {
-	cfg := newVisitConfig(options)
-	if cfg.TestingT != nil {
-		cfg.TestingT.Helper()
-	}
-	v.VisitDiffAssertion(a)
 }

@@ -1,6 +1,7 @@
 package goldenfile
 
 import (
+	"fmt"
 	"io/fs"
 	"path"
 	"strings"
@@ -22,16 +23,18 @@ func NewLoader(options ...LoadOption) *Loader {
 		options: loadOptions{
 			FS:       rootfs.FS,
 			Recurse:  true,
-			IsGolden: DefaultPredicate,
+			IsOutput: DefaultPredicate,
 		},
 	}
+
 	for _, opt := range options {
 		opt(&l.options)
 	}
+
 	return l
 }
 
-// Load returns a test build from the golden files in the given directory.
+// Load returns a test built from files in the given directory.
 //
 // Any directory or file that begins with an underscore produces a test that is
 // marked as skipped.
@@ -48,7 +51,7 @@ func loadDir(
 	dirPath string,
 	inherited test.FlagSet,
 ) (test.Test, error) {
-	t, inherited := test.New(
+	parent, inherited := test.New(
 		test.DirectoryOrigin{DirPath: dirPath},
 		inherited,
 	)
@@ -58,8 +61,20 @@ func loadDir(
 		return test.Test{}, err
 	}
 
-	var loaders []func() (test.Test, error)
-	var inputs []string
+	type output struct {
+		FilePath string
+		IsInput  InputPredicate
+	}
+
+	type input struct {
+		FilePath        string
+		MatchedToOutput bool
+	}
+
+	var (
+		inputs  []*input
+		outputs []*output
+	)
 
 	for _, e := range entries {
 		if strings.HasPrefix(e.Name(), ".") {
@@ -70,48 +85,56 @@ func loadDir(
 
 		if e.IsDir() {
 			if opts.Recurse {
-				sub, err := loadDir(opts, n, inherited)
+				child, err := loadDir(opts, n, inherited)
 				if err != nil {
 					return test.Test{}, err
 				}
-				t.SubTests = append(t.SubTests, sub)
+				parent.SubTests = append(parent.SubTests, child)
 			}
-		} else if isInput, ok := opts.IsGolden(e.Name()); ok {
-			loaders = append(
-				loaders,
-				func() (test.Test, error) {
-					var ins []string
-					for _, filename := range inputs {
-						if isInput(path.Base(filename)) {
-							ins = append(ins, filename)
-						}
-					}
-					return loadGoldenFile(opts, n, ins, inherited)
-				},
-			)
+		} else if isInput, ok := opts.IsOutput(e.Name()); ok {
+			outputs = append(outputs, &output{n, isInput})
 		} else {
-			inputs = append(inputs, n)
+			inputs = append(inputs, &input{n, false})
 		}
 	}
 
-	for _, load := range loaders {
-		sub, err := load()
+	for _, out := range outputs {
+		var matching []string
+		for _, in := range inputs {
+			if out.IsInput(path.Base(in.FilePath)) {
+				in.MatchedToOutput = true
+				matching = append(matching, in.FilePath)
+			}
+		}
+
+		if len(matching) == 0 {
+			return test.Test{}, fmt.Errorf("output file %q has no associated input files", out.FilePath)
+		}
+
+		child, err := loadOutput(opts, out.FilePath, matching, inherited)
 		if err != nil {
 			return test.Test{}, err
 		}
-		t.SubTests = append(t.SubTests, sub)
+
+		parent.SubTests = append(parent.SubTests, child)
 	}
 
-	return t, nil
+	for _, in := range inputs {
+		if !in.MatchedToOutput {
+			return test.Test{}, fmt.Errorf("input file %q has no associated output files", in.FilePath)
+		}
+	}
+
+	return parent, nil
 }
 
-func loadGoldenFile(
+func loadOutput(
 	opts loadOptions,
 	filePath string,
 	inputs []string,
 	inherited test.FlagSet,
 ) (test.Test, error) {
-	t, inherited := test.New(
+	parent, inherited := test.New(
 		test.FileOrigin{FilePath: filePath},
 		inherited,
 	)
@@ -122,43 +145,41 @@ func loadGoldenFile(
 	}
 
 	for _, filePath := range inputs {
-		sub, err := loadInputFile(opts, filePath, inherited, output)
+		child, err := loadInput(opts, filePath, output, inherited)
 		if err != nil {
 			return test.Test{}, err
 		}
-		t.SubTests = append(t.SubTests, sub)
+		parent.SubTests = append(parent.SubTests, child)
 	}
 
-	return t, nil
+	return parent, nil
 }
 
-func loadInputFile(
+func loadInput(
 	opts loadOptions,
 	filePath string,
-	inherited test.FlagSet,
 	output test.Content,
+	inherited test.FlagSet,
 ) (test.Test, error) {
 	input, err := loadContent(opts, filePath)
 	if err != nil {
 		return test.Test{}, err
 	}
 
-	t, inherited := test.New(
-		input.Origin,
+	t, _ := test.New(
+		test.FileOrigin{FilePath: filePath},
 		inherited,
 	)
 
-	t.Assertions = []test.Assertion{
-		test.EqualAssertion{
-			Input:  input,
-			Output: output,
-		},
+	t.Assertion = test.EqualAssertion{
+		Input:  input,
+		Output: output,
 	}
 
 	return t, nil
 }
 
-// loadContent loads the content of a golden file or input file.
+// loadContent loads the content of an input file or output file.
 func loadContent(
 	opts loadOptions,
 	filePath string,

@@ -1,0 +1,69 @@
+{
+  "Name": "multiple-tests",
+  "Flags": 0,
+  "Origin": {
+    "DirPath": "testdata/multiple-tests"
+  },
+  "SubTests": [
+    {
+      "Name": "test1.output",
+      "Flags": 0,
+      "Origin": {
+        "FilePath": "testdata/multiple-tests/test1.output"
+      },
+      "SubTests": [
+        {
+          "Name": "test1.input",
+          "Flags": 0,
+          "Origin": {
+            "FilePath": "testdata/multiple-tests/test1.input"
+          },
+          "Assertion": {
+            "Input": {
+              "Origin": {
+                "FilePath": "testdata/multiple-tests/test1.input"
+              },
+              "Data": "INPUT 1\n"
+            },
+            "Output": {
+              "Origin": {
+                "FilePath": "testdata/multiple-tests/test1.output"
+              },
+              "Data": "OUTPUT 1\n"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "Name": "test2.output",
+      "Flags": 0,
+      "Origin": {
+        "FilePath": "testdata/multiple-tests/test2.output"
+      },
+      "SubTests": [
+        {
+          "Name": "test2.input",
+          "Flags": 0,
+          "Origin": {
+            "FilePath": "testdata/multiple-tests/test2.input"
+          },
+          "Assertion": {
+            "Input": {
+              "Origin": {
+                "FilePath": "testdata/multiple-tests/test2.input"
+              },
+              "Data": "INPUT 2\n"
+            },
+            "Output": {
+              "Origin": {
+                "FilePath": "testdata/multiple-tests/test2.output"
+              },
+              "Data": "OUTPUT 2\n"
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

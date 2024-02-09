@@ -1,33 +1,33 @@
 {
-  "Name": "skipped-input-file",
+  "Name": "with-file-extension",
   "Flags": 0,
   "Origin": {
-    "DirPath": "testdata/skipped-input-file"
+    "DirPath": "testdata/with-file-extension"
   },
   "SubTests": [
     {
-      "Name": "test.output",
+      "Name": "test.output.txt",
       "Flags": 0,
       "Origin": {
-        "FilePath": "testdata/skipped-input-file/test.output"
+        "FilePath": "testdata/with-file-extension/test.output.txt"
       },
       "SubTests": [
         {
-          "Name": "test.input",
-          "Flags": 1,
+          "Name": "test.input.txt",
+          "Flags": 0,
           "Origin": {
-            "FilePath": "testdata/skipped-input-file/_test.input"
+            "FilePath": "testdata/with-file-extension/test.input.txt"
           },
           "Assertion": {
             "Input": {
               "Origin": {
-                "FilePath": "testdata/skipped-input-file/_test.input"
+                "FilePath": "testdata/with-file-extension/test.input.txt"
               },
               "Data": "INPUT\n"
             },
             "Output": {
               "Origin": {
-                "FilePath": "testdata/skipped-input-file/test.output"
+                "FilePath": "testdata/with-file-extension/test.output.txt"
               },
               "Data": "OUTPUT\n"
             }

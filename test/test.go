@@ -7,11 +7,11 @@ import (
 
 // Test is a (possibly nested) test.
 type Test struct {
-	Name       string
-	Flags      FlagSet
-	Origin     Origin
-	SubTests   []Test      `json:",omitempty"`
-	Assertions []Assertion `json:",omitempty"`
+	Name      string
+	Flags     FlagSet
+	Origin    Origin
+	SubTests  []Test    `json:",omitempty"`
+	Assertion Assertion `json:",omitempty"`
 }
 
 // New creates a new [Test] from an [Origin] and an inherited set of flags.

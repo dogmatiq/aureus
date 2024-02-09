@@ -1,0 +1,111 @@
+{
+  "Name": "matrix",
+  "Flags": 0,
+  "Origin": {
+    "DirPath": "testdata/matrix"
+  },
+  "SubTests": [
+    {
+      "Name": "test.output.one",
+      "Flags": 0,
+      "Origin": {
+        "FilePath": "testdata/matrix/test.output.one"
+      },
+      "SubTests": [
+        {
+          "Name": "test.input.one",
+          "Flags": 0,
+          "Origin": {
+            "FilePath": "testdata/matrix/test.input.one"
+          },
+          "Assertion": {
+            "Input": {
+              "Origin": {
+                "FilePath": "testdata/matrix/test.input.one"
+              },
+              "Data": "INPUT 1\n"
+            },
+            "Output": {
+              "Origin": {
+                "FilePath": "testdata/matrix/test.output.one"
+              },
+              "Data": "OUTPUT 1\n"
+            }
+          }
+        },
+        {
+          "Name": "test.input.two",
+          "Flags": 0,
+          "Origin": {
+            "FilePath": "testdata/matrix/test.input.two"
+          },
+          "Assertion": {
+            "Input": {
+              "Origin": {
+                "FilePath": "testdata/matrix/test.input.two"
+              },
+              "Data": "INPUT 2\n"
+            },
+            "Output": {
+              "Origin": {
+                "FilePath": "testdata/matrix/test.output.one"
+              },
+              "Data": "OUTPUT 1\n"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "Name": "test.output.two",
+      "Flags": 0,
+      "Origin": {
+        "FilePath": "testdata/matrix/test.output.two"
+      },
+      "SubTests": [
+        {
+          "Name": "test.input.one",
+          "Flags": 0,
+          "Origin": {
+            "FilePath": "testdata/matrix/test.input.one"
+          },
+          "Assertion": {
+            "Input": {
+              "Origin": {
+                "FilePath": "testdata/matrix/test.input.one"
+              },
+              "Data": "INPUT 1\n"
+            },
+            "Output": {
+              "Origin": {
+                "FilePath": "testdata/matrix/test.output.two"
+              },
+              "Data": "OUTPUT 2\n"
+            }
+          }
+        },
+        {
+          "Name": "test.input.two",
+          "Flags": 0,
+          "Origin": {
+            "FilePath": "testdata/matrix/test.input.two"
+          },
+          "Assertion": {
+            "Input": {
+              "Origin": {
+                "FilePath": "testdata/matrix/test.input.two"
+              },
+              "Data": "INPUT 2\n"
+            },
+            "Output": {
+              "Origin": {
+                "FilePath": "testdata/matrix/test.output.two"
+              },
+              "Data": "OUTPUT 2\n"
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

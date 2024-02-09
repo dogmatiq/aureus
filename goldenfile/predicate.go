@@ -1,16 +1,16 @@
 package goldenfile
 
 import (
-	"path"
+	"slices"
 	"strings"
 )
 
-// A Predicate is a function that determines whether a file is a "golden file",
+// A Predicate is a function that determines whether a file is an "output file",
 // that is, a file that contains the expected output for some set of inputs.
 //
-// If ok is true, the file is a golden-file and p is an [InputFilePredicate]
-// that that matches input files that are expected to produce output equal to
-// the content of the golden file.
+// If ok is true, the file is an output file and p is an [InputFilePredicate]
+// that that matches input files that are expected to produce the same output as
+// the contents of the output file.
 type Predicate func(filename string) (p InputPredicate, ok bool)
 
 // InputPredicate is a predicate that determines whether a file contains input
@@ -19,43 +19,37 @@ type InputPredicate func(filename string) bool
 
 // DefaultPredicate is the default [Predicate] implementation.
 //
-// It matches any files with a ".au" extension, or a ".au.*" extension.
+// It matches any filenames with an ".output" part, that is, either the
+// extension ".output", or with ".output." appearing in the filename.
 //
-// The returned [InputPredicate] matches any files with names that begin with
-// the name of the output file. It ignores any leading underscores and the
-// extension of the potential input file.
+// The returned [InputPredicate] matches filenames with the same prefix as the
+// output file, up to the first occurrence of ".output".
 func DefaultPredicate(filename string) (InputPredicate, bool) {
-	prefix, ext := splitExtension(filename)
-	if ext == "" {
-		return nil, false
+	if want, ok := hasAtom(filename, "output"); ok {
+		return func(filename string) bool {
+			got, ok := hasAtom(filename, "input")
+			return ok && slices.Equal(got, want)
+		}, true
 	}
-
-	if ext != ".au" {
-		prefix, ext = splitExtension(prefix)
-		if ext != ".au" {
-			return nil, false
-		}
-	}
-
-	prefix = strings.TrimPrefix(prefix, "_")
-
-	return func(filename string) (ok bool) {
-		filename = strings.TrimPrefix(filename, "_")
-
-		// somefile.au[.*] -> somefile
-		if filename == prefix {
-			return true
-		}
-
-		// somefile.au[.*] -> somefile.*
-		return strings.HasPrefix(filename, prefix+".")
-	}, true
+	return nil, false
 }
 
-func splitExtension(filename string) (string, string) {
-	ext := path.Ext(filename)
-	if ext == "" {
-		return filename, ""
+// hasAtom returns the atoms (dot-separated components) of filename that precede
+// the first occurrence of a.
+//
+// It returns false if a is the first atom, or does not appear in the filename
+// at all.
+//
+// Leading underscores are ignored.
+func hasAtom(filename, a string) ([]string, bool) {
+	filename = strings.TrimPrefix(filename, "_")
+	atoms := strings.Split(filename, ".")
+
+	for i, x := range atoms[1:] {
+		if x == a {
+			return atoms[:i+1], true
+		}
 	}
-	return strings.TrimSuffix(filename, ext), ext
+
+	return nil, false
 }

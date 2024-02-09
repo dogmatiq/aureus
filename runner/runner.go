@@ -35,9 +35,11 @@ func (r *Runner[T]) Run(t T, x test.Test) {
 				r.Run(t, s)
 			}
 
-			assert := assertionExecutor[T]{r.Output, t}
-			for _, a := range x.Assertions {
-				a.AcceptVisitor(assert, test.WithT(t))
+			if x.Assertion != nil {
+				x.Assertion.AcceptVisitor(
+					assertionExecutor[T]{r.Output, t},
+					test.WithT(t),
+				)
 			}
 		},
 	)
@@ -74,8 +76,4 @@ func (x assertionExecutor[T]) VisitEqualAssertion(a test.EqualAssertion) {
 	}
 
 	x.TestingT.Log(m.String())
-}
-
-func (x assertionExecutor[T]) VisitDiffAssertion(test.DiffAssertion) {
-	panic("not implemented")
 }
