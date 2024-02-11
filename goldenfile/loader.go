@@ -51,8 +51,12 @@ func loadDir(
 	dirPath string,
 	inherited test.FlagSet,
 ) (test.Test, error) {
+	name := path.Base(dirPath)
+	name, skip := strings.CutPrefix(name, "_")
+
 	parent, inherited := test.New(
-		test.WithNameFromPath(dirPath),
+		test.WithName(name),
+		test.If(skip, test.WithFlag(test.FlagSkipped)),
 		test.WithInheritedFlags(inherited),
 	)
 
@@ -85,13 +89,17 @@ func loadDir(
 			out := &outputFile{Path: n, IsInput: isInput}
 			outputs = append(outputs, out)
 			for _, in := range inputs {
-				correlate(in, out)
+				if err := correlate(opts, in, out); err != nil {
+					return test.Test{}, err
+				}
 			}
 		} else {
 			in := &inputFile{Path: n}
 			inputs = append(inputs, in)
 			for _, out := range outputs {
-				correlate(in, out)
+				if err := correlate(opts, in, out); err != nil {
+					return test.Test{}, err
+				}
 			}
 		}
 	}
@@ -101,16 +109,14 @@ func loadDir(
 			return test.Test{}, fmt.Errorf("output file %q has no associated input files", out.Path)
 		}
 
-		if out.IsMatrix {
-			panic("not implemented")
-		}
+		for _, in := range out.Inputs {
+			child, err := buildTest(opts, in, out, inherited)
+			if err != nil {
+				return test.Test{}, err
+			}
 
-		child, err := buildSingleTest(opts, out, inherited)
-		if err != nil {
-			return test.Test{}, err
+			parent.SubTests = append(parent.SubTests, child)
 		}
-
-		parent.SubTests = append(parent.SubTests, child)
 	}
 
 	for _, in := range inputs {
@@ -122,97 +128,100 @@ func loadDir(
 	return parent, nil
 }
 
-func buildSingleTest(
+func buildTest(
 	opts loadOptions,
+	in *inputFile,
 	out *outputFile,
 	inherited test.FlagSet,
 ) (test.Test, error) {
-	if len(out.Inputs) != 1 {
-		panic("unexpected number of inputs")
-	}
+	outName, skipOut := parsePath(out.Path)
+	inName, skipIn := parsePath(in.Path)
 
-	output, err := loadContent(opts, out.Path)
-	if err != nil {
-		return test.Test{}, err
-	}
-
-	in := out.Inputs[0]
-	input, err := loadContent(opts, in.Path)
-	if err != nil {
-		return test.Test{}, err
+	name := outName
+	if outName != inName {
+		name = fmt.Sprintf("%s -> %s", inName, outName)
 	}
 
 	t, _ := test.New(
-		test.WithNameFromPath(out.Path),
+		test.WithName(name),
+		test.If(skipIn || skipOut, test.WithFlag(test.FlagSkipped)),
 		test.WithInheritedFlags(inherited),
 		test.WithAssertion(
 			test.EqualAssertion{
-				Input:  input,
-				Output: output,
+				Input:  *in.Content,
+				Output: *out.Content,
 			},
 		),
 	)
+
 	return t, nil
 }
-
-// func loadInput(
-// 	opts loadOptions,
-// 	filePath string,
-// 	output test.Content,
-// 	inherited test.FlagSet,
-// ) (test.Test, error) {
-
-// 	t, _ := test.New(
-// 		test.WithNameFromPath(filePath),
-// 		test.WithInheritedFlags(inherited),
-// 		test.WithAssertion(
-// 			test.EqualAssertion{
-// 				Input:  inputFile,
-// 				Output: output,
-// 			},
-// 		),
-// 	)
-
-// 	return t, nil
-// }
 
 // loadContent loads the content of an input file or output file.
 func loadContent(
 	opts loadOptions,
 	filePath string,
-) (test.Content, error) {
+) (*test.Content, error) {
 	data, err := fs.ReadFile(opts.FS, filePath)
 	if err != nil {
-		return test.Content{}, err
+		return nil, err
 	}
 
-	return test.Content{
+	return &test.Content{
 		Data: string(data),
 		File: filePath,
 	}, nil
 }
 
 type outputFile struct {
-	Path     string
-	IsInput  InputPredicate
-	IsMatrix bool
-	Inputs   []*inputFile
+	Path           string
+	IsInput        InputPredicate
+	IsMatrixMember bool
+	Content        *test.Content
+	Inputs         []*inputFile
 }
 
 type inputFile struct {
-	Path     string
-	IsMatrix bool
-	Outputs  []*outputFile
+	Path           string
+	IsMatrixMember bool
+	Content        *test.Content
+	Outputs        []*outputFile
 }
 
-func correlate(in *inputFile, out *outputFile) {
-	if out.IsInput(path.Base(in.Path)) {
-		in.Outputs = append(in.Outputs, out)
-		out.Inputs = append(out.Inputs, in)
+func correlate(opts loadOptions, in *inputFile, out *outputFile) error {
+	if !out.IsInput(path.Base(in.Path)) {
+		return nil
+	}
 
-		if len(in.Outputs) > 1 || len(out.Inputs) > 1 {
-			in.IsMatrix = true
-			out.IsMatrix = true
+	if out.Content == nil {
+		var err error
+		out.Content, err = loadContent(opts, out.Path)
+		if err != nil {
+			return err
 		}
 	}
+
+	if in.Content == nil {
+		var err error
+		in.Content, err = loadContent(opts, in.Path)
+		if err != nil {
+			return err
+		}
+	}
+
+	in.Outputs = append(in.Outputs, out)
+	out.Inputs = append(out.Inputs, in)
+
+	if len(in.Outputs) > 1 || len(out.Inputs) > 1 {
+		in.IsMatrixMember = true
+		out.IsMatrixMember = true
+	}
+
+	return nil
+}
+
+func parsePath(p string) (string, bool) {
+	name := path.Base(p)
+	name = strings.Split(name, ".")[0]
+	return strings.CutPrefix(name, "_")
 }
