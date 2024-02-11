@@ -1,0 +1,7 @@
+{
+  "Name": "empty-directory",
+  "Flags": 0,
+  "Origin": {
+    "DirPath": "testdata/empty-directory"
+  }
+}
