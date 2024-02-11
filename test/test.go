@@ -17,69 +17,71 @@ type Test struct {
 
 // New creates a new [Test].
 //
-// The name of the test is derived from the path in the origin. If the basename
-// of the origin starts with an underscore, the test is marked as skipped.
-//
 // It returns the test and the set of flags that should be inherited by any
 // sub-tests.
-func New(origin Origin, options ...Option) (Test, FlagSet) {
-	name := path.Base(origin.Path())
-	name, skip := strings.CutPrefix(name, "_")
-
-	t := Test{
-		Name:   name,
-		Origin: origin,
-	}
-
+func New(options ...Option) (Test, FlagSet) {
+	var opts testOptions
 	for _, opt := range options {
-		opt(&t)
+		opt(&opts)
 	}
 
-	inherited := t.Flags
+	opts.Flags.Add(opts.InheritedFlags)
 
-	if skip {
-		t.Flags.Add(FlagSkipped)
-		inherited.Add(FlagAncestorSkipped)
+	if opts.Flags.Has(FlagSkipped) {
+		opts.InheritedFlags.Add(FlagAncestorSkipped)
 	}
 
-	return t, inherited
+	return opts.Test, opts.InheritedFlags
 }
 
 // Option is an option that controls how a test is created by [New].
-type Option func(*Test)
+type Option func(*testOptions)
 
-// WithName is a [TestOption] that overrides the default name of a [Test].
+type testOptions struct {
+	Test
+	InheritedFlags FlagSet
+}
+
+// WithOrigin is a [TestOption] that sets the name and flags of a test based on
+// its origin.
+func WithOrigin(o Origin) Option {
+	name := path.Base(o.Path())
+	name, skip := strings.CutPrefix(name, "_")
+
+	return func(opts *testOptions) {
+		opts.Name = name
+		opts.Origin = o
+		if skip {
+			opts.Flags.Add(FlagSkipped)
+		}
+	}
+}
+
+// WithName is a [TestOption] that sets the name of a test.
 func WithName(format string, args ...any) Option {
-	return func(t *Test) {
-		t.Name = fmt.Sprintf(format, args...)
+	return func(opts *testOptions) {
+		opts.Name = fmt.Sprintf(format, args...)
 	}
 }
 
 // WithFlag is a [TestOption] that sets the given flags on a test.
-func WithFlag(flags ...Flag) Option {
-	return func(t *Test) {
-		t.Flags.Add(flags...)
+func WithFlag(f FlagLike) Option {
+	return func(opts *testOptions) {
+		opts.Flags.Add(f)
 	}
 }
 
-// WithInheritedFlags is a [TestOption] that sets the given set of inherited
-// flags on a test. Inherited flags are those inherited by the test's ancestors.
-func WithInheritedFlags(inherited FlagSet) Option {
-	return func(t *Test) {
-		t.Flags = inherited
-	}
-}
-
-// WithSubTest is a [TestOption] that adds sub-tests to the test.
-func WithSubTest(subs ...Test) Option {
-	return func(t *Test) {
-		t.SubTests = append(t.SubTests, subs...)
+// WithInheritedFlags is a [TestOption] that adds the given flags to the set of
+// flags that are inherited from the test's ancestors.
+func WithInheritedFlags(s FlagSet) Option {
+	return func(opts *testOptions) {
+		opts.InheritedFlags.Add(s)
 	}
 }
 
 // WithAssertion is a [TestOption] that sets the assertion on the test.
 func WithAssertion(a Assertion) Option {
-	return func(t *Test) {
-		t.Assertion = a
+	return func(opts *testOptions) {
+		opts.Assertion = a
 	}
 }

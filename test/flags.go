@@ -25,6 +25,10 @@ func (f Flag) String() string {
 	}
 }
 
+func (f Flag) flags() FlagSet {
+	return FlagSet(f)
+}
+
 // flags is a slice of all possible flags.
 var flags = []Flag{
 	FlagSkipped,
@@ -38,22 +42,18 @@ type FlagSet int
 const EmptyFlagSet FlagSet = 0
 
 // Has returns true if s contains the given flag.
-func (s FlagSet) Has(f Flag) bool {
-	return s&FlagSet(f) != 0
+func (s FlagSet) Has(f FlagLike) bool {
+	return s&f.flags() != 0
 }
 
 // Add adds the given flags to s.
-func (s *FlagSet) Add(flags ...Flag) {
-	for _, f := range flags {
-		*s |= FlagSet(f)
-	}
+func (s *FlagSet) Add(f FlagLike) {
+	*s |= f.flags()
 }
 
 // Remove removes the given flags from s.
-func (s *FlagSet) Remove(flags ...Flag) {
-	for _, f := range flags {
-		*s &^= FlagSet(f)
-	}
+func (s *FlagSet) Remove(f FlagLike) {
+	*s &^= f.flags()
 }
 
 func (s FlagSet) String() string {
@@ -74,4 +74,13 @@ func (s FlagSet) String() string {
 // [github.com/dogmatiq/dapper] output.
 func (s FlagSet) DapperString() string {
 	return s.String()
+}
+
+func (s FlagSet) flags() FlagSet {
+	return s
+}
+
+// FlagLike is a type that can be converted to a [FlagSet].
+type FlagLike interface {
+	flags() FlagSet
 }
