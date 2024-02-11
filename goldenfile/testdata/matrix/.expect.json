@@ -1,23 +1,11 @@
 {
   "Name": "matrix",
-  "Flags": 0,
-  "Origin": {
-    "DirPath": "testdata/matrix"
-  },
   "SubTests": [
     {
       "Name": "test.output.one",
-      "Flags": 0,
-      "Origin": {
-        "FilePath": "testdata/matrix/test.output.one"
-      },
       "SubTests": [
         {
           "Name": "test.input.one",
-          "Flags": 0,
-          "Origin": {
-            "FilePath": "testdata/matrix/test.input.one"
-          },
           "Assertion": {
             "Input": {
               "Origin": {
@@ -35,10 +23,6 @@
         },
         {
           "Name": "test.input.two",
-          "Flags": 0,
-          "Origin": {
-            "FilePath": "testdata/matrix/test.input.two"
-          },
           "Assertion": {
             "Input": {
               "Origin": {
@@ -58,17 +42,9 @@
     },
     {
       "Name": "test.output.two",
-      "Flags": 0,
-      "Origin": {
-        "FilePath": "testdata/matrix/test.output.two"
-      },
       "SubTests": [
         {
           "Name": "test.input.one",
-          "Flags": 0,
-          "Origin": {
-            "FilePath": "testdata/matrix/test.input.one"
-          },
           "Assertion": {
             "Input": {
               "Origin": {
@@ -86,10 +62,6 @@
         },
         {
           "Name": "test.input.two",
-          "Flags": 0,
-          "Origin": {
-            "FilePath": "testdata/matrix/test.input.two"
-          },
           "Assertion": {
             "Input": {
               "Origin": {

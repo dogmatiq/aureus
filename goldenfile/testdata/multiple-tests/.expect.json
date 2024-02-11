@@ -1,23 +1,11 @@
 {
   "Name": "multiple-tests",
-  "Flags": 0,
-  "Origin": {
-    "DirPath": "testdata/multiple-tests"
-  },
   "SubTests": [
     {
       "Name": "test1.output",
-      "Flags": 0,
-      "Origin": {
-        "FilePath": "testdata/multiple-tests/test1.output"
-      },
       "SubTests": [
         {
           "Name": "test1.input",
-          "Flags": 0,
-          "Origin": {
-            "FilePath": "testdata/multiple-tests/test1.input"
-          },
           "Assertion": {
             "Input": {
               "Origin": {
@@ -37,17 +25,9 @@
     },
     {
       "Name": "test2.output",
-      "Flags": 0,
-      "Origin": {
-        "FilePath": "testdata/multiple-tests/test2.output"
-      },
       "SubTests": [
         {
           "Name": "test2.input",
-          "Flags": 0,
-          "Origin": {
-            "FilePath": "testdata/multiple-tests/test2.input"
-          },
           "Assertion": {
             "Input": {
               "Origin": {

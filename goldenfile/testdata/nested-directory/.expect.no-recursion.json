@@ -1,23 +1,11 @@
 {
   "Name": "nested-directory",
-  "Flags": 0,
-  "Origin": {
-    "DirPath": "testdata/nested-directory"
-  },
   "SubTests": [
     {
       "Name": "test.output",
-      "Flags": 0,
-      "Origin": {
-        "FilePath": "testdata/nested-directory/test.output"
-      },
       "SubTests": [
         {
           "Name": "test.input",
-          "Flags": 0,
-          "Origin": {
-            "FilePath": "testdata/nested-directory/test.input"
-          },
           "Assertion": {
             "Input": {
               "Origin": {

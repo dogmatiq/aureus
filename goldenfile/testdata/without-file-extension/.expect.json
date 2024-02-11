@@ -1,23 +1,11 @@
 {
   "Name": "without-file-extension",
-  "Flags": 0,
-  "Origin": {
-    "DirPath": "testdata/without-file-extension"
-  },
   "SubTests": [
     {
       "Name": "test.output",
-      "Flags": 0,
-      "Origin": {
-        "FilePath": "testdata/without-file-extension/test.output"
-      },
       "SubTests": [
         {
           "Name": "test.input",
-          "Flags": 0,
-          "Origin": {
-            "FilePath": "testdata/without-file-extension/test.input"
-          },
           "Assertion": {
             "Input": {
               "Origin": {

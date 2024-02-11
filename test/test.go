@@ -9,8 +9,7 @@ import (
 // Test is a (possibly nested) test.
 type Test struct {
 	Name      string
-	Flags     FlagSet
-	Origin    Origin
+	Flags     FlagSet   `json:",omitempty"`
 	SubTests  []Test    `json:",omitempty"`
 	Assertion Assertion `json:",omitempty"`
 }
@@ -42,15 +41,14 @@ type testOptions struct {
 	InheritedFlags FlagSet
 }
 
-// WithOrigin is a [TestOption] that sets the name and flags of a test based on
-// its origin.
-func WithOrigin(o Origin) Option {
+// WithSettingsFromOrigin is a [TestOption] that sets the name and flags of a
+// test based on its origin.
+func WithSettingsFromOrigin(o Origin) Option {
 	name := path.Base(o.Path())
 	name, skip := strings.CutPrefix(name, "_")
 
 	return func(opts *testOptions) {
 		opts.Name = name
-		opts.Origin = o
 		if skip {
 			opts.Flags.Add(FlagSkipped)
 		}

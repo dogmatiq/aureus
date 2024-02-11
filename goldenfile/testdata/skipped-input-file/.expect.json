@@ -1,23 +1,12 @@
 {
   "Name": "skipped-input-file",
-  "Flags": 0,
-  "Origin": {
-    "DirPath": "testdata/skipped-input-file"
-  },
   "SubTests": [
     {
       "Name": "test.output",
-      "Flags": 0,
-      "Origin": {
-        "FilePath": "testdata/skipped-input-file/test.output"
-      },
       "SubTests": [
         {
           "Name": "test.input",
           "Flags": 1,
-          "Origin": {
-            "FilePath": "testdata/skipped-input-file/_test.input"
-          },
           "Assertion": {
             "Input": {
               "Origin": {
