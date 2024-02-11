@@ -1,15 +1,15 @@
 {
-  "Name": "without-file-extension",
+  "Name": "nested-directory",
   "SubTests": [
     {
       "Name": "test",
       "Assertion": {
         "Input": {
-          "File": "testdata/without-file-extension/test.input",
+          "File": "testdata/nested-directory/test.input",
           "Data": "INPUT\n"
         },
         "Output": {
-          "File": "testdata/without-file-extension/test.output",
+          "File": "testdata/nested-directory/test.output",
           "Data": "OUTPUT\n"
         }
       }

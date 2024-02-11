@@ -1,15 +1,17 @@
 {
-  "Name": "without-file-extension",
+  "Name": "skipped-directory",
+  "Flags": 1,
   "SubTests": [
     {
       "Name": "test",
+      "Flags": 2,
       "Assertion": {
         "Input": {
-          "File": "testdata/without-file-extension/test.input",
+          "File": "testdata/_skipped-directory/test.input",
           "Data": "INPUT\n"
         },
         "Output": {
-          "File": "testdata/without-file-extension/test.output",
+          "File": "testdata/_skipped-directory/test.output",
           "Data": "OUTPUT\n"
         }
       }

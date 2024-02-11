@@ -1,15 +1,16 @@
 {
-  "Name": "without-file-extension",
+  "Name": "skipped-output-file",
   "SubTests": [
     {
       "Name": "test",
+      "Flags": 1,
       "Assertion": {
         "Input": {
-          "File": "testdata/without-file-extension/test.input",
+          "File": "testdata/skipped-output-file/test.input",
           "Data": "INPUT\n"
         },
         "Output": {
-          "File": "testdata/without-file-extension/test.output",
+          "File": "testdata/skipped-output-file/_test.output",
           "Data": "OUTPUT\n"
         }
       }

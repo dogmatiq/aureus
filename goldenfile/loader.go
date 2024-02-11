@@ -61,19 +61,9 @@ func loadDir(
 		return test.Test{}, err
 	}
 
-	type output struct {
-		FilePath string
-		IsInput  InputPredicate
-	}
-
-	type input struct {
-		FilePath        string
-		MatchedToOutput bool
-	}
-
 	var (
-		inputs  []*input
-		outputs []*output
+		inputs  []*inputFile
+		outputs []*outputFile
 	)
 
 	for _, e := range entries {
@@ -92,26 +82,30 @@ func loadDir(
 				parent.SubTests = append(parent.SubTests, child)
 			}
 		} else if isInput, ok := opts.IsOutput(e.Name()); ok {
-			outputs = append(outputs, &output{n, isInput})
+			out := &outputFile{Path: n, IsInput: isInput}
+			outputs = append(outputs, out)
+			for _, in := range inputs {
+				correlate(in, out)
+			}
 		} else {
-			inputs = append(inputs, &input{n, false})
+			in := &inputFile{Path: n}
+			inputs = append(inputs, in)
+			for _, out := range outputs {
+				correlate(in, out)
+			}
 		}
 	}
 
 	for _, out := range outputs {
-		var matching []string
-		for _, in := range inputs {
-			if out.IsInput(path.Base(in.FilePath)) {
-				in.MatchedToOutput = true
-				matching = append(matching, in.FilePath)
-			}
+		if len(out.Inputs) == 0 {
+			return test.Test{}, fmt.Errorf("output file %q has no associated input files", out.Path)
 		}
 
-		if len(matching) == 0 {
-			return test.Test{}, fmt.Errorf("output file %q has no associated input files", out.FilePath)
+		if out.IsMatrix {
+			panic("not implemented")
 		}
 
-		child, err := loadOutput(opts, out.FilePath, matching, inherited)
+		child, err := buildSingleTest(opts, out, inherited)
 		if err != nil {
 			return test.Test{}, err
 		}
@@ -120,54 +114,36 @@ func loadDir(
 	}
 
 	for _, in := range inputs {
-		if !in.MatchedToOutput {
-			return test.Test{}, fmt.Errorf("input file %q has no associated output files", in.FilePath)
+		if len(in.Outputs) == 0 {
+			return test.Test{}, fmt.Errorf("input file %q has no associated output files", in.Path)
 		}
 	}
 
 	return parent, nil
 }
 
-func loadOutput(
+func buildSingleTest(
 	opts loadOptions,
-	filePath string,
-	inputs []string,
+	out *outputFile,
 	inherited test.FlagSet,
 ) (test.Test, error) {
-	parent, inherited := test.New(
-		test.WithNameFromPath(filePath),
-		test.WithInheritedFlags(inherited),
-	)
+	if len(out.Inputs) != 1 {
+		panic("unexpected number of inputs")
+	}
 
-	output, err := loadContent(opts, filePath)
+	output, err := loadContent(opts, out.Path)
 	if err != nil {
 		return test.Test{}, err
 	}
 
-	for _, filePath := range inputs {
-		child, err := loadInput(opts, filePath, output, inherited)
-		if err != nil {
-			return test.Test{}, err
-		}
-		parent.SubTests = append(parent.SubTests, child)
-	}
-
-	return parent, nil
-}
-
-func loadInput(
-	opts loadOptions,
-	filePath string,
-	output test.Content,
-	inherited test.FlagSet,
-) (test.Test, error) {
-	input, err := loadContent(opts, filePath)
+	in := out.Inputs[0]
+	input, err := loadContent(opts, in.Path)
 	if err != nil {
 		return test.Test{}, err
 	}
 
 	t, _ := test.New(
-		test.WithNameFromPath(filePath),
+		test.WithNameFromPath(out.Path),
 		test.WithInheritedFlags(inherited),
 		test.WithAssertion(
 			test.EqualAssertion{
@@ -176,9 +152,29 @@ func loadInput(
 			},
 		),
 	)
-
 	return t, nil
 }
+
+// func loadInput(
+// 	opts loadOptions,
+// 	filePath string,
+// 	output test.Content,
+// 	inherited test.FlagSet,
+// ) (test.Test, error) {
+
+// 	t, _ := test.New(
+// 		test.WithNameFromPath(filePath),
+// 		test.WithInheritedFlags(inherited),
+// 		test.WithAssertion(
+// 			test.EqualAssertion{
+// 				Input:  inputFile,
+// 				Output: output,
+// 			},
+// 		),
+// 	)
+
+// 	return t, nil
+// }
 
 // loadContent loads the content of an input file or output file.
 func loadContent(
@@ -191,7 +187,32 @@ func loadContent(
 	}
 
 	return test.Content{
-		Data: data,
+		Data: string(data),
 		File: filePath,
 	}, nil
+}
+
+type outputFile struct {
+	Path     string
+	IsInput  InputPredicate
+	IsMatrix bool
+	Inputs   []*inputFile
+}
+
+type inputFile struct {
+	Path     string
+	IsMatrix bool
+	Outputs  []*outputFile
+}
+
+func correlate(in *inputFile, out *outputFile) {
+	if out.IsInput(path.Base(in.Path)) {
+		in.Outputs = append(in.Outputs, out)
+		out.Inputs = append(out.Inputs, in)
+
+		if len(in.Outputs) > 1 || len(out.Inputs) > 1 {
+			in.IsMatrix = true
+			out.IsMatrix = true
+		}
+	}
 }

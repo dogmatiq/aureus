@@ -45,6 +45,7 @@ type testOptions struct {
 // test based on its source path, which may be either a file or a directory.
 func WithNameFromPath(p string) Option {
 	name := path.Base(p)
+	name = strings.Split(name, ".")[0]
 	name, skip := strings.CutPrefix(name, "_")
 
 	return func(opts *testOptions) {
