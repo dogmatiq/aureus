@@ -65,7 +65,7 @@ func TestLoader_outputFileWithNoInputs(t *testing.T) {
 
 	_, err := loader.Load(
 		"testdata/without-file-extension",
-		WithPredicate(
+		WithOutputPredicate(
 			func(filename string) (InputPredicate, bool) {
 				if _, ok := IsOutputFile(filename); ok {
 					return func(filename string) bool {
@@ -90,7 +90,7 @@ func TestLoader_inputFileWithNoOutputs(t *testing.T) {
 
 	_, err := loader.Load(
 		"testdata/without-file-extension",
-		WithPredicate(
+		WithOutputPredicate(
 			func(filename string) (InputPredicate, bool) {
 				return nil, false
 			},

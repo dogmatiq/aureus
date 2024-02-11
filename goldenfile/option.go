@@ -31,11 +31,11 @@ func WithFS(f fs.FS) LoadOption {
 	}
 }
 
-// WithPredicate is a [LoadOption] that configures an alternative predicate to
-// use when determining whether a file is an output file.
+// WithOutputPredicate is a [LoadOption] that configures an alternative
+// predicate to use when determining whether a file is an output file.
 //
-// [DefaultPredicate] is used by default.
-func WithPredicate(p OutputPredicate) LoadOption {
+// [IsOutputFile] is used by default.
+func WithOutputPredicate(p OutputPredicate) LoadOption {
 	return func(opts *loadOptions) {
 		opts.IsOutput = p
 	}
