@@ -4,6 +4,6 @@ package test
 type Content struct {
 	File       string
 	Line       int `json:",omitempty"` // 0 == whole file
-	Data       string
+	Data       []byte
 	Attributes map[string]string `json:",omitempty"`
 }

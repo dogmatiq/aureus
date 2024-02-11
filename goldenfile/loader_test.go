@@ -5,10 +5,11 @@ import (
 	"encoding/json"
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 
-	"github.com/andreyvit/diff"
 	. "github.com/dogmatiq/aureus/goldenfile"
+	"github.com/dogmatiq/aureus/internal/diff"
 )
 
 func TestLoader(t *testing.T) {
@@ -20,7 +21,7 @@ func TestLoader(t *testing.T) {
 	}
 
 	for _, e := range entries {
-		if !e.IsDir() {
+		if !e.IsDir() || strings.HasPrefix(e.Name(), ".") {
 			continue
 		}
 
@@ -45,16 +46,11 @@ func TestLoader(t *testing.T) {
 			expect = bytes.TrimSpace(expect)
 			actual = bytes.TrimSpace(actual)
 
-			if !bytes.Equal(expect, actual) {
-				t.Log(
-					string(actual),
-				)
-				t.Fatalf(
-					diff.LineDiff(
-						string(expect),
-						string(actual),
-					),
-				)
+			if diff := diff.Diff(
+				"want", expect,
+				"got", actual,
+			); diff != nil {
+				t.Fatalf("%s", diff)
 			}
 		})
 	}

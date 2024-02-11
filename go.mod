@@ -2,6 +2,6 @@ module github.com/dogmatiq/aureus
 
 go 1.21
 
-require github.com/andreyvit/diff v0.0.0-20170406064948-c7f18ee00883
-
-require github.com/sergi/go-diff v1.3.1 // indirect
+require (
+	golang.org/x/tools v0.17.0
+)

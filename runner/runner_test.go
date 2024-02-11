@@ -12,24 +12,24 @@ import (
 func TestRunner(t *testing.T) {
 	loader := goldenfile.NewLoader()
 
-	formatJSON := func(c test.Content) (string, error) {
-		if c.Data == "" {
-			return "", nil
+	formatJSON := func(c test.Content) ([]byte, error) {
+		if len(c.Data) == 0 {
+			return nil, nil
 		}
 
 		input := []byte(c.Data)
 
 		var v any
 		if err := json.Unmarshal(input, &v); err != nil {
-			return "", err
+			return nil, err
 		}
 
 		output, err := json.MarshalIndent(v, "", "  ")
 		if err != nil {
-			return "", err
+			return nil, err
 		}
 
-		return string(output) + "\n", nil
+		return append(output, '\n'), nil
 	}
 
 	// expected to pass

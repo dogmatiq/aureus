@@ -191,7 +191,7 @@ func loadContent(
 	}
 
 	return test.Content{
-		Data: string(data),
+		Data: data,
 		File: filePath,
 	}, nil
 }
