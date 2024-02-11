@@ -52,7 +52,7 @@ func loadDir(
 	inherited test.FlagSet,
 ) (test.Test, error) {
 	parent, inherited := test.New(
-		test.WithSettingsFromOrigin(test.DirectoryOrigin{DirPath: dirPath}),
+		test.WithNameFromPath(dirPath),
 		test.WithInheritedFlags(inherited),
 	)
 
@@ -135,7 +135,7 @@ func loadOutput(
 	inherited test.FlagSet,
 ) (test.Test, error) {
 	parent, inherited := test.New(
-		test.WithSettingsFromOrigin(test.FileOrigin{FilePath: filePath}),
+		test.WithNameFromPath(filePath),
 		test.WithInheritedFlags(inherited),
 	)
 
@@ -167,7 +167,7 @@ func loadInput(
 	}
 
 	t, _ := test.New(
-		test.WithSettingsFromOrigin(test.FileOrigin{FilePath: filePath}),
+		test.WithNameFromPath(filePath),
 		test.WithInheritedFlags(inherited),
 		test.WithAssertion(
 			test.EqualAssertion{
@@ -191,7 +191,7 @@ func loadContent(
 	}
 
 	return test.Content{
-		Origin: test.FileOrigin{FilePath: filePath},
-		Data:   string(data),
+		Data: string(data),
+		File: filePath,
 	}, nil
 }

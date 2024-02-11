@@ -11,15 +11,11 @@
           "Flags": 2,
           "Assertion": {
             "Input": {
-              "Origin": {
-                "FilePath": "testdata/_skipped-directory/test.input"
-              },
+              "File": "testdata/_skipped-directory/test.input",
               "Data": "INPUT\n"
             },
             "Output": {
-              "Origin": {
-                "FilePath": "testdata/_skipped-directory/test.output"
-              },
+              "File": "testdata/_skipped-directory/test.output",
               "Data": "OUTPUT\n"
             }
           }

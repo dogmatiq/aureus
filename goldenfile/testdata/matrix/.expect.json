@@ -8,15 +8,11 @@
           "Name": "test.input.one",
           "Assertion": {
             "Input": {
-              "Origin": {
-                "FilePath": "testdata/matrix/test.input.one"
-              },
+              "File": "testdata/matrix/test.input.one",
               "Data": "INPUT 1\n"
             },
             "Output": {
-              "Origin": {
-                "FilePath": "testdata/matrix/test.output.one"
-              },
+              "File": "testdata/matrix/test.output.one",
               "Data": "OUTPUT 1\n"
             }
           }
@@ -25,15 +21,11 @@
           "Name": "test.input.two",
           "Assertion": {
             "Input": {
-              "Origin": {
-                "FilePath": "testdata/matrix/test.input.two"
-              },
+              "File": "testdata/matrix/test.input.two",
               "Data": "INPUT 2\n"
             },
             "Output": {
-              "Origin": {
-                "FilePath": "testdata/matrix/test.output.one"
-              },
+              "File": "testdata/matrix/test.output.one",
               "Data": "OUTPUT 1\n"
             }
           }
@@ -47,15 +39,11 @@
           "Name": "test.input.one",
           "Assertion": {
             "Input": {
-              "Origin": {
-                "FilePath": "testdata/matrix/test.input.one"
-              },
+              "File": "testdata/matrix/test.input.one",
               "Data": "INPUT 1\n"
             },
             "Output": {
-              "Origin": {
-                "FilePath": "testdata/matrix/test.output.two"
-              },
+              "File": "testdata/matrix/test.output.two",
               "Data": "OUTPUT 2\n"
             }
           }
@@ -64,15 +52,11 @@
           "Name": "test.input.two",
           "Assertion": {
             "Input": {
-              "Origin": {
-                "FilePath": "testdata/matrix/test.input.two"
-              },
+              "File": "testdata/matrix/test.input.two",
               "Data": "INPUT 2\n"
             },
             "Output": {
-              "Origin": {
-                "FilePath": "testdata/matrix/test.output.two"
-              },
+              "File": "testdata/matrix/test.output.two",
               "Data": "OUTPUT 2\n"
             }
           }

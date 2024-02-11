@@ -8,15 +8,11 @@
           "Name": "test1.input",
           "Assertion": {
             "Input": {
-              "Origin": {
-                "FilePath": "testdata/multiple-tests/test1.input"
-              },
+              "File": "testdata/multiple-tests/test1.input",
               "Data": "INPUT 1\n"
             },
             "Output": {
-              "Origin": {
-                "FilePath": "testdata/multiple-tests/test1.output"
-              },
+              "File": "testdata/multiple-tests/test1.output",
               "Data": "OUTPUT 1\n"
             }
           }
@@ -30,15 +26,11 @@
           "Name": "test2.input",
           "Assertion": {
             "Input": {
-              "Origin": {
-                "FilePath": "testdata/multiple-tests/test2.input"
-              },
+              "File": "testdata/multiple-tests/test2.input",
               "Data": "INPUT 2\n"
             },
             "Output": {
-              "Origin": {
-                "FilePath": "testdata/multiple-tests/test2.output"
-              },
+              "File": "testdata/multiple-tests/test2.output",
               "Data": "OUTPUT 2\n"
             }
           }

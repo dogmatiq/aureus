@@ -11,15 +11,11 @@
               "Name": "test.input",
               "Assertion": {
                 "Input": {
-                  "Origin": {
-                    "FilePath": "testdata/nested-directory/child/test.input"
-                  },
+                  "File": "testdata/nested-directory/child/test.input",
                   "Data": "CHILD INPUT\n"
                 },
                 "Output": {
-                  "Origin": {
-                    "FilePath": "testdata/nested-directory/child/test.output"
-                  },
+                  "File": "testdata/nested-directory/child/test.output",
                   "Data": "CHILD OUTPUT\n"
                 }
               }
@@ -35,15 +31,11 @@
           "Name": "test.input",
           "Assertion": {
             "Input": {
-              "Origin": {
-                "FilePath": "testdata/nested-directory/test.input"
-              },
+              "File": "testdata/nested-directory/test.input",
               "Data": "INPUT\n"
             },
             "Output": {
-              "Origin": {
-                "FilePath": "testdata/nested-directory/test.output"
-              },
+              "File": "testdata/nested-directory/test.output",
               "Data": "OUTPUT\n"
             }
           }

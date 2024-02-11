@@ -41,10 +41,10 @@ type testOptions struct {
 	InheritedFlags FlagSet
 }
 
-// WithSettingsFromOrigin is a [TestOption] that sets the name and flags of a
-// test based on its origin.
-func WithSettingsFromOrigin(o Origin) Option {
-	name := path.Base(o.Path())
+// WithNameFromPath is a [TestOption] that sets the name and flags of a
+// test based on its source path, which may be either a file or a directory.
+func WithNameFromPath(p string) Option {
+	name := path.Base(p)
 	name, skip := strings.CutPrefix(name, "_")
 
 	return func(opts *testOptions) {

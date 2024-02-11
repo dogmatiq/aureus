@@ -8,15 +8,11 @@
           "Name": "test.input",
           "Assertion": {
             "Input": {
-              "Origin": {
-                "FilePath": "testdata/without-file-extension/test.input"
-              },
+              "File": "testdata/without-file-extension/test.input",
               "Data": "INPUT\n"
             },
             "Output": {
-              "Origin": {
-                "FilePath": "testdata/without-file-extension/test.output"
-              },
+              "File": "testdata/without-file-extension/test.output",
               "Data": "OUTPUT\n"
             }
           }

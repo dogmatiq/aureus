@@ -10,15 +10,11 @@
           "Flags": 2,
           "Assertion": {
             "Input": {
-              "Origin": {
-                "FilePath": "testdata/skipped-output-file/test.input"
-              },
+              "File": "testdata/skipped-output-file/test.input",
               "Data": "INPUT\n"
             },
             "Output": {
-              "Origin": {
-                "FilePath": "testdata/skipped-output-file/_test.output"
-              },
+              "File": "testdata/skipped-output-file/_test.output",
               "Data": "OUTPUT\n"
             }
           }
