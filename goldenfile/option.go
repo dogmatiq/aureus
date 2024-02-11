@@ -10,7 +10,7 @@ type LoadOption func(*loadOptions)
 type loadOptions struct {
 	FS       fs.FS
 	Recurse  bool
-	IsOutput Predicate
+	IsOutput OutputPredicate
 }
 
 // WithRecursion if a [LoadOption] that enables or disables recursive scanning
@@ -35,7 +35,7 @@ func WithFS(f fs.FS) LoadOption {
 // use when determining whether a file is an output file.
 //
 // [DefaultPredicate] is used by default.
-func WithPredicate(p Predicate) LoadOption {
+func WithPredicate(p OutputPredicate) LoadOption {
 	return func(opts *loadOptions) {
 		opts.IsOutput = p
 	}

@@ -67,7 +67,7 @@ func TestLoader_outputFileWithNoInputs(t *testing.T) {
 		"testdata/without-file-extension",
 		WithPredicate(
 			func(filename string) (InputPredicate, bool) {
-				if _, ok := DefaultPredicate(filename); ok {
+				if _, ok := IsOutputFile(filename); ok {
 					return func(filename string) bool {
 						return false
 					}, true

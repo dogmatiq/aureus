@@ -5,26 +5,27 @@ import (
 	"strings"
 )
 
-// A Predicate is a function that determines whether a file is an "output file",
-// that is, a file that contains the expected output for some set of inputs.
+// An OutputPredicate is a function that determines whether a file is to be
+// treated as an "output file", that is, a file that contains the expected
+// output for some set of inputs.
 //
-// If ok is true, the file is an output file and p is an [InputFilePredicate]
-// that that matches input files that are expected to produce the same output as
-// the contents of the output file.
-type Predicate func(filename string) (p InputPredicate, ok bool)
+// If filename refers to an output file, ok is true and p is an [InputPredicate]
+// that matches the "input files" that are expected to produce output equal to
+// the content of the output file.
+type OutputPredicate func(filename string) (p InputPredicate, ok bool)
 
-// InputPredicate is a predicate that determines whether a file contains input
-// data for a test.
+// An InputPredicate is a function that determines whether a file is to be
+// treated as an "input file" for a specific "output file".
 type InputPredicate func(filename string) bool
 
-// DefaultPredicate is the default [Predicate] implementation.
+// IsOutputFile is the default [OutputPredicate] implementation.
 //
 // It matches any filenames with an ".output" part, that is, either the
 // extension ".output", or with ".output." appearing in the filename.
 //
 // The returned [InputPredicate] matches filenames with the same prefix as the
 // output file, up to the first occurrence of ".output".
-func DefaultPredicate(filename string) (InputPredicate, bool) {
+func IsOutputFile(filename string) (InputPredicate, bool) {
 	if want, ok := hasAtom(filename, "output"); ok {
 		return func(filename string) bool {
 			got, ok := hasAtom(filename, "input")

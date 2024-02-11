@@ -23,7 +23,7 @@ func NewLoader(options ...LoadOption) *Loader {
 		options: loadOptions{
 			FS:       rootfs.FS,
 			Recurse:  true,
-			IsOutput: DefaultPredicate,
+			IsOutput: IsOutputFile,
 		},
 	}
 
