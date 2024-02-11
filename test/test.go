@@ -2,8 +2,6 @@ package test
 
 import (
 	"fmt"
-	"path"
-	"strings"
 )
 
 // Test is a (possibly nested) test.
@@ -41,16 +39,13 @@ type testOptions struct {
 	InheritedFlags FlagSet
 }
 
-// WithNameFromPath is a [TestOption] that sets the name and flags of a
-// test based on its source path, which may be either a file or a directory.
-func WithNameFromPath(p string) Option {
-	name := path.Base(p)
-	name, skip := strings.CutPrefix(name, "_")
-
-	return func(opts *testOptions) {
-		opts.Name = name
-		if skip {
-			opts.Flags.Add(FlagSkipped)
+// If is a [TestOption] that applies the given options only if the cond is true.
+func If(cond bool, opts ...Option) Option {
+	return func(to *testOptions) {
+		if cond {
+			for _, opt := range opts {
+				opt(to)
+			}
 		}
 	}
 }

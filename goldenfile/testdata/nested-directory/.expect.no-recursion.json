@@ -2,22 +2,17 @@
   "Name": "nested-directory",
   "SubTests": [
     {
-      "Name": "test.output",
-      "SubTests": [
-        {
-          "Name": "test.input",
-          "Assertion": {
-            "Input": {
-              "File": "testdata/nested-directory/test.input",
-              "Data": "INPUT\n"
-            },
-            "Output": {
-              "File": "testdata/nested-directory/test.output",
-              "Data": "OUTPUT\n"
-            }
-          }
+      "Name": "test",
+      "Assertion": {
+        "Input": {
+          "File": "testdata/nested-directory/test.input",
+          "Data": "INPUT\n"
+        },
+        "Output": {
+          "File": "testdata/nested-directory/test.output",
+          "Data": "OUTPUT\n"
         }
-      ]
+      }
     }
   ]
 }

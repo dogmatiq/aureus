@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"io/fs"
 	"path"
+	"slices"
 	"strings"
 
 	"github.com/dogmatiq/aureus/internal/rootfs"
@@ -23,7 +24,7 @@ func NewLoader(options ...LoadOption) *Loader {
 		options: loadOptions{
 			FS:       rootfs.FS,
 			Recurse:  true,
-			IsOutput: IsOutputFile,
+			LoadFile: LoadFile,
 		},
 	}
 
@@ -43,136 +44,119 @@ func (l *Loader) Load(dir string, options ...LoadOption) (test.Test, error) {
 	for _, opt := range options {
 		opt(&opts)
 	}
-	return loadDir(opts, dir, test.EmptyFlagSet)
+	return l.loadDir(dir, test.EmptyFlagSet)
 }
 
-func loadDir(
-	opts loadOptions,
+func (l *Loader) loadDir(
 	dirPath string,
-	inherited test.FlagSet,
+	flags test.FlagSet,
 ) (test.Test, error) {
-	parent, inherited := test.New(
-		test.WithNameFromPath(dirPath),
-		test.WithInheritedFlags(inherited),
+	name := path.Base(dirPath)
+	name, skip := strings.CutPrefix(name, "_")
+
+	t, flags := test.New(
+		test.WithName(name),
+		test.If(skip, test.WithFlag(test.FlagSkipped)),
+		test.WithInheritedFlags(flags),
 	)
 
-	entries, err := fs.ReadDir(opts.FS, dirPath)
+	entries, err := fs.ReadDir(l.options.FS, dirPath)
 	if err != nil {
 		return test.Test{}, err
 	}
 
-	type output struct {
-		FilePath string
-		IsInput  InputPredicate
-	}
+	filesByTest := map[string][]File{}
 
-	type input struct {
-		FilePath        string
-		MatchedToOutput bool
-	}
-
-	var (
-		inputs  []*input
-		outputs []*output
-	)
-
-	for _, e := range entries {
-		if strings.HasPrefix(e.Name(), ".") {
+	for _, entry := range entries {
+		if strings.HasPrefix(entry.Name(), ".") {
 			continue
 		}
 
-		n := path.Join(dirPath, e.Name())
+		entryPath := path.Join(dirPath, entry.Name())
 
-		if e.IsDir() {
-			if opts.Recurse {
-				child, err := loadDir(opts, n, inherited)
+		if entry.IsDir() {
+			if l.options.Recurse {
+				s, err := l.loadDir(entryPath, flags)
 				if err != nil {
 					return test.Test{}, err
 				}
-				parent.SubTests = append(parent.SubTests, child)
+				t.SubTests = append(t.SubTests, s)
 			}
-		} else if isInput, ok := opts.IsOutput(e.Name()); ok {
-			outputs = append(outputs, &output{n, isInput})
 		} else {
-			inputs = append(inputs, &input{n, false})
+			file, ok, err := l.options.LoadFile(l.options.FS, entryPath)
+			if err != nil {
+				return test.Test{}, err
+			}
+			if ok {
+				filesByTest[file.TestName] = append(filesByTest[file.TestName], file)
+			}
 		}
 	}
 
-	for _, out := range outputs {
-		var matching []string
-		for _, in := range inputs {
-			if out.IsInput(path.Base(in.FilePath)) {
-				in.MatchedToOutput = true
-				matching = append(matching, in.FilePath)
-			}
-		}
-
-		if len(matching) == 0 {
-			return test.Test{}, fmt.Errorf("output file %q has no associated input files", out.FilePath)
-		}
-
-		child, err := loadOutput(opts, out.FilePath, matching, inherited)
+	// Build a sub-test for each separate group of files.
+	for n, files := range filesByTest {
+		s, err := l.buildTest(n, files, flags)
 		if err != nil {
 			return test.Test{}, err
 		}
-
-		parent.SubTests = append(parent.SubTests, child)
+		t.SubTests = append(t.SubTests, s)
 	}
 
-	for _, in := range inputs {
-		if !in.MatchedToOutput {
-			return test.Test{}, fmt.Errorf("input file %q has no associated output files", in.FilePath)
-		}
-	}
-
-	return parent, nil
-}
-
-func loadOutput(
-	opts loadOptions,
-	filePath string,
-	inputs []string,
-	inherited test.FlagSet,
-) (test.Test, error) {
-	parent, inherited := test.New(
-		test.WithNameFromPath(filePath),
-		test.WithInheritedFlags(inherited),
+	// Sort by name those sub-tests that were built from file groups. This
+	// ensures that the order of the sub-tests is deterministic, and also that
+	// sub-tests build from directories appear first.
+	slices.SortFunc(
+		t.SubTests[len(t.SubTests)-len(filesByTest):],
+		func(a, b test.Test) int {
+			return strings.Compare(a.Name, b.Name)
+		},
 	)
 
-	output, err := loadContent(opts, filePath)
-	if err != nil {
-		return test.Test{}, err
-	}
-
-	for _, filePath := range inputs {
-		child, err := loadInput(opts, filePath, output, inherited)
-		if err != nil {
-			return test.Test{}, err
-		}
-		parent.SubTests = append(parent.SubTests, child)
-	}
-
-	return parent, nil
+	return t, nil
 }
 
-func loadInput(
-	opts loadOptions,
-	filePath string,
-	output test.Content,
-	inherited test.FlagSet,
+func (l *Loader) buildTest(
+	name string,
+	files []File,
+	flags test.FlagSet,
 ) (test.Test, error) {
-	input, err := loadContent(opts, filePath)
-	if err != nil {
-		return test.Test{}, err
+	var inputs, outputs []File
+	for _, f := range files {
+		if f.IsInput {
+			inputs = append(inputs, f)
+		} else {
+			outputs = append(outputs, f)
+		}
 	}
 
+	switch {
+	case len(inputs) == 0:
+		return test.Test{}, fmt.Errorf("output file %q has no associated input files", outputs[0].Content.File)
+	case len(outputs) == 0:
+		return test.Test{}, fmt.Errorf("input file %q has no associated output files", inputs[0].Content.File)
+	case len(inputs) == 1 && len(outputs) == 1:
+		return l.buildSingleTest(name, inputs[0], outputs[0], flags)
+	default:
+		return l.buildMatrixTest(name, inputs, outputs, flags)
+	}
+}
+
+func (l *Loader) buildSingleTest(
+	name string,
+	input, output File,
+	flags test.FlagSet,
+) (test.Test, error) {
 	t, _ := test.New(
-		test.WithNameFromPath(filePath),
-		test.WithInheritedFlags(inherited),
+		test.WithName(name),
+		test.WithInheritedFlags(flags),
+		test.If(
+			input.IsSkipped || output.IsSkipped,
+			test.WithFlag(test.FlagSkipped),
+		),
 		test.WithAssertion(
 			test.EqualAssertion{
-				Input:  input,
-				Output: output,
+				Input:  input.Content,
+				Output: output.Content,
 			},
 		),
 	)
@@ -180,18 +164,47 @@ func loadInput(
 	return t, nil
 }
 
-// loadContent loads the content of an input file or output file.
-func loadContent(
-	opts loadOptions,
-	filePath string,
-) (test.Content, error) {
-	data, err := fs.ReadFile(opts.FS, filePath)
-	if err != nil {
-		return test.Content{}, err
+func (l *Loader) buildMatrixTest(
+	name string,
+	inputs, outputs []File,
+	flags test.FlagSet,
+) (test.Test, error) {
+	parent, _ := test.New(
+		test.WithName(name),
+		test.WithInheritedFlags(flags),
+	)
+
+	testName := func(input, output File) string {
+		if input.Content.Language != "" && output.Content.Language != "" {
+			return fmt.Sprintf("%s -> %s", input.Content.Language, output.Content.Language)
+		}
+
+		return fmt.Sprintf(
+			"%s -> %s",
+			path.Base(input.Content.File),
+			path.Base(output.Content.File),
+		)
 	}
 
-	return test.Content{
-		Data: data,
-		File: filePath,
-	}, nil
+	for _, output := range outputs {
+		for _, input := range inputs {
+			t, _ := test.New(
+				test.WithName(testName(input, output)),
+				test.WithInheritedFlags(flags),
+				test.If(
+					input.IsSkipped || output.IsSkipped,
+					test.WithFlag(test.FlagSkipped),
+				),
+				test.WithAssertion(
+					test.EqualAssertion{
+						Input:  input.Content,
+						Output: output.Content,
+					},
+				),
+			)
+			parent.SubTests = append(parent.SubTests, t)
+		}
+	}
+
+	return parent, nil
 }

@@ -2,22 +2,19 @@
   "Name": "with-file-extension",
   "SubTests": [
     {
-      "Name": "test.output.txt",
-      "SubTests": [
-        {
-          "Name": "test.input.txt",
-          "Assertion": {
-            "Input": {
-              "File": "testdata/with-file-extension/test.input.txt",
-              "Data": "INPUT\n"
-            },
-            "Output": {
-              "File": "testdata/with-file-extension/test.output.txt",
-              "Data": "OUTPUT\n"
-            }
-          }
+      "Name": "test",
+      "Assertion": {
+        "Input": {
+          "File": "testdata/with-file-extension/test.input.txt",
+          "Language": "txt",
+          "Data": "INPUT\n"
+        },
+        "Output": {
+          "File": "testdata/with-file-extension/test.output.txt",
+          "Language": "txt",
+          "Data": "OUTPUT\n"
         }
-      ]
+      }
     }
   ]
 }

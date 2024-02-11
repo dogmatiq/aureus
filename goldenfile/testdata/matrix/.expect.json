@@ -2,61 +2,64 @@
   "Name": "matrix",
   "SubTests": [
     {
-      "Name": "test.output.one",
+      "Name": "test",
       "SubTests": [
         {
-          "Name": "test.input.one",
+          "Name": "one -> one",
           "Assertion": {
             "Input": {
               "File": "testdata/matrix/test.input.one",
+              "Language": "one",
               "Data": "INPUT 1\n"
             },
             "Output": {
               "File": "testdata/matrix/test.output.one",
+              "Language": "one",
               "Data": "OUTPUT 1\n"
             }
           }
         },
         {
-          "Name": "test.input.two",
+          "Name": "two -> one",
           "Assertion": {
             "Input": {
               "File": "testdata/matrix/test.input.two",
+              "Language": "two",
               "Data": "INPUT 2\n"
             },
             "Output": {
               "File": "testdata/matrix/test.output.one",
+              "Language": "one",
               "Data": "OUTPUT 1\n"
             }
           }
-        }
-      ]
-    },
-    {
-      "Name": "test.output.two",
-      "SubTests": [
+        },
         {
-          "Name": "test.input.one",
+          "Name": "one -> two",
           "Assertion": {
             "Input": {
               "File": "testdata/matrix/test.input.one",
+              "Language": "one",
               "Data": "INPUT 1\n"
             },
             "Output": {
               "File": "testdata/matrix/test.output.two",
+              "Language": "two",
               "Data": "OUTPUT 2\n"
             }
           }
         },
         {
-          "Name": "test.input.two",
+          "Name": "two -> two",
           "Assertion": {
             "Input": {
               "File": "testdata/matrix/test.input.two",
+              "Language": "two",
               "Data": "INPUT 2\n"
             },
             "Output": {
               "File": "testdata/matrix/test.output.two",
+              "Language": "two",
               "Data": "OUTPUT 2\n"
             }
           }

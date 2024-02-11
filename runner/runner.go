@@ -59,7 +59,7 @@ func (x assertionExecutor[T]) VisitEqualAssertion(a test.EqualAssertion) {
 
 	m.WriteString("\n")
 	m.WriteString("--- INPUT ---\n")
-	m.Write(a.Input.Data)
+	m.WriteString(a.Input.Data)
 
 	output, err := x.Output(a.Input)
 	if err != nil {
@@ -67,7 +67,7 @@ func (x assertionExecutor[T]) VisitEqualAssertion(a test.EqualAssertion) {
 		m.WriteString("--- OUTPUT (error) ---\n")
 		m.WriteString(err.Error())
 	} else if d := diff.Diff(
-		"want", a.Output.Data,
+		"want", []byte(a.Output.Data),
 		"got", output,
 	); d != nil {
 		x.TestingT.Fail()

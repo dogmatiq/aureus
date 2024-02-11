@@ -2,40 +2,30 @@
   "Name": "multiple-tests",
   "SubTests": [
     {
-      "Name": "test1.output",
-      "SubTests": [
-        {
-          "Name": "test1.input",
-          "Assertion": {
-            "Input": {
-              "File": "testdata/multiple-tests/test1.input",
-              "Data": "INPUT 1\n"
-            },
-            "Output": {
-              "File": "testdata/multiple-tests/test1.output",
-              "Data": "OUTPUT 1\n"
-            }
-          }
+      "Name": "test1",
+      "Assertion": {
+        "Input": {
+          "File": "testdata/multiple-tests/test1.input",
+          "Data": "INPUT 1\n"
+        },
+        "Output": {
+          "File": "testdata/multiple-tests/test1.output",
+          "Data": "OUTPUT 1\n"
         }
-      ]
+      }
     },
     {
-      "Name": "test2.output",
-      "SubTests": [
-        {
-          "Name": "test2.input",
-          "Assertion": {
-            "Input": {
-              "File": "testdata/multiple-tests/test2.input",
-              "Data": "INPUT 2\n"
-            },
-            "Output": {
-              "File": "testdata/multiple-tests/test2.output",
-              "Data": "OUTPUT 2\n"
-            }
-          }
+      "Name": "test2",
+      "Assertion": {
+        "Input": {
+          "File": "testdata/multiple-tests/test2.input",
+          "Data": "INPUT 2\n"
+        },
+        "Output": {
+          "File": "testdata/multiple-tests/test2.output",
+          "Data": "OUTPUT 2\n"
         }
-      ]
+      }
     }
   ]
 }

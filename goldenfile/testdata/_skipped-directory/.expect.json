@@ -3,24 +3,18 @@
   "Flags": 1,
   "SubTests": [
     {
-      "Name": "test.output",
+      "Name": "test",
       "Flags": 2,
-      "SubTests": [
-        {
-          "Name": "test.input",
-          "Flags": 2,
-          "Assertion": {
-            "Input": {
-              "File": "testdata/_skipped-directory/test.input",
-              "Data": "INPUT\n"
-            },
-            "Output": {
-              "File": "testdata/_skipped-directory/test.output",
-              "Data": "OUTPUT\n"
-            }
-          }
+      "Assertion": {
+        "Input": {
+          "File": "testdata/_skipped-directory/test.input",
+          "Data": "INPUT\n"
+        },
+        "Output": {
+          "File": "testdata/_skipped-directory/test.output",
+          "Data": "OUTPUT\n"
         }
-      ]
+      }
     }
   ]
 }

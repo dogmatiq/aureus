@@ -2,23 +2,18 @@
   "Name": "skipped-input-file",
   "SubTests": [
     {
-      "Name": "test.output",
-      "SubTests": [
-        {
-          "Name": "test.input",
-          "Flags": 1,
-          "Assertion": {
-            "Input": {
-              "File": "testdata/skipped-input-file/_test.input",
-              "Data": "INPUT\n"
-            },
-            "Output": {
-              "File": "testdata/skipped-input-file/test.output",
-              "Data": "OUTPUT\n"
-            }
-          }
+      "Name": "test",
+      "Flags": 1,
+      "Assertion": {
+        "Input": {
+          "File": "testdata/skipped-input-file/_test.input",
+          "Data": "INPUT\n"
+        },
+        "Output": {
+          "File": "testdata/skipped-input-file/test.output",
+          "Data": "OUTPUT\n"
         }
-      ]
+      }
     }
   ]
 }
