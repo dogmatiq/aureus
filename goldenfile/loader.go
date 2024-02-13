@@ -44,10 +44,11 @@ func (l *Loader) Load(dir string, options ...LoadOption) (test.Test, error) {
 	for _, opt := range options {
 		opt(&opts)
 	}
-	return l.loadDir(dir, test.EmptyFlagSet)
+	return loadDir(opts, dir, test.EmptyFlagSet)
 }
 
-func (l *Loader) loadDir(
+func loadDir(
+	opts loadOptions,
 	dirPath string,
 	flags test.FlagSet,
 ) (test.Test, error) {
@@ -60,7 +61,7 @@ func (l *Loader) loadDir(
 		test.WithInheritedFlags(flags),
 	)
 
-	entries, err := fs.ReadDir(l.options.FS, dirPath)
+	entries, err := fs.ReadDir(opts.FS, dirPath)
 	if err != nil {
 		return test.Test{}, err
 	}
@@ -75,15 +76,15 @@ func (l *Loader) loadDir(
 		entryPath := path.Join(dirPath, entry.Name())
 
 		if entry.IsDir() {
-			if l.options.Recurse {
-				s, err := l.loadDir(entryPath, flags)
+			if opts.Recurse {
+				s, err := loadDir(opts, entryPath, flags)
 				if err != nil {
 					return test.Test{}, err
 				}
 				t.SubTests = append(t.SubTests, s)
 			}
 		} else {
-			file, ok, err := l.options.LoadFile(l.options.FS, entryPath)
+			file, ok, err := opts.LoadFile(opts.FS, entryPath)
 			if err != nil {
 				return test.Test{}, err
 			}
@@ -95,7 +96,7 @@ func (l *Loader) loadDir(
 
 	// Build a sub-test for each separate group of files.
 	for n, files := range filesByTest {
-		s, err := l.buildTest(n, files, flags)
+		s, err := buildTest(n, files, flags)
 		if err != nil {
 			return test.Test{}, err
 		}
@@ -115,7 +116,7 @@ func (l *Loader) loadDir(
 	return t, nil
 }
 
-func (l *Loader) buildTest(
+func buildTest(
 	name string,
 	files []File,
 	flags test.FlagSet,
@@ -135,13 +136,13 @@ func (l *Loader) buildTest(
 	case len(outputs) == 0:
 		return test.Test{}, fmt.Errorf("input file %q has no associated output files", inputs[0].Content.File)
 	case len(inputs) == 1 && len(outputs) == 1:
-		return l.buildSingleTest(name, inputs[0], outputs[0], flags)
+		return buildSingleTest(name, inputs[0], outputs[0], flags)
 	default:
-		return l.buildMatrixTest(name, inputs, outputs, flags)
+		return buildMatrixTest(name, inputs, outputs, flags)
 	}
 }
 
-func (l *Loader) buildSingleTest(
+func buildSingleTest(
 	name string,
 	input, output File,
 	flags test.FlagSet,
@@ -164,7 +165,7 @@ func (l *Loader) buildSingleTest(
 	return t, nil
 }
 
-func (l *Loader) buildMatrixTest(
+func buildMatrixTest(
 	name string,
 	inputs, outputs []File,
 	flags test.FlagSet,

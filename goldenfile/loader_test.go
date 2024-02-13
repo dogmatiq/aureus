@@ -27,33 +27,37 @@ func TestLoader(t *testing.T) {
 
 		dir := filepath.Join("testdata", e.Name())
 
-		var buf bytes.Buffer
-		enc := json.NewEncoder(&buf)
-		enc.SetEscapeHTML(false)
-		enc.SetIndent("", "  ")
-
 		t.Run(e.Name(), func(t *testing.T) {
+			var buf bytes.Buffer
+			enc := json.NewEncoder(&buf)
+			enc.SetEscapeHTML(false)
+			enc.SetIndent("", "  ")
+
 			test, err := loader.Load(dir)
 			if err != nil {
+				enc.Encode(
+					struct {
+						Error string
+					}{
+						err.Error(),
+					},
+				)
+			} else if err := enc.Encode(test); err != nil {
 				t.Fatal(err)
 			}
 
-			buf.Reset()
-			if err := enc.Encode(test); err != nil {
-				t.Fatal(err)
-			}
-
-			want, err := os.ReadFile(filepath.Join(dir, ".expect.json"))
+			expectFile := filepath.Join(dir, ".expect.json")
+			expect, err := os.ReadFile(expectFile)
 			if err != nil {
 				t.Fatal(err)
 			}
 
-			got := bytes.TrimSpace(buf.Bytes())
-			want = bytes.TrimSpace(want)
+			expect = bytes.TrimSpace(expect)
+			actual := bytes.TrimSpace(buf.Bytes())
 
 			if d := diff.Diff(
-				"want.json", want,
-				"got.json", got,
+				expectFile, expect,
+				"actual.json", actual,
 			); d != nil {
 				t.Fatal(string(d))
 			}
@@ -61,79 +65,32 @@ func TestLoader(t *testing.T) {
 	}
 }
 
-// func TestLoader_outputFileWithNoInputs(t *testing.T) {
-// 	loader := NewLoader()
+func TestWithRecursion(t *testing.T) {
+	loader := NewLoader()
 
-// 	_, err := loader.Load(
-// 		"testdata/without-file-extension",
-// 		WithOutputPredicate(
-// 			func(filename string) (InputPredicate, bool) {
-// 				if _, ok := IsOutputFile(filename); ok {
-// 					return func(filename string) bool {
-// 						return false
-// 					}, true
-// 				}
-// 				return nil, false
-// 			},
-// 		),
-// 	)
-// 	expect := `output file "testdata/without-file-extension/test.output" has no associated input files`
-// 	if err == nil {
-// 		t.Fatalf("expected an error: got nil, want %q", expect)
-// 	}
-// 	if err.Error() != expect {
-// 		t.Fatalf("unexpected error: got %q, want %q", err.Error(), expect)
-// 	}
-// }
+	test, err := loader.Load("testdata/nested-directory", WithRecursion(false))
+	if err != nil {
+		t.Fatal(err)
+	}
 
-// func TestLoader_inputFileWithNoOutputs(t *testing.T) {
-// 	loader := NewLoader()
+	actual, err := json.MarshalIndent(test, "", "  ")
+	if err != nil {
+		t.Fatal(err)
+	}
 
-// 	_, err := loader.Load(
-// 		"testdata/without-file-extension",
-// 		WithOutputPredicate(
-// 			func(filename string) (InputPredicate, bool) {
-// 				return nil, false
-// 			},
-// 		),
-// 	)
+	expectFile := "testdata/nested-directory/.expect.no-recursion.json"
+	expect, err := os.ReadFile(expectFile)
+	if err != nil {
+		t.Fatal(err)
+	}
 
-// 	expect := `input file "testdata/without-file-extension/test.input" has no associated output files`
-// 	if err == nil {
-// 		t.Fatalf("expected an error: got nil, want %q", expect)
-// 	}
-// 	if err.Error() != expect {
-// 		t.Fatalf("unexpected error: got %q, want %q", err.Error(), expect)
-// 	}
-// }
+	expect = bytes.TrimSpace(expect)
+	actual = bytes.TrimSpace(actual)
 
-// func TestWithRecursion(t *testing.T) {
-// 	loader := NewLoader()
-
-// 	test, err := loader.Load("testdata/nested-directory", WithRecursion(false))
-// 	if err != nil {
-// 		t.Fatal(err)
-// 	}
-
-// 	actual, err := json.MarshalIndent(test, "", "  ")
-// 	if err != nil {
-// 		t.Fatal(err)
-// 	}
-
-// 	expect, err := os.ReadFile("testdata/nested-directory/.expect.no-recursion.json")
-// 	if err != nil {
-// 		t.Fatal(err)
-// 	}
-
-// 	expect = bytes.TrimSpace(expect)
-// 	actual = bytes.TrimSpace(actual)
-
-// 	if !bytes.Equal(expect, actual) {
-// 		t.Fatalf(
-// 			diff.LineDiff(
-// 				string(expect),
-// 				string(actual),
-// 			),
-// 		)
-// 	}
-// }
+	if d := diff.Diff(
+		expectFile, expect,
+		"actual.json", actual,
+	); d != nil {
+		t.Fatal(string(d))
+	}
+}
