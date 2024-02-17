@@ -8,6 +8,7 @@ import (
 	"strings"
 
 	"github.com/dogmatiq/aureus/internal/rootfs"
+	"github.com/dogmatiq/aureus/loader"
 	"github.com/dogmatiq/aureus/test"
 )
 
@@ -64,7 +65,7 @@ func loadDir(
 		return test.Test{}, err
 	}
 
-	filesByTest := map[string][]File{}
+	envelopesByGroup := map[string][]loader.ContentEnvelope{}
 
 	for _, entry := range entries {
 		if strings.HasPrefix(entry.Name(), ".") {
@@ -82,19 +83,22 @@ func loadDir(
 				t.SubTests = append(t.SubTests, s)
 			}
 		} else {
-			file, ok, err := opts.LoadFile(opts.FS, entryPath)
+			env, ok, err := loadFile(opts, entryPath)
 			if err != nil {
 				return test.Test{}, err
 			}
 			if ok {
-				filesByTest[file.TestName] = append(filesByTest[file.TestName], file)
+				envelopesByGroup[env.Content.Group] = append(
+					envelopesByGroup[env.Content.Group],
+					env,
+				)
 			}
 		}
 	}
 
 	// Build a sub-test for each separate group of files.
-	for n, files := range filesByTest {
-		s, err := buildTest(n, files)
+	for n, envelopes := range envelopesByGroup {
+		s, err := buildTest(n, envelopes)
 		if err != nil {
 			return test.Test{}, err
 		}
@@ -105,7 +109,7 @@ func loadDir(
 	// ensures that the order of the sub-tests is deterministic, and also that
 	// sub-tests build from directories appear first.
 	slices.SortFunc(
-		t.SubTests[len(t.SubTests)-len(filesByTest):],
+		t.SubTests[len(t.SubTests)-len(envelopesByGroup):],
 		func(a, b test.Test) int {
 			return strings.Compare(a.Name, b.Name)
 		},
@@ -114,21 +118,36 @@ func loadDir(
 	return t, nil
 }
 
-func buildTest(name string, files []File) (test.Test, error) {
-	var inputs, outputs []File
-	for _, f := range files {
-		if f.IsInput {
-			inputs = append(inputs, f)
-		} else {
-			outputs = append(outputs, f)
-		}
+func loadFile(opts loadOptions, filePath string) (loader.ContentEnvelope, bool, error) {
+	f, err := opts.FS.Open(filePath)
+	if err != nil {
+		return loader.ContentEnvelope{}, false, err
 	}
+	defer f.Close()
+
+	base := path.Base(filePath)
+	name, skip := strings.CutPrefix(base, "_")
+
+	c, err := opts.LoadFile(name, f)
+	if err != nil {
+		return loader.ContentEnvelope{}, false, err
+	}
+
+	return loader.ContentEnvelope{
+		File:    filePath,
+		Skip:    skip,
+		Content: c,
+	}, true, nil
+}
+
+func buildTest(name string, envelopes []loader.ContentEnvelope) (test.Test, error) {
+	inputs, outputs := loader.SeparateContentByRole(envelopes)
 
 	switch {
 	case len(inputs) == 0:
-		return test.Test{}, fmt.Errorf("output file %q has no associated input files", outputs[0].Content.File)
+		return test.Test{}, fmt.Errorf("output file %q has no associated input files", outputs[0].File)
 	case len(outputs) == 0:
-		return test.Test{}, fmt.Errorf("input file %q has no associated output files", inputs[0].Content.File)
+		return test.Test{}, fmt.Errorf("input file %q has no associated output files", inputs[0].File)
 	case len(inputs) == 1 && len(outputs) == 1:
 		return buildSingleTest(name, inputs[0], outputs[0]), nil
 	default:
@@ -136,31 +155,31 @@ func buildTest(name string, files []File) (test.Test, error) {
 	}
 }
 
-func buildSingleTest(name string, input, output File) test.Test {
+func buildSingleTest(name string, input, output loader.ContentEnvelope) test.Test {
 	return test.New(
 		name,
-		test.WithSkip(input.IsSkipped || output.IsSkipped),
+		test.WithSkip(input.Skip || output.Skip),
 		test.WithAssertion(
 			test.EqualAssertion{
-				Input:  input.Content,
-				Output: output.Content,
+				Input:  input.AsTestContent(),
+				Output: output.AsTestContent(),
 			},
 		),
 	)
 }
 
-func buildMatrixTest(name string, inputs, outputs []File) test.Test {
+func buildMatrixTest(name string, inputs, outputs []loader.ContentEnvelope) test.Test {
 	t := test.New(name)
 
-	testName := func(input, output File) string {
+	testName := func(input, output loader.ContentEnvelope) string {
 		if input.Content.Language != "" && output.Content.Language != "" {
 			return fmt.Sprintf("%s -> %s", input.Content.Language, output.Content.Language)
 		}
 
 		return fmt.Sprintf(
 			"%s -> %s",
-			path.Base(input.Content.File),
-			path.Base(output.Content.File),
+			path.Base(input.File),
+			path.Base(output.File),
 		)
 	}
 
@@ -170,11 +189,11 @@ func buildMatrixTest(name string, inputs, outputs []File) test.Test {
 				t.SubTests,
 				test.New(
 					testName(input, output),
-					test.WithSkip(input.IsSkipped || output.IsSkipped),
+					test.WithSkip(input.Skip || output.Skip),
 					test.WithAssertion(
 						test.EqualAssertion{
-							Input:  input.Content,
-							Output: output.Content,
+							Input:  input.AsTestContent(),
+							Output: output.AsTestContent(),
 						},
 					),
 				),

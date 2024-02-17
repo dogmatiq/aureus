@@ -72,7 +72,7 @@ func (x assertionExecutor[T]) VisitEqualAssertion(a test.EqualAssertion) {
 	); d != nil {
 		x.TestingT.Fail()
 		m.WriteString("--- OUTPUT (-want +got) ---\n")
-		m.WriteString(string(d))
+		m.Write(d)
 	} else {
 		m.WriteString("--- OUTPUT ---\n")
 		m.Write(output)

@@ -1,28 +1,25 @@
 package goldenfile
 
 import (
+	"io"
 	"io/fs"
 	"path"
 	"strings"
 
-	"github.com/dogmatiq/aureus/test"
+	"github.com/dogmatiq/aureus/loader"
 )
 
-// File is a file that plays some role within a test.
-type File struct {
-	TestName  string
-	IsInput   bool
-	IsSkipped bool
-	Content   test.Content
-}
-
-// A FileLoader loads test files from the filesystem.
+// A FileLoader is a function that returns content read from a file.
 //
-// If the file is not part of any test, ok is false.
-type FileLoader func(fsys fs.FS, name string) (f File, ok bool, err error)
+// name is the "effective" or "sanitized" name of the file, after any special
+// characters have been removed by the loader. For example, a leading
+// underscore. The f.Stat() method can be used to get the actual file name.
+//
+// If the returned content's role is [loader.NoRole], it is ignored.
+type FileLoader func(name string, f fs.File) (loader.Content, error)
 
 // LoadFile is the default [FileLoader] implementation.
-func LoadFile(fsys fs.FS, name string) (File, bool, error) {
+func LoadFile(name string, f fs.File) (loader.Content, error) {
 	base := path.Base(name)
 	atoms := strings.Split(base, ".")
 
@@ -34,37 +31,32 @@ func LoadFile(fsys fs.FS, name string) (File, bool, error) {
 			continue
 		}
 
-		isInput := strings.EqualFold(x, "input")
-		isOutput := strings.EqualFold(x, "output")
-
-		if !isInput && !isOutput {
+		var role loader.ContentRole
+		if strings.EqualFold(x, "input") {
+			role = loader.Input
+		} else if strings.EqualFold(x, "output") {
+			role = loader.Output
+		} else {
 			continue
 		}
 
-		data, err := fs.ReadFile(fsys, name)
+		data, err := io.ReadAll(f)
 		if err != nil {
-			return File{}, false, err
+			return loader.Content{}, err
 		}
 
-		language := ""
+		lang := ""
 		if n := len(atoms) - 1; i < n {
-			language = atoms[n]
+			lang = atoms[n]
 		}
 
-		testName := strings.Join(atoms[:i], ".")
-		testName, skip := strings.CutPrefix(testName, "_")
-
-		return File{
-			TestName:  testName,
-			IsInput:   isInput,
-			IsSkipped: skip,
-			Content: test.Content{
-				File:     name,
-				Data:     string(data),
-				Language: language,
-			},
-		}, true, nil
+		return loader.Content{
+			Language: lang,
+			Data:     string(data),
+			Group:    strings.Join(atoms[:i], "."),
+			Role:     role,
+		}, nil
 	}
 
-	return File{}, false, nil
+	return loader.Content{}, nil
 }
