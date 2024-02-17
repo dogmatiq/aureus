@@ -3,7 +3,7 @@
   "SubTests": [
     {
       "Name": "test",
-      "Flags": 1,
+      "Skip": true,
       "Assertion": {
         "Input": {
           "File": "testdata/skipped-input-file/_test.input",

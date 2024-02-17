@@ -44,21 +44,19 @@ func (l *Loader) Load(dir string, options ...LoadOption) (test.Test, error) {
 	for _, opt := range options {
 		opt(&opts)
 	}
-	return loadDir(opts, dir, test.EmptyFlagSet)
+	return loadDir(opts, dir)
 }
 
 func loadDir(
 	opts loadOptions,
 	dirPath string,
-	flags test.FlagSet,
 ) (test.Test, error) {
 	name := path.Base(dirPath)
 	name, skip := strings.CutPrefix(name, "_")
 
-	t, flags := test.New(
-		test.WithName(name),
-		test.If(skip, test.WithFlag(test.FlagSkipped)),
-		test.WithInheritedFlags(flags),
+	t := test.New(
+		name,
+		test.WithSkip(skip),
 	)
 
 	entries, err := fs.ReadDir(opts.FS, dirPath)
@@ -77,7 +75,7 @@ func loadDir(
 
 		if entry.IsDir() {
 			if opts.Recurse {
-				s, err := loadDir(opts, entryPath, flags)
+				s, err := loadDir(opts, entryPath)
 				if err != nil {
 					return test.Test{}, err
 				}
@@ -96,7 +94,7 @@ func loadDir(
 
 	// Build a sub-test for each separate group of files.
 	for n, files := range filesByTest {
-		s, err := buildTest(n, files, flags)
+		s, err := buildTest(n, files)
 		if err != nil {
 			return test.Test{}, err
 		}
@@ -116,11 +114,7 @@ func loadDir(
 	return t, nil
 }
 
-func buildTest(
-	name string,
-	files []File,
-	flags test.FlagSet,
-) (test.Test, error) {
+func buildTest(name string, files []File) (test.Test, error) {
 	var inputs, outputs []File
 	for _, f := range files {
 		if f.IsInput {
@@ -136,24 +130,16 @@ func buildTest(
 	case len(outputs) == 0:
 		return test.Test{}, fmt.Errorf("input file %q has no associated output files", inputs[0].Content.File)
 	case len(inputs) == 1 && len(outputs) == 1:
-		return buildSingleTest(name, inputs[0], outputs[0], flags)
+		return buildSingleTest(name, inputs[0], outputs[0]), nil
 	default:
-		return buildMatrixTest(name, inputs, outputs, flags)
+		return buildMatrixTest(name, inputs, outputs), nil
 	}
 }
 
-func buildSingleTest(
-	name string,
-	input, output File,
-	flags test.FlagSet,
-) (test.Test, error) {
-	t, _ := test.New(
-		test.WithName(name),
-		test.WithInheritedFlags(flags),
-		test.If(
-			input.IsSkipped || output.IsSkipped,
-			test.WithFlag(test.FlagSkipped),
-		),
+func buildSingleTest(name string, input, output File) test.Test {
+	return test.New(
+		name,
+		test.WithSkip(input.IsSkipped || output.IsSkipped),
 		test.WithAssertion(
 			test.EqualAssertion{
 				Input:  input.Content,
@@ -161,19 +147,10 @@ func buildSingleTest(
 			},
 		),
 	)
-
-	return t, nil
 }
 
-func buildMatrixTest(
-	name string,
-	inputs, outputs []File,
-	flags test.FlagSet,
-) (test.Test, error) {
-	parent, _ := test.New(
-		test.WithName(name),
-		test.WithInheritedFlags(flags),
-	)
+func buildMatrixTest(name string, inputs, outputs []File) test.Test {
+	t := test.New(name)
 
 	testName := func(input, output File) string {
 		if input.Content.Language != "" && output.Content.Language != "" {
@@ -189,23 +166,21 @@ func buildMatrixTest(
 
 	for _, output := range outputs {
 		for _, input := range inputs {
-			t, _ := test.New(
-				test.WithName(testName(input, output)),
-				test.WithInheritedFlags(flags),
-				test.If(
-					input.IsSkipped || output.IsSkipped,
-					test.WithFlag(test.FlagSkipped),
-				),
-				test.WithAssertion(
-					test.EqualAssertion{
-						Input:  input.Content,
-						Output: output.Content,
-					},
+			t.SubTests = append(
+				t.SubTests,
+				test.New(
+					testName(input, output),
+					test.WithSkip(input.IsSkipped || output.IsSkipped),
+					test.WithAssertion(
+						test.EqualAssertion{
+							Input:  input.Content,
+							Output: output.Content,
+						},
+					),
 				),
 			)
-			parent.SubTests = append(parent.SubTests, t)
 		}
 	}
 
-	return parent, nil
+	return t
 }

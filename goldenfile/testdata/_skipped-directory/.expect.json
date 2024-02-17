@@ -1,10 +1,9 @@
 {
   "Name": "skipped-directory",
-  "Flags": 1,
+  "Skip": true,
   "SubTests": [
     {
       "Name": "test",
-      "Flags": 2,
       "Assertion": {
         "Input": {
           "File": "testdata/_skipped-directory/test.input",

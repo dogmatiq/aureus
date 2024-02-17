@@ -25,7 +25,7 @@ func (r *Runner[T]) Run(t T, x test.Test) {
 		func(t T) {
 			t.Helper()
 
-			if x.Flags.Has(test.FlagSkipped) {
+			if x.Skip {
 				t.SkipNow()
 				// Return in case stubbed SkipNow() impementation does not panic
 				return
