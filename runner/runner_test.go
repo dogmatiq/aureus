@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"testing"
 
-	"github.com/dogmatiq/aureus/goldenfile"
+	"github.com/dogmatiq/aureus/loader/goldenfile"
 	. "github.com/dogmatiq/aureus/runner"
 	"github.com/dogmatiq/aureus/test"
 )

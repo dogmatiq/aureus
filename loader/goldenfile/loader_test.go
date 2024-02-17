@@ -6,9 +6,9 @@ import (
 	"os"
 	"testing"
 
-	. "github.com/dogmatiq/aureus/goldenfile"
 	"github.com/dogmatiq/aureus/internal/diff"
 	"github.com/dogmatiq/aureus/internal/loadertest"
+	. "github.com/dogmatiq/aureus/loader/goldenfile"
 )
 
 func TestLoader(t *testing.T) {
