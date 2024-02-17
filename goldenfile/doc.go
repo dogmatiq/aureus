@@ -1,3 +1,3 @@
-// Package goldenfile loads [test.Test] values from directories containing
-// pairs of files representing input and expected output.
+// Package goldenfile loads [test.Test] values from files containing test inputs
+// and expected outputs.
 package goldenfile

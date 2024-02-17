@@ -12,8 +12,8 @@ import (
 	"github.com/dogmatiq/aureus/test"
 )
 
-// Loader loads [test.Test] values from directories containing pairs of files
-// representing input and expected output.
+// Loader loads [test.Test] values from files containing test inputs and
+// expected outputs.
 type Loader struct {
 	options loadOptions
 }
