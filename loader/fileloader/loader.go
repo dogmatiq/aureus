@@ -1,4 +1,4 @@
-package goldenfile
+package fileloader
 
 import (
 	"fmt"
@@ -23,9 +23,9 @@ type Loader struct {
 func NewLoader(options ...LoadOption) *Loader {
 	l := &Loader{
 		options: loadOptions{
-			FS:       rootfs.FS,
-			Recurse:  true,
-			LoadFile: LoadFile,
+			FS:          rootfs.FS,
+			Recurse:     true,
+			LoadContent: LoadContent,
 		},
 	}
 
@@ -128,7 +128,7 @@ func loadFile(opts loadOptions, filePath string) (loader.ContentEnvelope, bool, 
 	base := path.Base(filePath)
 	name, skip := strings.CutPrefix(base, "_")
 
-	c, err := opts.LoadFile(name, f)
+	c, err := opts.LoadContent(name, f)
 	if err != nil {
 		return loader.ContentEnvelope{}, false, err
 	}

@@ -4,13 +4,13 @@ import (
 	"encoding/json"
 	"testing"
 
-	"github.com/dogmatiq/aureus/loader/goldenfile"
+	"github.com/dogmatiq/aureus/loader/fileloader"
 	. "github.com/dogmatiq/aureus/runner"
 	"github.com/dogmatiq/aureus/test"
 )
 
 func TestRunner(t *testing.T) {
-	loader := goldenfile.NewLoader()
+	loader := fileloader.NewLoader()
 
 	formatJSON := func(c test.Content) ([]byte, error) {
 		if len(c.Data) == 0 {

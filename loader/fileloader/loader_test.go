@@ -1,4 +1,4 @@
-package goldenfile_test
+package fileloader_test
 
 import (
 	"bytes"
@@ -8,7 +8,7 @@ import (
 
 	"github.com/dogmatiq/aureus/internal/diff"
 	"github.com/dogmatiq/aureus/internal/loadertest"
-	. "github.com/dogmatiq/aureus/loader/goldenfile"
+	. "github.com/dogmatiq/aureus/loader/fileloader"
 )
 
 func TestLoader(t *testing.T) {

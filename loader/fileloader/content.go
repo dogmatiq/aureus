@@ -1,4 +1,4 @@
-package goldenfile
+package fileloader
 
 import (
 	"io"
@@ -9,17 +9,17 @@ import (
 	"github.com/dogmatiq/aureus/loader"
 )
 
-// A FileLoader is a function that returns content read from a file.
+// A ContentLoader is a function that returns content read from a file.
 //
 // name is the "effective" or "sanitized" name of the file, after any special
 // characters have been removed by the loader. For example, a leading
 // underscore. The f.Stat() method can be used to get the actual file name.
 //
 // If the returned content's role is [loader.NoRole], it is ignored.
-type FileLoader func(name string, f fs.File) (loader.Content, error)
+type ContentLoader func(name string, f fs.File) (loader.Content, error)
 
-// LoadFile is the default [FileLoader] implementation.
-func LoadFile(name string, f fs.File) (loader.Content, error) {
+// LoadContent is the default [ContentLoader] implementation.
+func LoadContent(name string, f fs.File) (loader.Content, error) {
 	base := path.Base(name)
 	atoms := strings.Split(base, ".")
 

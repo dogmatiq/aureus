@@ -1,4 +1,4 @@
-package goldenfile
+package fileloader
 
 import (
 	"io/fs"
@@ -8,10 +8,9 @@ import (
 type LoadOption func(*loadOptions)
 
 type loadOptions struct {
-	FS        fs.FS
-	Recurse   bool
-	IsSkipped func(fs.FS, string) (bool, error)
-	LoadFile  FileLoader
+	FS          fs.FS
+	Recurse     bool
+	LoadContent ContentLoader
 }
 
 // WithRecursion if a [LoadOption] that enables or disables recursive scanning
@@ -34,8 +33,8 @@ func WithFS(f fs.FS) LoadOption {
 
 // WithFileLoader is a [LoadOption] that configures an alternative [FileLoader]
 // used to identify test files and load their content.
-func WithFileLoader(load FileLoader) LoadOption {
+func WithFileLoader(load ContentLoader) LoadOption {
 	return func(opts *loadOptions) {
-		opts.LoadFile = load
+		opts.LoadContent = load
 	}
 }
