@@ -48,7 +48,7 @@ func (l *Loader) Load(dir string, options ...LoadOption) (test.Test, error) {
 		opts.FS,
 		dir,
 		opts.Recurse,
-		func(fsys fs.FS, filePath string, builder *loader.TestBuilder) error {
+		func(builder *loader.TestBuilder, fsys fs.FS, filePath string) error {
 			f, err := fsys.Open(filePath)
 			if err != nil {
 				return err

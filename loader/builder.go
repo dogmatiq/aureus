@@ -73,7 +73,7 @@ func LoadDir(
 	fsys fs.FS,
 	dirPath string,
 	recurse bool,
-	build func(fs.FS, string, *TestBuilder) error,
+	build func(*TestBuilder, fs.FS, string) error,
 ) (test.Test, error) {
 	var builder TestBuilder
 
@@ -98,7 +98,7 @@ func LoadDir(
 				builder.AddTest(t)
 			}
 		} else {
-			if err := build(fsys, entryPath, &builder); err != nil {
+			if err := build(&builder, fsys, entryPath); err != nil {
 				return test.Test{}, err
 			}
 		}

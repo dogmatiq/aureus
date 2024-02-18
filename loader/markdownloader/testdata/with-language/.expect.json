@@ -1,0 +1,27 @@
+{
+  "Name": "with-language",
+  "SubTests": [
+    {
+      "Name": "test",
+      "SubTests": [
+        {
+          "Name": "grp",
+          "Assertion": {
+            "Input": {
+              "File": "testdata/with-language/test.md",
+              "Line": 1,
+              "Language": "text",
+              "Data": "INPUT\n"
+            },
+            "Output": {
+              "File": "testdata/with-language/test.md",
+              "Line": 5,
+              "Language": "text",
+              "Data": "OUTPUT\n"
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

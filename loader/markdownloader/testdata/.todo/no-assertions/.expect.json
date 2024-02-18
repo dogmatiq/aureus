@@ -1,0 +1,16 @@
+{
+  "Name": "no-assertions",
+  "Flags": 0,
+  "Origin": {
+    "DirPath": "testdata/no-assertions"
+  },
+  "SubTests": [
+    {
+      "Name": "pretty-print.au.md",
+      "Flags": 0,
+      "Origin": {
+        "FilePath": "testdata/no-assertions/pretty-print.au.md"
+      }
+    }
+  ]
+}

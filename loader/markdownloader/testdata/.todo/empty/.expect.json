@@ -1,0 +1,16 @@
+{
+  "Name": "empty",
+  "Flags": 0,
+  "Origin": {
+    "DirPath": "testdata/empty"
+  },
+  "SubTests": [
+    {
+      "Name": "pretty-print.au.md",
+      "Flags": 0,
+      "Origin": {
+        "FilePath": "testdata/empty/pretty-print.au.md"
+      }
+    }
+  ]
+}

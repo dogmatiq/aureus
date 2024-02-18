@@ -1,0 +1,44 @@
+{
+  "Name": "additional-content",
+  "Flags": 0,
+  "Origin": {
+    "DirPath": "testdata/additional-content"
+  },
+  "SubTests": [
+    {
+      "Name": "pretty-print.au.md",
+      "Flags": 0,
+      "Origin": {
+        "FilePath": "testdata/additional-content/pretty-print.au.md"
+      },
+      "SubTests": [
+        {
+          "Name": "L12",
+          "Flags": 0,
+          "Origin": {
+            "FilePath": "testdata/additional-content/pretty-print.au.md",
+            "Line": 12
+          },
+          "Assertions": [
+            {
+              "Input": {
+                "Origin": {
+                  "FilePath": "testdata/additional-content/pretty-print.au.md",
+                  "Line": 6
+                },
+                "Data": "{ \"foo\": 1, \"bar\": 2, \"baz\": 3 }\n"
+              },
+              "Output": {
+                "Origin": {
+                  "FilePath": "testdata/additional-content/pretty-print.au.md",
+                  "Line": 12
+                },
+                "Data": "{\n  \"foo\": 1,\n  \"bar\": 2,\n  \"baz\": 3\n}\n"
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
