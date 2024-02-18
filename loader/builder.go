@@ -23,6 +23,8 @@ type group struct {
 }
 
 // AddTest adds a pre-built test to the builder.
+//
+// Empty tests are ignored.
 func (b *TestBuilder) AddTest(t test.Test) {
 	if len(t.SubTests) > 0 || t.Assertion != nil {
 		b.tests = append(b.tests, t)
@@ -30,6 +32,8 @@ func (b *TestBuilder) AddTest(t test.Test) {
 }
 
 // AddContent adds content to the builder.
+//
+// Content with no [Role] is ignored.
 func (b *TestBuilder) AddContent(env ContentEnvelope) {
 	switch env.Content.Role {
 	case Input:
@@ -39,18 +43,6 @@ func (b *TestBuilder) AddContent(env ContentEnvelope) {
 		g := b.group(env.Content.Group)
 		g.Outputs = append(g.Outputs, env)
 	}
-}
-
-func (b *TestBuilder) group(name string) *group {
-	if b.groups == nil {
-		b.groups = map[string]*group{}
-	} else if g, ok := b.groups[name]; ok {
-		return g
-	}
-
-	g := &group{Name: name}
-	b.groups[name] = g
-	return g
 }
 
 // Build returns tests built from the inputs and outputs, sorted by name.
@@ -125,6 +117,19 @@ func LoadDir(
 		test.WithSkip(skip),
 		test.WithSubTests(subTests...),
 	), nil
+}
+
+// group returns the group with the given name, creating it if necessary.
+func (b *TestBuilder) group(name string) *group {
+	if b.groups == nil {
+		b.groups = map[string]*group{}
+	} else if g, ok := b.groups[name]; ok {
+		return g
+	}
+
+	g := &group{Name: name}
+	b.groups[name] = g
+	return g
 }
 
 // location returns a string that describes the location of the given content.
