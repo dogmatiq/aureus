@@ -8,7 +8,7 @@ import (
 
 	"github.com/dogmatiq/aureus/internal/rootfs"
 	"github.com/dogmatiq/aureus/loader"
-	"github.com/dogmatiq/aureus/loader/internal/fsiter"
+	"github.com/dogmatiq/aureus/loader/internal/diriter"
 	"github.com/dogmatiq/aureus/test"
 )
 
@@ -52,31 +52,32 @@ func loadDir(
 	opts loadOptions,
 	dirPath string,
 ) (test.Test, error) {
-	envelopesByGroup := map[string][]loader.ContentEnvelope{}
+	var subTests []test.Test
+	groups := map[string][]loader.ContentEnvelope{}
 
-	subTests, err := fsiter.Each(
+	err := diriter.Each(
 		opts.FS,
 		opts.Recurse,
 		dirPath,
-		func(dirPath string) (test.Test, error) {
-			return loadDir(opts, dirPath)
-		},
-		func(filePath string) error {
-			env, ok, err := loadFile(opts, filePath)
+		func(dirPath string) error {
+			t, err := loadDir(opts, dirPath)
 			if err != nil {
 				return err
 			}
-			if ok {
-				envelopesByGroup[env.Content.Group] = append(envelopesByGroup[env.Content.Group], env)
+			if len(t.SubTests) != 0 {
+				subTests = append(subTests, t)
 			}
 			return nil
+		},
+		func(filePath string) error {
+			return loadFile(opts, filePath, groups)
 		},
 	)
 	if err != nil {
 		return test.Test{}, err
 	}
 
-	for n, envelopes := range envelopesByGroup {
+	for n, envelopes := range groups {
 		s, err := buildTest(n, envelopes)
 		if err != nil {
 			return test.Test{}, err
@@ -101,10 +102,14 @@ func loadDir(
 	), nil
 }
 
-func loadFile(opts loadOptions, filePath string) (loader.ContentEnvelope, bool, error) {
+func loadFile(
+	opts loadOptions,
+	filePath string,
+	groups map[string][]loader.ContentEnvelope,
+) error {
 	f, err := opts.FS.Open(filePath)
 	if err != nil {
-		return loader.ContentEnvelope{}, false, err
+		return err
 	}
 	defer f.Close()
 
@@ -113,14 +118,19 @@ func loadFile(opts loadOptions, filePath string) (loader.ContentEnvelope, bool, 
 
 	c, err := opts.LoadContent(name, f)
 	if err != nil {
-		return loader.ContentEnvelope{}, false, err
+		return err
 	}
 
-	return loader.ContentEnvelope{
-		File:    filePath,
-		Skip:    skip,
-		Content: c,
-	}, true, nil
+	groups[c.Group] = append(
+		groups[c.Group],
+		loader.ContentEnvelope{
+			File:    filePath,
+			Skip:    skip,
+			Content: c,
+		},
+	)
+
+	return nil
 }
 
 func buildTest(name string, envelopes []loader.ContentEnvelope) (test.Test, error) {
