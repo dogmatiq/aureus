@@ -2,6 +2,7 @@ package loader
 
 import (
 	"fmt"
+	"io/fs"
 	"path"
 	"slices"
 	"strings"
@@ -73,6 +74,57 @@ func (b *TestBuilder) Build() ([]test.Test, error) {
 	)
 
 	return tests, nil
+}
+
+// LoadDir loads tests from the given directory.
+func LoadDir(
+	fsys fs.FS,
+	dirPath string,
+	recurse bool,
+	build func(fs.FS, string, *TestBuilder) error,
+) (test.Test, error) {
+	var builder TestBuilder
+
+	entries, err := fs.ReadDir(fsys, dirPath)
+	if err != nil {
+		return test.Test{}, err
+	}
+
+	for _, entry := range entries {
+		if strings.HasPrefix(entry.Name(), ".") {
+			continue
+		}
+
+		entryPath := path.Join(dirPath, entry.Name())
+
+		if entry.IsDir() {
+			if recurse {
+				t, err := LoadDir(fsys, entryPath, true, build)
+				if err != nil {
+					return test.Test{}, err
+				}
+				builder.AddTest(t)
+			}
+		} else {
+			if err := build(fsys, entryPath, &builder); err != nil {
+				return test.Test{}, err
+			}
+		}
+	}
+
+	name := path.Base(dirPath)
+	name, skip := strings.CutPrefix(name, "_")
+
+	subTests, err := builder.Build()
+	if err != nil {
+		return test.Test{}, err
+	}
+
+	return test.New(
+		name,
+		test.WithSkip(skip),
+		test.WithSubTests(subTests...),
+	), nil
 }
 
 // location returns a string that describes the location of the given content.
