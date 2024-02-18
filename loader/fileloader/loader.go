@@ -1,9 +1,7 @@
 package fileloader
 
 import (
-	"fmt"
 	"path"
-	"slices"
 	"strings"
 
 	"github.com/dogmatiq/aureus/internal/rootfs"
@@ -52,8 +50,7 @@ func loadDir(
 	opts loadOptions,
 	dirPath string,
 ) (test.Test, error) {
-	var subTests []test.Test
-	groups := map[string][]loader.ContentEnvelope{}
+	var builder loader.TestBuilder
 
 	err := diriter.Each(
 		opts.FS,
@@ -64,36 +61,29 @@ func loadDir(
 			if err != nil {
 				return err
 			}
-			if len(t.SubTests) != 0 {
-				subTests = append(subTests, t)
-			}
+			builder.AddTest(t)
 			return nil
 		},
 		func(filePath string) error {
-			return loadFile(opts, filePath, groups)
+			c, err := loadFile(opts, filePath)
+			if err != nil {
+				return err
+			}
+			builder.AddContent(c)
+			return nil
 		},
 	)
 	if err != nil {
 		return test.Test{}, err
 	}
 
-	for n, envelopes := range groups {
-		s, err := buildTest(n, envelopes)
-		if err != nil {
-			return test.Test{}, err
-		}
-		subTests = append(subTests, s)
-	}
-
-	slices.SortFunc(
-		subTests,
-		func(a, b test.Test) int {
-			return strings.Compare(a.Name, b.Name)
-		},
-	)
-
 	name := path.Base(dirPath)
 	name, skip := strings.CutPrefix(name, "_")
+
+	subTests, err := builder.Build()
+	if err != nil {
+		return test.Test{}, err
+	}
 
 	return test.New(
 		name,
@@ -102,97 +92,24 @@ func loadDir(
 	), nil
 }
 
-func loadFile(
-	opts loadOptions,
-	filePath string,
-	groups map[string][]loader.ContentEnvelope,
-) error {
+func loadFile(opts loadOptions, filePath string) (loader.ContentEnvelope, error) {
 	f, err := opts.FS.Open(filePath)
 	if err != nil {
-		return err
+		return loader.ContentEnvelope{}, err
 	}
 	defer f.Close()
 
-	base := path.Base(filePath)
-	name, skip := strings.CutPrefix(base, "_")
+	name := path.Base(filePath)
+	name, skip := strings.CutPrefix(name, "_")
 
 	c, err := opts.LoadContent(name, f)
 	if err != nil {
-		return err
+		return loader.ContentEnvelope{}, err
 	}
 
-	groups[c.Group] = append(
-		groups[c.Group],
-		loader.ContentEnvelope{
-			File:    filePath,
-			Skip:    skip,
-			Content: c,
-		},
-	)
-
-	return nil
-}
-
-func buildTest(name string, envelopes []loader.ContentEnvelope) (test.Test, error) {
-	inputs, outputs := loader.SeparateContentByRole(envelopes)
-
-	switch {
-	case len(inputs) == 0:
-		return test.Test{}, fmt.Errorf("output file %q has no associated input files", outputs[0].File)
-	case len(outputs) == 0:
-		return test.Test{}, fmt.Errorf("input file %q has no associated output files", inputs[0].File)
-	case len(inputs) == 1 && len(outputs) == 1:
-		return buildSingleTest(name, inputs[0], outputs[0]), nil
-	default:
-		return buildMatrixTest(name, inputs, outputs), nil
-	}
-}
-
-func buildSingleTest(name string, input, output loader.ContentEnvelope) test.Test {
-	return test.New(
-		name,
-		test.WithSkip(input.Skip || output.Skip),
-		test.WithAssertion(
-			test.EqualAssertion{
-				Input:  input.AsTestContent(),
-				Output: output.AsTestContent(),
-			},
-		),
-	)
-}
-
-func buildMatrixTest(name string, inputs, outputs []loader.ContentEnvelope) test.Test {
-	t := test.New(name)
-
-	testName := func(input, output loader.ContentEnvelope) string {
-		if input.Content.Language != "" && output.Content.Language != "" {
-			return fmt.Sprintf("%s -> %s", input.Content.Language, output.Content.Language)
-		}
-
-		return fmt.Sprintf(
-			"%s -> %s",
-			path.Base(input.File),
-			path.Base(output.File),
-		)
-	}
-
-	for _, output := range outputs {
-		for _, input := range inputs {
-			t.SubTests = append(
-				t.SubTests,
-				test.New(
-					testName(input, output),
-					test.WithSkip(input.Skip || output.Skip),
-					test.WithAssertion(
-						test.EqualAssertion{
-							Input:  input.AsTestContent(),
-							Output: output.AsTestContent(),
-						},
-					),
-				),
-			)
-		}
-	}
-
-	return t
+	return loader.ContentEnvelope{
+		File:    filePath,
+		Skip:    skip,
+		Content: c,
+	}, nil
 }
