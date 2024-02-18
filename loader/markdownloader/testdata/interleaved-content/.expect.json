@@ -1,0 +1,25 @@
+{
+  "Name": "interleaved-content",
+  "SubTests": [
+    {
+      "Name": "test",
+      "SubTests": [
+        {
+          "Name": "grp",
+          "Assertion": {
+            "Input": {
+              "File": "testdata/interleaved-content/test.md",
+              "Line": 4,
+              "Data": "INPUT\n"
+            },
+            "Output": {
+              "File": "testdata/interleaved-content/test.md",
+              "Line": 10,
+              "Data": "OUTPUT\n"
+            }
+          }
+        }
+      ]
+    }
+  ]
+}
