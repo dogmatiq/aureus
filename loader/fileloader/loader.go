@@ -2,13 +2,13 @@ package fileloader
 
 import (
 	"fmt"
-	"io/fs"
 	"path"
 	"slices"
 	"strings"
 
 	"github.com/dogmatiq/aureus/internal/rootfs"
 	"github.com/dogmatiq/aureus/loader"
+	"github.com/dogmatiq/aureus/loader/internal/fsiter"
 	"github.com/dogmatiq/aureus/test"
 )
 
@@ -52,70 +52,53 @@ func loadDir(
 	opts loadOptions,
 	dirPath string,
 ) (test.Test, error) {
-	name := path.Base(dirPath)
-	name, skip := strings.CutPrefix(name, "_")
+	envelopesByGroup := map[string][]loader.ContentEnvelope{}
 
-	t := test.New(
-		name,
-		test.WithSkip(skip),
+	subTests, err := fsiter.Each(
+		opts.FS,
+		opts.Recurse,
+		dirPath,
+		func(dirPath string) (test.Test, error) {
+			return loadDir(opts, dirPath)
+		},
+		func(filePath string) error {
+			env, ok, err := loadFile(opts, filePath)
+			if err != nil {
+				return err
+			}
+			if ok {
+				envelopesByGroup[env.Content.Group] = append(envelopesByGroup[env.Content.Group], env)
+			}
+			return nil
+		},
 	)
-
-	entries, err := fs.ReadDir(opts.FS, dirPath)
 	if err != nil {
 		return test.Test{}, err
 	}
 
-	envelopesByGroup := map[string][]loader.ContentEnvelope{}
-
-	for _, entry := range entries {
-		if strings.HasPrefix(entry.Name(), ".") {
-			continue
-		}
-
-		entryPath := path.Join(dirPath, entry.Name())
-
-		if entry.IsDir() {
-			if opts.Recurse {
-				s, err := loadDir(opts, entryPath)
-				if err != nil {
-					return test.Test{}, err
-				}
-				t.SubTests = append(t.SubTests, s)
-			}
-		} else {
-			env, ok, err := loadFile(opts, entryPath)
-			if err != nil {
-				return test.Test{}, err
-			}
-			if ok {
-				envelopesByGroup[env.Content.Group] = append(
-					envelopesByGroup[env.Content.Group],
-					env,
-				)
-			}
-		}
-	}
-
-	// Build a sub-test for each separate group of files.
 	for n, envelopes := range envelopesByGroup {
 		s, err := buildTest(n, envelopes)
 		if err != nil {
 			return test.Test{}, err
 		}
-		t.SubTests = append(t.SubTests, s)
+		subTests = append(subTests, s)
 	}
 
-	// Sort by name those sub-tests that were built from file groups. This
-	// ensures that the order of the sub-tests is deterministic, and also that
-	// sub-tests build from directories appear first.
 	slices.SortFunc(
-		t.SubTests[len(t.SubTests)-len(envelopesByGroup):],
+		subTests,
 		func(a, b test.Test) int {
 			return strings.Compare(a.Name, b.Name)
 		},
 	)
 
-	return t, nil
+	name := path.Base(dirPath)
+	name, skip := strings.CutPrefix(name, "_")
+
+	return test.New(
+		name,
+		test.WithSkip(skip),
+		test.WithSubTests(subTests...),
+	), nil
 }
 
 func loadFile(opts loadOptions, filePath string) (loader.ContentEnvelope, bool, error) {

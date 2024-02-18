@@ -40,3 +40,10 @@ func WithAssertion(a Assertion) Option {
 		opts.Assertion = a
 	}
 }
+
+// WithSubTests is a [TestOption] that adds sub-tests to the test.
+func WithSubTests(subTests ...Test) Option {
+	return func(t *Test) {
+		t.SubTests = append(t.SubTests, subTests...)
+	}
+}
