@@ -13,20 +13,24 @@ import (
 func TestRunner(t *testing.T) {
 	loader := fileloader.NewLoader()
 
-	formatJSON := func(input test.Content, output io.Writer) error {
-		if len(input.Data) == 0 {
+	formatJSON := func(
+		w io.Writer,
+		in test.Content,
+		out test.ContentMetaData,
+	) error {
+		if len(in.Data) == 0 {
 			return nil
 		}
 
 		var v any
 		if err := json.Unmarshal(
-			[]byte(input.Data),
+			[]byte(in.Data),
 			&v,
 		); err != nil {
 			return err
 		}
 
-		enc := json.NewEncoder(output)
+		enc := json.NewEncoder(w)
 		enc.SetIndent("", "  ")
 		return enc.Encode(v)
 	}

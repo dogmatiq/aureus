@@ -15,8 +15,16 @@ type Runner[T TestingT[T]] struct {
 	GenerateOutput OutputGenerator
 }
 
-// OutputGenerator is a function that generates output for a given input.
-type OutputGenerator func(input test.Content, output io.Writer) error
+// OutputGenerator produced output for a test case's input.
+//
+// in is the input data for the test case. out is meta-data about the expected
+// output, which may be used to influence the kind of output that the generator
+// writes to w.
+type OutputGenerator func(
+	w io.Writer,
+	in test.Content,
+	out test.ContentMetaData,
+) error
 
 // Run makes the assertions described by all documents within a [TestSuite].
 func (r *Runner[T]) Run(t T, x test.Test) {
@@ -63,7 +71,11 @@ func (x assertionExecutor[T]) VisitEqualAssertion(a test.EqualAssertion) {
 	m.WriteString(a.Input.Data)
 
 	output := &bytes.Buffer{}
-	err := x.GenerateOutput(a.Input, output)
+	err := x.GenerateOutput(
+		output,
+		a.Input,
+		a.Output.ContentMetaData,
+	)
 
 	if err != nil {
 		x.TestingT.Fail()

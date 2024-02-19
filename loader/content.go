@@ -64,11 +64,13 @@ type ContentEnvelope struct {
 // AsTestContent returns the content as a [test.Content].
 func (e ContentEnvelope) AsTestContent() test.Content {
 	return test.Content{
-		File:       e.File,
-		Line:       e.Line,
-		Language:   e.Content.Language,
-		Attributes: e.Content.Attributes,
-		Data:       e.Content.Data,
+		ContentMetaData: test.ContentMetaData{
+			File:       e.File,
+			Line:       e.Line,
+			Language:   e.Content.Language,
+			Attributes: e.Content.Attributes,
+		},
+		Data: e.Content.Data,
 	}
 }
 

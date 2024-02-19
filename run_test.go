@@ -2,6 +2,7 @@ package aureus_test
 
 import (
 	"encoding/json"
+	"errors"
 	"io"
 	"testing"
 
@@ -9,20 +10,24 @@ import (
 	"github.com/dogmatiq/aureus/test"
 )
 
-func prettyPrint(input test.Content, output io.Writer) error {
-	if len(input.Data) == 0 {
-		return nil
+func prettyPrint(
+	w io.Writer,
+	in test.Content,
+	out test.ContentMetaData,
+) error {
+	if in.Language != "json" || out.Language != "json" {
+		return errors.New("the pretty-printer can only produce JSON output")
 	}
 
 	var v any
 	if err := json.Unmarshal(
-		[]byte(input.Data),
+		[]byte(in.Data),
 		&v,
 	); err != nil {
 		return err
 	}
 
-	enc := json.NewEncoder(output)
+	enc := json.NewEncoder(w)
 	enc.SetIndent("", "  ")
 	return enc.Encode(v)
 }
