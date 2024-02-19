@@ -34,7 +34,7 @@ user-defined function is invoked. The function must produce output that matches
 the content of the output file, otherwise the test fails.
 
 The [`run_test.go`] illustrates how to use Aureus to execute the flat-file tests
-in the [`./testdata`] directory.
+in the [`testdata`] directory.
 
 ### Markdown documents
 
@@ -65,7 +65,7 @@ View the [README source] to see how the code blocks are annotated for use with
 Aureus, and [`run_test.go`] to see how to execute the
 tests.
 
-[`./testdata`]: ./testdata
-[`run_test.go`]: ./testdata/run_test.go
+[`testdata`]: testdata
+[`run_test.go`]: run_test.go
 [readme source]: https://github.com/dogmatiq/aureus/blob/main/README.md?plain=1
 [fenced code blocks]: https://spec.commonmark.org/0.31.2/#fenced-code-blocks
