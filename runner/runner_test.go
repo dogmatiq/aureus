@@ -2,6 +2,7 @@ package runner_test
 
 import (
 	"encoding/json"
+	"io"
 	"testing"
 
 	"github.com/dogmatiq/aureus/loader/fileloader"
@@ -12,24 +13,22 @@ import (
 func TestRunner(t *testing.T) {
 	loader := fileloader.NewLoader()
 
-	formatJSON := func(c test.Content) ([]byte, error) {
-		if len(c.Data) == 0 {
-			return nil, nil
+	formatJSON := func(input test.Content, output io.Writer) error {
+		if len(input.Data) == 0 {
+			return nil
 		}
-
-		input := []byte(c.Data)
 
 		var v any
-		if err := json.Unmarshal(input, &v); err != nil {
-			return nil, err
+		if err := json.Unmarshal(
+			[]byte(input.Data),
+			&v,
+		); err != nil {
+			return err
 		}
 
-		output, err := json.MarshalIndent(v, "", "  ")
-		if err != nil {
-			return nil, err
-		}
-
-		return append(output, '\n'), nil
+		enc := json.NewEncoder(output)
+		enc.SetIndent("", "  ")
+		return enc.Encode(v)
 	}
 
 	// expected to pass
@@ -39,8 +38,8 @@ func TestRunner(t *testing.T) {
 			t.Fatal(err)
 		}
 
-		runner := &NativeRunner{
-			Output: formatJSON,
+		runner := &Runner[*testing.T]{
+			GenerateOutput: formatJSON,
 		}
 
 		runner.Run(t, test)
@@ -54,7 +53,7 @@ func TestRunner(t *testing.T) {
 		}
 
 		runner := &Runner[*testingT]{
-			Output: formatJSON,
+			GenerateOutput: formatJSON,
 		}
 
 		x := &testingT{T: t}
