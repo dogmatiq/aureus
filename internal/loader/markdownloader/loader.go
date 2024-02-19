@@ -5,9 +5,9 @@ import (
 	"path"
 	"strings"
 
+	"github.com/dogmatiq/aureus/internal/loader"
 	"github.com/dogmatiq/aureus/internal/rootfs"
-	"github.com/dogmatiq/aureus/loader"
-	"github.com/dogmatiq/aureus/test"
+	"github.com/dogmatiq/aureus/internal/test"
 	"github.com/yuin/goldmark"
 	"github.com/yuin/goldmark/ast"
 	"github.com/yuin/goldmark/text"

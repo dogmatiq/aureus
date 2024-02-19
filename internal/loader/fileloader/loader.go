@@ -5,9 +5,9 @@ import (
 	"path"
 	"strings"
 
+	"github.com/dogmatiq/aureus/internal/loader"
 	"github.com/dogmatiq/aureus/internal/rootfs"
-	"github.com/dogmatiq/aureus/loader"
-	"github.com/dogmatiq/aureus/test"
+	"github.com/dogmatiq/aureus/internal/test"
 )
 
 // Loader loads [test.Test] values from files containing test inputs and

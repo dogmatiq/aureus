@@ -1,7 +1,7 @@
 package loader
 
 import (
-	"github.com/dogmatiq/aureus/test"
+	"github.com/dogmatiq/aureus/internal/test"
 )
 
 // ContentRole is an enumeration of the roles that loaded content can play

@@ -6,14 +6,13 @@ import (
 	"io"
 	"testing"
 
-	. "github.com/dogmatiq/aureus"
-	"github.com/dogmatiq/aureus/test"
+	"github.com/dogmatiq/aureus"
 )
 
 func prettyPrint(
 	w io.Writer,
-	in test.Content,
-	out test.ContentMetaData,
+	in aureus.Content,
+	out aureus.ContentMetaData,
 ) error {
 	if in.Language != "json" || out.Language != "json" {
 		return errors.New("the pretty-printer can only produce JSON output")
@@ -33,14 +32,14 @@ func prettyPrint(
 }
 
 func TestRun_flatFile(t *testing.T) {
-	Run(t, prettyPrint)
+	aureus.Run(t, prettyPrint)
 }
 
 func TestRun_readme(t *testing.T) {
-	Run(
+	aureus.Run(
 		t,
 		prettyPrint,
-		WithDir("."),
-		WithRecursion(false),
+		aureus.WithDir("."),
+		aureus.WithRecursion(false),
 	)
 }

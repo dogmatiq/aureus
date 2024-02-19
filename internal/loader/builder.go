@@ -7,7 +7,7 @@ import (
 	"slices"
 	"strings"
 
-	"github.com/dogmatiq/aureus/test"
+	"github.com/dogmatiq/aureus/internal/test"
 )
 
 // TestBuilder builds [test.Test] values from groups of correlated inputs and

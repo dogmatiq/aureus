@@ -9,7 +9,7 @@ import (
 	"testing"
 
 	"github.com/dogmatiq/aureus/internal/diff"
-	"github.com/dogmatiq/aureus/test"
+	"github.com/dogmatiq/aureus/internal/test"
 )
 
 // Run executes a set of basic golden-file tests for a loader using directories

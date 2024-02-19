@@ -7,8 +7,8 @@ import (
 	"testing"
 
 	"github.com/dogmatiq/aureus/internal/diff"
-	. "github.com/dogmatiq/aureus/loader/fileloader"
-	"github.com/dogmatiq/aureus/loader/internal/loadertest"
+	. "github.com/dogmatiq/aureus/internal/loader/fileloader"
+	"github.com/dogmatiq/aureus/internal/loader/internal/loadertest"
 )
 
 func TestLoader(t *testing.T) {

@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/dogmatiq/aureus/loader"
+	"github.com/dogmatiq/aureus/internal/loader"
 	"golang.org/x/net/html"
 )
 

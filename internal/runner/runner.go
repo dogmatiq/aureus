@@ -6,7 +6,7 @@ import (
 	"strings"
 
 	"github.com/dogmatiq/aureus/internal/diff"
-	"github.com/dogmatiq/aureus/test"
+	"github.com/dogmatiq/aureus/internal/test"
 )
 
 // Runner executes tests under any test framework with an interface similar to

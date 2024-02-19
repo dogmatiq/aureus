@@ -5,9 +5,9 @@ import (
 	"io"
 	"testing"
 
-	"github.com/dogmatiq/aureus/loader/fileloader"
-	. "github.com/dogmatiq/aureus/runner"
-	"github.com/dogmatiq/aureus/test"
+	"github.com/dogmatiq/aureus/internal/loader/fileloader"
+	. "github.com/dogmatiq/aureus/internal/runner"
+	"github.com/dogmatiq/aureus/internal/test"
 )
 
 func TestRunner(t *testing.T) {

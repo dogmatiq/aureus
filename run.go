@@ -1,9 +1,30 @@
 package aureus
 
 import (
-	"github.com/dogmatiq/aureus/loader/fileloader"
-	"github.com/dogmatiq/aureus/loader/markdownloader"
-	"github.com/dogmatiq/aureus/runner"
+	"io"
+
+	"github.com/dogmatiq/aureus/internal/loader/fileloader"
+	"github.com/dogmatiq/aureus/internal/loader/markdownloader"
+	"github.com/dogmatiq/aureus/internal/runner"
+	"github.com/dogmatiq/aureus/internal/test"
+)
+
+// OutputGenerator produced output for a test case's input.
+//
+// in is the input data for the test case. out is meta-data about the expected
+// output, which may be used to influence the kind of output that the generator
+// writes to w.
+type OutputGenerator func(
+	w io.Writer,
+	in Content,
+	out ContentMetaData,
+) error
+
+type (
+	// Content is data used as input or output in tests.
+	Content = test.Content
+	// ContentMetaData contains information about input or output content.
+	ContentMetaData = test.ContentMetaData
 )
 
 // Run searches a directory for "golden" tests and executes them as
@@ -14,7 +35,7 @@ import (
 //
 // g is a function that generates output from input values. It is called for
 // each test case. If the output it produces does not match the expected output.
-func Run[T runner.TestingT[T]](t T, g runner.OutputGenerator, options ...RunOption) {
+func Run[T runner.TestingT[T]](t T, g OutputGenerator, options ...RunOption) {
 	t.Helper()
 
 	opts := runOptions{
@@ -42,7 +63,7 @@ func Run[T runner.TestingT[T]](t T, g runner.OutputGenerator, options ...RunOpti
 	}
 
 	r := runner.Runner[T]{
-		GenerateOutput: g,
+		GenerateOutput: (runner.OutputGenerator)(g),
 	}
 	r.Run(t, fileTests)
 	r.Run(t, markdownTests)

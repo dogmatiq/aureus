@@ -6,7 +6,7 @@ import (
 	"path"
 	"strings"
 
-	"github.com/dogmatiq/aureus/loader"
+	"github.com/dogmatiq/aureus/internal/loader"
 )
 
 // A ContentLoader is a function that returns content read from a file.

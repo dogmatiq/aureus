@@ -10,7 +10,7 @@ type Content struct {
 	Data string
 }
 
-// ContentMetaData is additional information about a piece of content.
+// ContentMetaData contains information about input or output content.
 type ContentMetaData struct {
 	// File is the path of the file from which the content was loaded.
 	File string
