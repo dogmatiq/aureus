@@ -19,10 +19,7 @@ func prettyPrint(
 	}
 
 	var v any
-	if err := json.Unmarshal(
-		[]byte(in.Data),
-		&v,
-	); err != nil {
+	if err := json.Unmarshal(in.Data, &v); err != nil {
 		return err
 	}
 

@@ -2,7 +2,6 @@ package fileloader_test
 
 import (
 	"bytes"
-	"encoding/json"
 	"os"
 	"testing"
 
@@ -24,23 +23,18 @@ func TestWithRecursion(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	actual, err := json.MarshalIndent(test, "", "  ")
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	expectFile := "testdata/nested-directory/.expect.no-recursion.json"
+	expectFile := "testdata/nested-directory/.expect.no-recursion"
 	expect, err := os.ReadFile(expectFile)
 	if err != nil {
 		t.Fatal(err)
 	}
 
 	expect = bytes.TrimSpace(expect)
-	actual = bytes.TrimSpace(actual)
+	actual := bytes.TrimSpace(loadertest.RenderTest(test))
 
 	if d := diff.Diff(
 		expectFile, expect,
-		"actual.json", actual,
+		"actual", actual,
 	); d != nil {
 		t.Fatal(string(d))
 	}

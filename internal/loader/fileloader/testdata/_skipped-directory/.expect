@@ -1,0 +1,12 @@
+test "skipped-directory" [skipped] {
+    test "test" {
+        equal {
+            input "testdata/_skipped-directory/test.input" {
+                data = "INPUT\n"
+            }
+            output "testdata/_skipped-directory/test.output" {
+                data = "OUTPUT\n"
+            }
+        }
+    }
+}

@@ -1,0 +1,12 @@
+test "skipped-input-file" {
+    test "test" [skipped] {
+        equal {
+            input "testdata/skipped-input-file/_test.input" {
+                data = "INPUT\n"
+            }
+            output "testdata/skipped-input-file/test.output" {
+                data = "OUTPUT\n"
+            }
+        }
+    }
+}

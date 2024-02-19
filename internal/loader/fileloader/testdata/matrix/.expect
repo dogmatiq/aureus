@@ -1,0 +1,52 @@
+test "matrix" {
+    test "test" {
+        test "one -> one" {
+            equal {
+                input "testdata/matrix/test.input.one" {
+                    lang = "one"
+                    data = "INPUT 1\n"
+                }
+                output "testdata/matrix/test.output.one" {
+                    lang = "one"
+                    data = "OUTPUT 1\n"
+                }
+            }
+        }
+        test "two -> one" {
+            equal {
+                input "testdata/matrix/test.input.two" {
+                    lang = "two"
+                    data = "INPUT 2\n"
+                }
+                output "testdata/matrix/test.output.one" {
+                    lang = "one"
+                    data = "OUTPUT 1\n"
+                }
+            }
+        }
+        test "one -> two" {
+            equal {
+                input "testdata/matrix/test.input.one" {
+                    lang = "one"
+                    data = "INPUT 1\n"
+                }
+                output "testdata/matrix/test.output.two" {
+                    lang = "two"
+                    data = "OUTPUT 2\n"
+                }
+            }
+        }
+        test "two -> two" {
+            equal {
+                input "testdata/matrix/test.input.two" {
+                    lang = "two"
+                    data = "INPUT 2\n"
+                }
+                output "testdata/matrix/test.output.two" {
+                    lang = "two"
+                    data = "OUTPUT 2\n"
+                }
+            }
+        }
+    }
+}

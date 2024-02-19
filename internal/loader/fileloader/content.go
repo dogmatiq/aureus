@@ -52,7 +52,7 @@ func LoadContent(name string, f fs.File) (loader.Content, error) {
 
 		return loader.Content{
 			Language: lang,
-			Data:     string(data),
+			Data:     data,
 			Group:    strings.Join(atoms[:i], "."),
 			Role:     role,
 		}, nil

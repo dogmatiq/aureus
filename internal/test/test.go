@@ -3,9 +3,9 @@ package test
 // Test is a (possibly nested) test.
 type Test struct {
 	Name      string
-	Skip      bool      `json:",omitempty"`
-	SubTests  []Test    `json:",omitempty"`
-	Assertion Assertion `json:",omitempty"`
+	Skip      bool
+	SubTests  []Test
+	Assertion Assertion
 }
 
 // New creates a new [Test].

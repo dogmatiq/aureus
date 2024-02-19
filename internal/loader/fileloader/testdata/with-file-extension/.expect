@@ -1,0 +1,14 @@
+test "with-file-extension" {
+    test "test" {
+        equal {
+            input "testdata/with-file-extension/test.input.txt" {
+                lang = "txt"
+                data = "INPUT\n"
+            }
+            output "testdata/with-file-extension/test.output.txt" {
+                lang = "txt"
+                data = "OUTPUT\n"
+            }
+        }
+    }
+}

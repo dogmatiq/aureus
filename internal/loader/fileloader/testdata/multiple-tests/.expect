@@ -1,0 +1,22 @@
+test "multiple-tests" {
+    test "test1" {
+        equal {
+            input "testdata/multiple-tests/test1.input" {
+                data = "INPUT 1\n"
+            }
+            output "testdata/multiple-tests/test1.output" {
+                data = "OUTPUT 1\n"
+            }
+        }
+    }
+    test "test2" {
+        equal {
+            input "testdata/multiple-tests/test2.input" {
+                data = "INPUT 2\n"
+            }
+            output "testdata/multiple-tests/test2.output" {
+                data = "OUTPUT 2\n"
+            }
+        }
+    }
+}

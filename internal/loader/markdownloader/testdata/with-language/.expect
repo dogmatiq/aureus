@@ -1,0 +1,16 @@
+test "with-language" {
+    test "test" {
+        test "grp" {
+            equal {
+                input "testdata/with-language/test.md:1" {
+                    lang = "text"
+                    data = "INPUT\n"
+                }
+                output "testdata/with-language/test.md:5" {
+                    lang = "text"
+                    data = "OUTPUT\n"
+                }
+            }
+        }
+    }
+}

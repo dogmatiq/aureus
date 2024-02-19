@@ -1,0 +1,24 @@
+test "nested-directory" {
+    test "child" {
+        test "test" {
+            equal {
+                input "testdata/nested-directory/child/test.input" {
+                    data = "CHILD INPUT\n"
+                }
+                output "testdata/nested-directory/child/test.output" {
+                    data = "CHILD OUTPUT\n"
+                }
+            }
+        }
+    }
+    test "test" {
+        equal {
+            input "testdata/nested-directory/test.input" {
+                data = "INPUT\n"
+            }
+            output "testdata/nested-directory/test.output" {
+                data = "OUTPUT\n"
+            }
+        }
+    }
+}

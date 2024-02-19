@@ -38,9 +38,8 @@ type Content struct {
 	// loader-specific information about the data.
 	Attributes map[string]string
 
-	// Data is the content itself. It is always considered to be human-readable
-	// text, such as source code.
-	Data string
+	// Data is the content itself.
+	Data []byte
 }
 
 // ContentEnvelope is a container for [Content] and meta-data about how it was

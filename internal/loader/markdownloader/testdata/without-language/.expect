@@ -1,0 +1,14 @@
+test "without-language" {
+    test "test" {
+        test "grp" {
+            equal {
+                input "testdata/without-language/test.md:1" {
+                    data = "INPUT\n"
+                }
+                output "testdata/without-language/test.md:5" {
+                    data = "OUTPUT\n"
+                }
+            }
+        }
+    }
+}

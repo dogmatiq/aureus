@@ -2,7 +2,6 @@ package loadertest
 
 import (
 	"bytes"
-	"encoding/json"
 	"os"
 	"path/filepath"
 	"strings"
@@ -34,26 +33,22 @@ func Run[O any](
 		dir := filepath.Join("testdata", e.Name())
 
 		t.Run(e.Name(), func(t *testing.T) {
-			var buf bytes.Buffer
-			enc := json.NewEncoder(&buf)
-			enc.SetEscapeHTML(false)
-			enc.SetIndent("", "  ")
-
+			var actual []byte
 			test, err := load(dir)
 			if err != nil {
-				enc.Encode(struct{ Error string }{err.Error()})
-			} else if err := enc.Encode(test); err != nil {
-				t.Fatal(err)
+				actual = []byte(err.Error())
+			} else {
+				actual = RenderTest(test)
 			}
 
-			expectFile := filepath.Join(dir, ".expect.json")
+			expectFile := filepath.Join(dir, ".expect")
 			expect, err := os.ReadFile(expectFile)
 			if err != nil {
 				t.Fatal(err)
 			}
 
 			expect = bytes.TrimSpace(expect)
-			actual := bytes.TrimSpace(buf.Bytes())
+			actual = bytes.TrimSpace(actual)
 
 			if d := diff.Diff(
 				expectFile, expect,

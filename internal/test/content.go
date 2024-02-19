@@ -5,9 +5,8 @@ type Content struct {
 	// ContentMetaData is additional information about the content.
 	ContentMetaData
 
-	// Data is the content itself. It is always considered to be human-readable
-	// text, such as source code.
-	Data string
+	// Data is the content itself.
+	Data []byte
 }
 
 // ContentMetaData contains information about input or output content.
@@ -17,12 +16,13 @@ type ContentMetaData struct {
 
 	// Line is the line number within the file where the content begins, or 0 if
 	// the content represents the entire file.
-	Line int `json:",omitempty"`
+	Line int
+
 	// Language is the language of the content, if known, e.g. "json", "yaml",
 	// etc. Content with an empty language is treated as plain text.
-	Language string `json:",omitempty"`
+	Language string
 
 	// Attributes is a set of key-value pairs that provide additional
 	// loader-specific information about the data.
-	Attributes map[string]string `json:",omitempty"`
+	Attributes map[string]string
 }

@@ -63,7 +63,7 @@ func LoadContent(info, code string) (loader.Content, bool, error) {
 		Group:      group,
 		Language:   lang,
 		Attributes: attrs,
-		Data:       code,
+		Data:       []byte(code),
 	}
 
 	if isInput {

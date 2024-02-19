@@ -1,0 +1,12 @@
+test "without-file-extension" {
+    test "test" {
+        equal {
+            input "testdata/without-file-extension/test.input" {
+                data = "INPUT\n"
+            }
+            output "testdata/without-file-extension/test.output" {
+                data = "OUTPUT\n"
+            }
+        }
+    }
+}
