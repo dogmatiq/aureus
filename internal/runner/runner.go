@@ -82,8 +82,8 @@ func (x assertionExecutor[T]) VisitEqualAssertion(a test.EqualAssertion) {
 		m.WriteString("--- OUTPUT (error) ---\n")
 		m.WriteString(err.Error())
 	} else if d := diff.Diff(
-		"want", a.Output.Data,
-		"got", output.Bytes(),
+		a.Output.File, a.Output.Data,
+		"generated-output", output.Bytes(),
 	); d != nil {
 		x.TestingT.Fail()
 		m.WriteString("--- OUTPUT (-want +got) ---\n")
