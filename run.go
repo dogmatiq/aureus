@@ -62,8 +62,8 @@ func Run[T runner.TestingT[T]](t T, g OutputGenerator[T], options ...RunOption) 
 			w io.Writer,
 			in test.Content,
 			out test.ContentMetaData,
-		) error {
-			return g(
+		) {
+			g(
 				t,
 				&input{
 					Reader: bytes.NewReader(in.Data),

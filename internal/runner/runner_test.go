@@ -15,35 +15,53 @@ func TestRunner(t *testing.T) {
 
 	// expected to pass
 	{
-		test, err := loader.Load("testdata/pass")
+		tst, err := loader.Load("testdata/pass")
 		if err != nil {
 			t.Fatal(err)
 		}
 
 		runner := &Runner[*testing.T]{
-			GenerateOutput: formatJSON[*testing.T],
+			GenerateOutput: func(
+				t *testing.T,
+				w io.Writer,
+				in test.Content,
+				out test.ContentMetaData,
+			) {
+				if err := prettyPrint(w, in, out); err != nil {
+					t.Fatal(err)
+				}
+			},
 		}
 
-		runner.Run(t, test)
+		runner.Run(t, tst)
 	}
 
 	// expected to fail
 	{
-		test, err := loader.Load("testdata/fail")
+		tst, err := loader.Load("testdata/fail")
 		if err != nil {
 			t.Fatal(err)
 		}
 
 		runner := &Runner[*testingT]{
-			GenerateOutput: formatJSON[*testingT],
+			GenerateOutput: func(
+				t *testingT,
+				w io.Writer,
+				in test.Content,
+				out test.ContentMetaData,
+			) {
+				if err := prettyPrint(w, in, out); err != nil {
+					t.Fatal(err)
+				}
+			},
 		}
 
 		x := &testingT{T: t}
-		runner.Run(x, test)
+		runner.Run(x, tst)
 
 		for _, leaf := range x.leaves() {
 			if !leaf.Failed {
-				t.Errorf("expected %q to fail", leaf.Name())
+				x.Errorf("expected %q to fail", leaf.Name())
 			}
 		}
 	}
@@ -88,8 +106,7 @@ func (t *testingT) leaves() []*testingT {
 	return leaves
 }
 
-func formatJSON[T any](
-	_ T,
+func prettyPrint(
 	w io.Writer,
 	in test.Content,
 	out test.ContentMetaData,

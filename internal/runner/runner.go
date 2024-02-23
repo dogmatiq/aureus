@@ -27,7 +27,7 @@ type OutputGenerator[T any] func(
 	w io.Writer,
 	in test.Content,
 	out test.ContentMetaData,
-) error
+)
 
 // Run makes the assertions described by all documents within a [TestSuite].
 func (r *Runner[T]) Run(t T, x test.Test) {
@@ -79,7 +79,7 @@ func (x assertionExecutor[T]) VisitEqualAssertion(a test.EqualAssertion) {
 	m.Write(a.Input.Data)
 
 	output := &bytes.Buffer{}
-	err := x.GenerateOutput(
+	x.GenerateOutput(
 		x.TestingT,
 		output,
 		a.Input,
@@ -94,11 +94,7 @@ func (x assertionExecutor[T]) VisitEqualAssertion(a test.EqualAssertion) {
 		got = append(bytes.TrimSpace(got), '\n')
 	}
 
-	if err != nil {
-		x.TestingT.Fail()
-		m.WriteString("=== OUTPUT (error) ===\n")
-		m.WriteString(err.Error())
-	} else if d := diff.Diff(
+	if d := diff.Diff(
 		"want:"+a.Output.File, want,
 		"got", got,
 	); d != nil {
