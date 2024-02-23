@@ -13,25 +13,6 @@ import (
 func TestRunner(t *testing.T) {
 	loader := fileloader.NewLoader()
 
-	formatJSON := func(
-		w io.Writer,
-		in test.Content,
-		out test.ContentMetaData,
-	) error {
-		if len(in.Data) == 0 {
-			return nil
-		}
-
-		var v any
-		if err := json.Unmarshal(in.Data, &v); err != nil {
-			return err
-		}
-
-		enc := json.NewEncoder(w)
-		enc.SetIndent("", "  ")
-		return enc.Encode(v)
-	}
-
 	// expected to pass
 	{
 		test, err := loader.Load("testdata/pass")
@@ -40,7 +21,7 @@ func TestRunner(t *testing.T) {
 		}
 
 		runner := &Runner[*testing.T]{
-			GenerateOutput: formatJSON,
+			GenerateOutput: formatJSON[*testing.T],
 		}
 
 		runner.Run(t, test)
@@ -54,7 +35,7 @@ func TestRunner(t *testing.T) {
 		}
 
 		runner := &Runner[*testingT]{
-			GenerateOutput: formatJSON,
+			GenerateOutput: formatJSON[*testingT],
 		}
 
 		x := &testingT{T: t}
@@ -105,4 +86,24 @@ func (t *testingT) leaves() []*testingT {
 	}
 
 	return leaves
+}
+
+func formatJSON[T any](
+	_ T,
+	w io.Writer,
+	in test.Content,
+	out test.ContentMetaData,
+) error {
+	if len(in.Data) == 0 {
+		return nil
+	}
+
+	var v any
+	if err := json.Unmarshal(in.Data, &v); err != nil {
+		return err
+	}
+
+	enc := json.NewEncoder(w)
+	enc.SetIndent("", "  ")
+	return enc.Encode(v)
 }

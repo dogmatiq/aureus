@@ -13,7 +13,7 @@ import (
 // Runner executes tests under any test framework with an interface similar to
 // Go's native [*testing.T].
 type Runner[T TestingT[T]] struct {
-	GenerateOutput OutputGenerator
+	GenerateOutput OutputGenerator[T]
 	TrimSpace      bool
 }
 
@@ -22,7 +22,8 @@ type Runner[T TestingT[T]] struct {
 // in is the input data for the test case. out is meta-data about the expected
 // output, which may be used to influence the kind of output that the generator
 // writes to w.
-type OutputGenerator func(
+type OutputGenerator[T any] func(
+	t T,
 	w io.Writer,
 	in test.Content,
 	out test.ContentMetaData,
@@ -63,7 +64,7 @@ func (r *Runner[T]) Run(t T, x test.Test) {
 // assertionExecutor is an impelmentation of [test.AssertionVisitor] that
 // performs assertions within the context of a test.
 type assertionExecutor[T TestingT[T]] struct {
-	GenerateOutput OutputGenerator
+	GenerateOutput OutputGenerator[T]
 	TrimSpace      bool
 	TestingT       T
 }
@@ -79,6 +80,7 @@ func (x assertionExecutor[T]) VisitEqualAssertion(a test.EqualAssertion) {
 
 	output := &bytes.Buffer{}
 	err := x.GenerateOutput(
+		x.TestingT,
 		output,
 		a.Input,
 		a.Output.ContentMetaData,

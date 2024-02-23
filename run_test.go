@@ -9,6 +9,7 @@ import (
 )
 
 func prettyPrint(
+	_ *testing.T,
 	in aureus.Input,
 	out aureus.Output,
 ) error {

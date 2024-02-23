@@ -5,7 +5,7 @@ import (
 )
 
 // OutputGenerator produces the output of a specific test.
-type OutputGenerator func(Input, Output) error
+type OutputGenerator[T TestingT[T]] func(T, Input, Output) error
 
 // Input is an interface for the input to a test.
 type Input interface {
