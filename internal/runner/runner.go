@@ -70,15 +70,25 @@ type assertionExecutor[T TestingT[T]] struct {
 	TestingT       T
 }
 
+func (x assertionExecutor[T]) sanitize(data []byte) []byte {
+	if x.TrimSpace {
+		data = slices.Clone(data)
+		return append(bytes.TrimSpace(data), '\n')
+	}
+	return data
+}
+
 func (x assertionExecutor[T]) VisitEqualAssertion(a test.EqualAssertion) {
 	x.TestingT.Helper()
 
 	var m strings.Builder
 
-	m.WriteString("=== INPUT ")
+	input := x.sanitize(a.Input.Data)
+
+	m.WriteString("=== INPUT (")
 	m.WriteString(location(a.Input))
-	m.WriteString(" ===\n")
-	m.Write(a.Input.Data)
+	m.WriteString(") ===\n")
+	m.Write(input)
 	x.TestingT.Log(m.String())
 	m.Reset()
 
@@ -90,23 +100,18 @@ func (x assertionExecutor[T]) VisitEqualAssertion(a test.EqualAssertion) {
 		a.Output.ContentMetaData,
 	)
 
-	want := slices.Clone(a.Output.Data)
-	got := output.Bytes()
-
-	if x.TrimSpace {
-		want = append(bytes.TrimSpace(want), '\n')
-		got = append(bytes.TrimSpace(got), '\n')
-	}
+	want := x.sanitize(a.Output.Data)
+	got := x.sanitize(output.Bytes())
 
 	if d := diff.Diff(
-		"want:"+location(a.Output), want,
-		"got", got,
+		location(a.Output), want,
+		"generated-output", got,
 	); d != nil {
 		x.TestingT.Fail()
 		m.WriteString("=== OUTPUT (-want +got) ===\n")
 		m.Write(d)
 	} else {
-		m.WriteString("=== OUTPUT ")
+		m.WriteString("=== OUTPUT (")
 		m.WriteString(location(a.Input))
 		m.WriteString(" ===\n")
 		output.WriteTo(&m)
