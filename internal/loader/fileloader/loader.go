@@ -63,14 +63,13 @@ func (l *Loader) Load(dir string, options ...LoadOption) (test.Test, error) {
 				return err
 			}
 
-			builder.AddContent(
+			return builder.AddContent(
 				loader.ContentEnvelope{
 					File:    filePath,
 					Skip:    skip,
 					Content: c,
 				},
 			)
-			return nil
 		},
 	)
 }

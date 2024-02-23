@@ -124,7 +124,7 @@ func loadBlock(
 		return err
 	}
 
-	builder.AddContent(
+	return builder.AddContent(
 		loader.ContentEnvelope{
 			File:    filePath,
 			Line:    lineNumberOf(block, source),
@@ -132,6 +132,4 @@ func loadBlock(
 			Content: c,
 		},
 	)
-
-	return nil
 }
