@@ -1,6 +1,7 @@
 package aureus
 
 import (
+	"bytes"
 	"io"
 
 	"github.com/dogmatiq/aureus/internal/loader/fileloader"
@@ -9,32 +10,24 @@ import (
 	"github.com/dogmatiq/aureus/internal/test"
 )
 
-// OutputGenerator produced output for a test case's input.
-//
-// in is the input data for the test case. out is meta-data about the expected
-// output, which may be used to influence the kind of output that the generator
-// writes to w.
-type OutputGenerator func(
-	w io.Writer,
-	in Content,
-	out ContentMetaData,
-) error
+// TestingT is a constraint for the subset of [testing.T] that is used by Aureus
+// to execute tests.
+type TestingT[T any] interface {
+	Helper()
+	Run(string, func(T)) bool
+	Log(...any)
+	SkipNow()
+	Fail()
+}
 
-type (
-	// Content is data used as input or output in tests.
-	Content = test.Content
-	// ContentMetaData contains information about input or output content.
-	ContentMetaData = test.ContentMetaData
-)
-
-// Run searches a directory for "golden" tests and executes them as
-// sub-tests of t.
+// Run searches a directory for tests and executes them as sub-tests of t.
 //
-// By default is searches the ./testdata directory for test cases. This can be
-// changed using the [WithDir] option.
+// By default it searches the ./testdata directory; use [WithDir] to search a
+// different directory.
 //
-// g is a function that generates output from input values. It is called for
-// each test case. If the output it produces does not match the expected output.
+// g is an [OutputGenerator] that produces output from input values for each
+// test. If the output produced by g does not match the test's expected output
+// the test fails.
 func Run[T runner.TestingT[T]](t T, g OutputGenerator, options ...RunOption) {
 	t.Helper()
 
@@ -49,7 +42,7 @@ func Run[T runner.TestingT[T]](t T, g OutputGenerator, options ...RunOption) {
 	fileLoader := fileloader.NewLoader(fileloader.WithRecursion(opts.Recursive))
 	fileTests, err := fileLoader.Load(opts.Dir)
 	if err != nil {
-		t.Log("failed to load test cases:", err)
+		t.Log("failed to load tests:", err)
 		t.Fail()
 		return
 	}
@@ -57,13 +50,26 @@ func Run[T runner.TestingT[T]](t T, g OutputGenerator, options ...RunOption) {
 	markdownLoader := markdownloader.NewLoader(markdownloader.WithRecursion(opts.Recursive))
 	markdownTests, err := markdownLoader.Load(opts.Dir)
 	if err != nil {
-		t.Log("failed to load test cases:", err)
+		t.Log("failed to load tests:", err)
 		t.Fail()
 		return
 	}
 
 	r := runner.Runner[T]{
-		GenerateOutput: (runner.OutputGenerator)(g),
+		GenerateOutput: func(w io.Writer, in test.Content, out test.ContentMetaData) error {
+			return g(
+				&input{
+					Reader: bytes.NewReader(in.Data),
+					lang:   in.Language,
+					attrs:  in.Attributes,
+				},
+				&output{
+					Writer: w,
+					lang:   out.Language,
+					attrs:  out.Attributes,
+				},
+			)
+		},
 	}
 	r.Run(t, fileTests)
 	r.Run(t, markdownTests)
@@ -77,8 +83,8 @@ type runOptions struct {
 	Recursive bool
 }
 
-// WithDir is a [RunOption] that sets the directory to search for test cases.
-// By default the ./testdata directory is used.
+// WithDir is a [RunOption] that sets the directory to search for tests. By
+// default the ./testdata directory is used.
 func WithDir(dir string) RunOption {
 	return func(o *runOptions) {
 		o.Dir = dir
