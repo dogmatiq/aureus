@@ -3,6 +3,7 @@ package runner
 import (
 	"bytes"
 	"io"
+	"slices"
 	"strings"
 
 	"github.com/dogmatiq/aureus/internal/diff"
@@ -83,12 +84,12 @@ func (x assertionExecutor[T]) VisitEqualAssertion(a test.EqualAssertion) {
 		a.Output.ContentMetaData,
 	)
 
-	want := a.Output.Data
+	want := slices.Clone(a.Output.Data)
 	got := output.Bytes()
 
 	if x.TrimSpace {
-		want = bytes.TrimSpace(want)
-		got = bytes.TrimSpace(got)
+		want = append(bytes.TrimSpace(want), '\n')
+		got = append(bytes.TrimSpace(got), '\n')
 	}
 
 	if err != nil {
