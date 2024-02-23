@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"fmt"
 	"io"
+	"os"
 	"slices"
 	"strings"
 
@@ -51,9 +52,9 @@ func (r *Runner[T]) Run(t T, x test.Test) {
 			if x.Assertion != nil {
 				x.Assertion.AcceptVisitor(
 					assertionExecutor[T]{
+						t,
 						r.GenerateOutput,
 						r.TrimSpace,
-						t,
 					},
 					test.WithT(t),
 				)
@@ -65,28 +66,18 @@ func (r *Runner[T]) Run(t T, x test.Test) {
 // assertionExecutor is an impelmentation of [test.AssertionVisitor] that
 // performs assertions within the context of a test.
 type assertionExecutor[T TestingT[T]] struct {
+	TestingT       T
 	GenerateOutput OutputGenerator[T]
 	TrimSpace      bool
-	TestingT       T
-}
-
-func (x assertionExecutor[T]) sanitize(data []byte) []byte {
-	if x.TrimSpace {
-		data = slices.Clone(data)
-		return append(bytes.TrimSpace(data), '\n')
-	}
-	return data
 }
 
 func (x assertionExecutor[T]) VisitEqualAssertion(a test.EqualAssertion) {
 	x.TestingT.Helper()
 
-	input := x.sanitize(a.Input.Data)
+	x.log("=== BEGIN INPUT (%s) ===", location(a.Input))
+	x.log("%s", string(x.sanitizeForLog(a.Input.Data)))
+	x.log("=== END INPUT ===")
 
-	x.log("=== INPUT (%s) ===", location(a.Input))
-	x.log("%s", string(input))
-
-	x.log("=== GENERATING OUTPUT ===")
 	output := &bytes.Buffer{}
 	x.GenerateOutput(
 		x.TestingT,
@@ -95,19 +86,33 @@ func (x assertionExecutor[T]) VisitEqualAssertion(a test.EqualAssertion) {
 		a.Output.ContentMetaData,
 	)
 
-	want := x.sanitize(a.Output.Data)
-	got := x.sanitize(output.Bytes())
+	f, err := os.CreateTemp("", "aureus-")
+	if err != nil {
+		x.TestingT.Log("failed to create temporary file:", err)
+		x.TestingT.Fail()
+		return
+	}
+	defer f.Close()
 
 	if d := diff.Diff(
-		location(a.Output), want,
-		"generated-output", got,
+		location(a.Output), x.sanitizeForDiff(a.Output.Data),
+		f.Name(), x.sanitizeForDiff(output.Bytes()),
 	); d != nil {
 		x.TestingT.Fail()
-		x.log("=== OUTPUT (-want +got) ===")
+		x.log("=== BEGIN OUTPUT DIFF (-want +got) ===")
 		x.log("%s", d)
+		x.log("=== END OUTPUT DIFF ===")
+
+		if _, err := f.Write(a.Output.Data); err != nil {
+			x.TestingT.Log("unable to write output to temporary file:", err)
+			os.Remove(f.Name())
+			return
+		}
 	} else {
-		x.log("=== OUTPUT (%s) ===", location(a.Output))
-		x.log("%s", string(got))
+		os.Remove(f.Name())
+		x.log("=== BEGIN OUTPUT (%s) ===", location(a.Output))
+		x.log("%s", x.sanitizeForLog(a.Output.Data))
+		x.log("=== END OUTPUT ===")
 	}
 }
 
@@ -122,6 +127,22 @@ func (x assertionExecutor[T]) log(format string, args ...any) {
 	for _, l := range lines {
 		x.TestingT.Log(l)
 	}
+}
+
+func (x assertionExecutor[T]) sanitizeForLog(data []byte) []byte {
+	if x.TrimSpace {
+		return bytes.TrimSpace(data)
+	}
+	return data
+}
+
+func (x assertionExecutor[T]) sanitizeForDiff(data []byte) []byte {
+	if x.TrimSpace {
+		data = slices.Clone(data)
+		data = bytes.TrimSpace(data)
+		return append(data, '\n')
+	}
+	return slices.Clone(data)
 }
 
 func location(c test.Content) string {
