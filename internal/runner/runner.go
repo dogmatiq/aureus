@@ -81,17 +81,12 @@ func (x assertionExecutor[T]) sanitize(data []byte) []byte {
 func (x assertionExecutor[T]) VisitEqualAssertion(a test.EqualAssertion) {
 	x.TestingT.Helper()
 
-	var m strings.Builder
-
 	input := x.sanitize(a.Input.Data)
 
-	m.WriteString("=== INPUT (")
-	m.WriteString(location(a.Input))
-	m.WriteString(") ===\n")
-	m.Write(input)
-	x.TestingT.Log(m.String())
-	m.Reset()
+	x.log("=== INPUT (%s) ===", location(a.Input))
+	x.log("%s", string(input))
 
+	x.log("=== GENERATING OUTPUT ===")
 	output := &bytes.Buffer{}
 	x.GenerateOutput(
 		x.TestingT,
@@ -108,16 +103,25 @@ func (x assertionExecutor[T]) VisitEqualAssertion(a test.EqualAssertion) {
 		"generated-output", got,
 	); d != nil {
 		x.TestingT.Fail()
-		m.WriteString("=== OUTPUT (-want +got) ===\n")
-		m.Write(d)
+		x.log("=== OUTPUT (-want +got) ===")
+		x.log("%s", d)
 	} else {
-		m.WriteString("=== OUTPUT (")
-		m.WriteString(location(a.Input))
-		m.WriteString(" ===\n")
-		output.WriteTo(&m)
+		x.log("=== OUTPUT (%s) ===", location(a.Output))
+		x.log("%s", string(got))
 	}
+}
 
-	x.TestingT.Log(m.String())
+func (x assertionExecutor[T]) log(format string, args ...any) {
+	x.TestingT.Helper()
+
+	lines := strings.Split(
+		fmt.Sprintf(format, args...),
+		"\n",
+	)
+
+	for _, l := range lines {
+		x.TestingT.Log(l)
+	}
 }
 
 func location(c test.Content) string {
