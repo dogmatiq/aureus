@@ -67,7 +67,7 @@ func (x assertionExecutor[T]) VisitEqualAssertion(a test.EqualAssertion) {
 	var m strings.Builder
 
 	m.WriteString("\n")
-	m.WriteString("--- INPUT ---\n")
+	m.WriteString("=== INPUT ===\n")
 	m.Write(a.Input.Data)
 
 	output := &bytes.Buffer{}
@@ -79,17 +79,17 @@ func (x assertionExecutor[T]) VisitEqualAssertion(a test.EqualAssertion) {
 
 	if err != nil {
 		x.TestingT.Fail()
-		m.WriteString("--- OUTPUT (error) ---\n")
+		m.WriteString("=== OUTPUT (error) ===\n")
 		m.WriteString(err.Error())
 	} else if d := diff.Diff(
 		a.Output.File, a.Output.Data,
 		"generated-output", output.Bytes(),
 	); d != nil {
 		x.TestingT.Fail()
-		m.WriteString("--- OUTPUT (-want +got) ---\n")
+		m.WriteString("=== OUTPUT (-want +got) ===\n")
 		m.Write(d)
 	} else {
-		m.WriteString("--- OUTPUT ---\n")
+		m.WriteString("=== OUTPUT ===\n")
 		output.WriteTo(&m)
 	}
 

@@ -54,7 +54,6 @@ func Diff(oldName string, old []byte, newName string, new []byte) []byte {
 
 	// Print diff header.
 	var out bytes.Buffer
-	fmt.Fprintf(&out, "diff %s %s\n", oldName, newName)
 	fmt.Fprintf(&out, "--- %s\n", oldName)
 	fmt.Fprintf(&out, "+++ %s\n", newName)
 
