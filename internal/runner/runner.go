@@ -2,6 +2,7 @@ package runner
 
 import (
 	"bytes"
+	"fmt"
 	"io"
 	"slices"
 	"strings"
@@ -74,9 +75,12 @@ func (x assertionExecutor[T]) VisitEqualAssertion(a test.EqualAssertion) {
 
 	var m strings.Builder
 
-	m.WriteString("\n")
-	m.WriteString("=== INPUT ===\n")
+	m.WriteString("=== INPUT ")
+	m.WriteString(location(a.Input))
+	m.WriteString(" ===\n")
 	m.Write(a.Input.Data)
+	x.TestingT.Log(m.String())
+	m.Reset()
 
 	output := &bytes.Buffer{}
 	x.GenerateOutput(
@@ -95,16 +99,25 @@ func (x assertionExecutor[T]) VisitEqualAssertion(a test.EqualAssertion) {
 	}
 
 	if d := diff.Diff(
-		"want:"+a.Output.File, want,
+		"want:"+location(a.Output), want,
 		"got", got,
 	); d != nil {
 		x.TestingT.Fail()
 		m.WriteString("=== OUTPUT (-want +got) ===\n")
 		m.Write(d)
 	} else {
-		m.WriteString("=== OUTPUT ===\n")
+		m.WriteString("=== OUTPUT ")
+		m.WriteString(location(a.Input))
+		m.WriteString(" ===\n")
 		output.WriteTo(&m)
 	}
 
 	x.TestingT.Log(m.String())
+}
+
+func location(c test.Content) string {
+	if c.Line == 0 {
+		return c.File
+	}
+	return fmt.Sprintf("%s:%d", c.File, c.Line)
 }
