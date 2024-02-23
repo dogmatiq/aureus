@@ -13,6 +13,7 @@ import (
 // Go's native [*testing.T].
 type Runner[T TestingT[T]] struct {
 	GenerateOutput OutputGenerator
+	TrimSpace      bool
 }
 
 // OutputGenerator produced output for a test case's input.
@@ -46,7 +47,11 @@ func (r *Runner[T]) Run(t T, x test.Test) {
 
 			if x.Assertion != nil {
 				x.Assertion.AcceptVisitor(
-					assertionExecutor[T]{r.GenerateOutput, t},
+					assertionExecutor[T]{
+						r.GenerateOutput,
+						r.TrimSpace,
+						t,
+					},
 					test.WithT(t),
 				)
 			}
@@ -58,6 +63,7 @@ func (r *Runner[T]) Run(t T, x test.Test) {
 // performs assertions within the context of a test.
 type assertionExecutor[T TestingT[T]] struct {
 	GenerateOutput OutputGenerator
+	TrimSpace      bool
 	TestingT       T
 }
 
@@ -77,13 +83,21 @@ func (x assertionExecutor[T]) VisitEqualAssertion(a test.EqualAssertion) {
 		a.Output.ContentMetaData,
 	)
 
+	want := a.Output.Data
+	got := output.Bytes()
+
+	if x.TrimSpace {
+		want = bytes.TrimSpace(want)
+		got = bytes.TrimSpace(got)
+	}
+
 	if err != nil {
 		x.TestingT.Fail()
 		m.WriteString("=== OUTPUT (error) ===\n")
 		m.WriteString(err.Error())
 	} else if d := diff.Diff(
-		a.Output.File, a.Output.Data,
-		"generated-output", output.Bytes(),
+		"want:"+a.Output.File, want,
+		"got", got,
 	); d != nil {
 		x.TestingT.Fail()
 		m.WriteString("=== OUTPUT (-want +got) ===\n")

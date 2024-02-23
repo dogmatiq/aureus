@@ -18,7 +18,6 @@ y
 z
 e
 -- diff --
-diff old new
 --- old
 +++ new
 @@ -1,7 +1,7 @@

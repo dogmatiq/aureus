@@ -22,7 +22,6 @@ eleven
 9
 10
 -- diff --
-diff old new
 --- old
 +++ new
 @@ -5,7 +5,6 @@

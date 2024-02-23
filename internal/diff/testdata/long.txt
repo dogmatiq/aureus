@@ -39,7 +39,6 @@
 19
 20
 -- diff --
-diff old new
 --- old
 +++ new
 @@ -4,7 +4,6 @@

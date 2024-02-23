@@ -35,7 +35,7 @@ func TestRun_readme(t *testing.T) {
 	aureus.Run(
 		t,
 		prettyPrint,
-		aureus.WithDir("."),
-		aureus.WithRecursion(false),
+		aureus.FromDir("."),
+		aureus.Recursive(false),
 	)
 }

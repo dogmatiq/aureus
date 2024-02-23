@@ -22,8 +22,8 @@ type TestingT[T any] interface {
 
 // Run searches a directory for tests and executes them as sub-tests of t.
 //
-// By default it searches the ./testdata directory; use [WithDir] to search a
-// different directory.
+// By default it searches the ./testdata directory; use the [FromDir] option to
+// search a different directory.
 //
 // g is an [OutputGenerator] that produces output from input values for each
 // test. If the output produced by g does not match the test's expected output
@@ -34,6 +34,7 @@ func Run[T runner.TestingT[T]](t T, g OutputGenerator, options ...RunOption) {
 	opts := runOptions{
 		Dir:       "./testdata",
 		Recursive: true,
+		TrimSpace: true,
 	}
 	for _, opt := range options {
 		opt(&opts)
@@ -70,6 +71,7 @@ func Run[T runner.TestingT[T]](t T, g OutputGenerator, options ...RunOption) {
 				},
 			)
 		},
+		TrimSpace: opts.TrimSpace,
 	}
 	r.Run(t, fileTests)
 	r.Run(t, markdownTests)
@@ -81,20 +83,29 @@ type RunOption func(*runOptions)
 type runOptions struct {
 	Dir       string
 	Recursive bool
+	TrimSpace bool
 }
 
-// WithDir is a [RunOption] that sets the directory to search for tests. By
+// FromDir is a [RunOption] that sets the directory to search for tests. By
 // default the ./testdata directory is used.
-func WithDir(dir string) RunOption {
+func FromDir(dir string) RunOption {
 	return func(o *runOptions) {
 		o.Dir = dir
 	}
 }
 
-// WithRecursion is a [RunOption] that enables or disables recursion when
-// searching for test cases. By default recursion is enabled.
-func WithRecursion(on bool) RunOption {
+// Recursive is a [RunOption] that enables or disables recursion when searching
+// for test cases. By default recursion is enabled.
+func Recursive(on bool) RunOption {
 	return func(o *runOptions) {
 		o.Recursive = on
+	}
+}
+
+// TrimSpace is a [RunOption] that enables or disables trimming of leading and
+// trailing whitespace from test outputs. By default trimming is enabled.
+func TrimSpace(on bool) RunOption {
+	return func(o *runOptions) {
+		o.TrimSpace = on
 	}
 }

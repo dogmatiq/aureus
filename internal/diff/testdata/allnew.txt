@@ -4,7 +4,6 @@ a
 b
 c
 -- diff --
-diff old new
 --- old
 +++ new
 @@ -0,0 +1,3 @@

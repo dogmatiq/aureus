@@ -21,7 +21,6 @@ a
 b
 c
 -- diff --
-diff old new
 --- old
 +++ new
 @@ -1,7 +1,6 @@
