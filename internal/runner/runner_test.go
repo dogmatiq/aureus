@@ -22,14 +22,12 @@ func TestRunner(t *testing.T) {
 
 		runner := &Runner[*testing.T]{
 			GenerateOutput: func(
-				t *testing.T,
+				_ *testing.T,
 				w io.Writer,
 				in test.Content,
 				out test.ContentMetaData,
-			) {
-				if err := prettyPrint(w, in, out); err != nil {
-					t.Fatal(err)
-				}
+			) error {
+				return prettyPrint(w, in, out)
 			},
 		}
 
@@ -45,14 +43,12 @@ func TestRunner(t *testing.T) {
 
 		runner := &Runner[*testingT]{
 			GenerateOutput: func(
-				t *testingT,
+				_ *testingT,
 				w io.Writer,
 				in test.Content,
 				out test.ContentMetaData,
-			) {
-				if err := prettyPrint(w, in, out); err != nil {
-					t.Fatal(err)
-				}
+			) error {
+				return prettyPrint(w, in, out)
 			},
 		}
 
@@ -60,7 +56,7 @@ func TestRunner(t *testing.T) {
 		runner.Run(x, tst)
 
 		for _, leaf := range x.leaves() {
-			if !leaf.Failed {
+			if !leaf.Failed() {
 				x.Errorf("expected %q to fail", leaf.Name())
 			}
 		}
@@ -70,7 +66,7 @@ func TestRunner(t *testing.T) {
 type testingT struct {
 	*testing.T
 	Children []*testingT
-	Failed   bool
+	failed   bool
 }
 
 func (t *testingT) Run(name string, fn func(*testingT)) bool {
@@ -89,7 +85,11 @@ func (t *testingT) Run(name string, fn func(*testingT)) bool {
 }
 
 func (t *testingT) Fail() {
-	t.Failed = true
+	t.failed = true
+}
+
+func (t *testingT) Failed() bool {
+	return t.failed
 }
 
 func (t *testingT) leaves() []*testingT {

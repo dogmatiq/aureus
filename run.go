@@ -62,7 +62,7 @@ func Run[T runner.TestingT[T]](t T, g OutputGenerator[T], options ...RunOption) 
 			w io.Writer,
 			in test.Content,
 			out test.ContentMetaData,
-		) {
+		) error {
 			g(
 				t,
 				&input{
@@ -76,6 +76,7 @@ func Run[T runner.TestingT[T]](t T, g OutputGenerator[T], options ...RunOption) 
 					attrs:  out.Attributes,
 				},
 			)
+			return nil
 		},
 		TrimSpace: opts.TrimSpace,
 	}
