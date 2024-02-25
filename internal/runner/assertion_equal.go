@@ -14,7 +14,7 @@ func (x *assertionExecutor[T]) VisitEqualAssertion(a test.EqualAssertion) {
 
 	f, err := x.generateOutput(a.Input, a.Output)
 	if err != nil {
-		x.TestingT.Log("unable to generate output:", err)
+		x.TestingT.Log(err)
 		x.TestingT.Fail()
 		return
 	}

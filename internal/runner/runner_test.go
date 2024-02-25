@@ -7,7 +7,6 @@ import (
 
 	"github.com/dogmatiq/aureus/internal/loader/fileloader"
 	. "github.com/dogmatiq/aureus/internal/runner"
-	"github.com/dogmatiq/aureus/internal/test"
 )
 
 func TestRunner(t *testing.T) {
@@ -21,14 +20,7 @@ func TestRunner(t *testing.T) {
 		}
 
 		runner := &Runner[*testing.T]{
-			GenerateOutput: func(
-				_ *testing.T,
-				w io.Writer,
-				in test.Content,
-				out test.ContentMetaData,
-			) error {
-				return prettyPrint(w, in, out)
-			},
+			GenerateOutput: prettyPrint[*testing.T],
 		}
 
 		runner.Run(t, tst)
@@ -42,14 +34,7 @@ func TestRunner(t *testing.T) {
 		}
 
 		runner := &Runner[*testingT]{
-			GenerateOutput: func(
-				_ *testingT,
-				w io.Writer,
-				in test.Content,
-				out test.ContentMetaData,
-			) error {
-				return prettyPrint(w, in, out)
-			},
+			GenerateOutput: prettyPrint[*testingT],
 		}
 
 		x := &testingT{T: t}
@@ -106,21 +91,17 @@ func (t *testingT) leaves() []*testingT {
 	return leaves
 }
 
-func prettyPrint(
-	w io.Writer,
-	in test.Content,
-	out test.ContentMetaData,
-) error {
-	if len(in.Data) == 0 {
-		return nil
-	}
-
+func prettyPrint[T any](_ T, in Input, out Output) error {
 	var v any
-	if err := json.Unmarshal(in.Data, &v); err != nil {
+	dec := json.NewDecoder(in)
+	if err := dec.Decode(&v); err != nil {
+		if err == io.EOF { // handle "empty" test
+			return nil
+		}
 		return err
 	}
 
-	enc := json.NewEncoder(w)
+	enc := json.NewEncoder(out)
 	enc.SetIndent("", "  ")
 	return enc.Encode(v)
 }

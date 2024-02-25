@@ -23,7 +23,7 @@ type assertionExecutor[T TestingT[T]] struct {
 	Runner   *Runner[T]
 }
 
-func (x *assertionExecutor[T]) generateOutput(input, output test.Content) (_ *os.File, err error) {
+func (x *assertionExecutor[T]) generateOutput(in, out test.Content) (_ *os.File, err error) {
 	f, err := os.CreateTemp("", "aureus-")
 	if err != nil {
 		return nil, fmt.Errorf("unable to create temporary file: %w", err)
@@ -37,9 +37,16 @@ func (x *assertionExecutor[T]) generateOutput(input, output test.Content) (_ *os
 
 	if err := x.Runner.GenerateOutput(
 		x.TestingT,
-		f,
-		input,
-		output.ContentMetaData,
+		&input{
+			Reader: bytes.NewReader(in.Data),
+			lang:   in.Language,
+			attrs:  in.Attributes,
+		},
+		&output{
+			Writer: f,
+			lang:   out.Language,
+			attrs:  out.Attributes,
+		},
 	); err != nil {
 		return nil, fmt.Errorf("unable to generate output: %w", err)
 	}

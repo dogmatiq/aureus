@@ -1,13 +1,9 @@
 package aureus
 
 import (
-	"bytes"
-	"io"
-
 	"github.com/dogmatiq/aureus/internal/loader/fileloader"
 	"github.com/dogmatiq/aureus/internal/loader/markdownloader"
 	"github.com/dogmatiq/aureus/internal/runner"
-	"github.com/dogmatiq/aureus/internal/test"
 )
 
 // TestingT is a constraint for the subset of [testing.T] that is used by Aureus
@@ -59,23 +55,10 @@ func Run[T runner.TestingT[T]](t T, g OutputGenerator[T], options ...RunOption) 
 	r := runner.Runner[T]{
 		GenerateOutput: func(
 			t T,
-			w io.Writer,
-			in test.Content,
-			out test.ContentMetaData,
+			in runner.Input,
+			out runner.Output,
 		) error {
-			g(
-				t,
-				&input{
-					Reader: bytes.NewReader(in.Data),
-					lang:   in.Language,
-					attrs:  in.Attributes,
-				},
-				&output{
-					Writer: w,
-					lang:   out.Language,
-					attrs:  out.Attributes,
-				},
-			)
+			g(t, in, out)
 			return nil
 		},
 		TrimSpace: opts.TrimSpace,
