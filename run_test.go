@@ -19,13 +19,13 @@ func prettyPrint(
 	var v any
 	dec := json.NewDecoder(in)
 	if err := dec.Decode(&v); err != nil {
-		t.Fatal(err)
+		t.Fatalf("unable to decode input: %s", err)
 	}
 
 	enc := json.NewEncoder(out)
 	enc.SetIndent("", "  ")
 	if err := enc.Encode(v); err != nil {
-		t.Fatal(err)
+		t.Fatal("unable to encode output:", err)
 	}
 }
 

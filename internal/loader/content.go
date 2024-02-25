@@ -1,6 +1,9 @@
 package loader
 
 import (
+	"bytes"
+	"io"
+
 	"github.com/dogmatiq/aureus/internal/test"
 )
 
@@ -69,7 +72,11 @@ func (e ContentEnvelope) AsTestContent() test.Content {
 			Language:   e.Content.Language,
 			Attributes: e.Content.Attributes,
 		},
-		Data: e.Content.Data,
+		Open: func() (io.ReadCloser, error) {
+			return io.NopCloser(
+				bytes.NewReader(e.Content.Data),
+			), nil
+		},
 	}
 }
 

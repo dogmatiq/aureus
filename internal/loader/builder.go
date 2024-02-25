@@ -117,11 +117,11 @@ func (b *TestBuilder) Build() ([]test.Test, error) {
 		func(a, b test.Test) int {
 			if natsort.Less(a.Name, b.Name) {
 				return -1
-			} else if natsort.Less(b.Name, a.Name) {
-				return 1
-			} else {
-				return 0
 			}
+			if natsort.Less(b.Name, a.Name) {
+				return 1
+			}
+			return 0
 		},
 	)
 
@@ -203,9 +203,8 @@ func buildTest(g *group) (test.Test, error) {
 		return test.Test{}, NoOutputsError{g.Inputs}
 	} else if inputs == 1 && outputs == 1 {
 		return buildSingleTest(g), nil
-	} else {
-		return buildMatrixTest(g), nil
 	}
+	return buildMatrixTest(g), nil
 }
 
 func buildSingleTest(g *group) test.Test {

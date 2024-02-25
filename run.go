@@ -65,6 +65,7 @@ func Run[T runner.TestingT[T]](t T, g OutputGenerator[T], options ...RunOption) 
 	}
 	r.Run(t, fileTests)
 	r.Run(t, markdownTests)
+
 }
 
 // RunOption is an option that changes the behavior of [Run].

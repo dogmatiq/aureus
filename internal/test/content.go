@@ -1,12 +1,14 @@
 package test
 
+import "io"
+
 // Content is data used as input or output in tests.
 type Content struct {
 	// ContentMetaData is additional information about the content.
 	ContentMetaData
 
-	// Data is the content itself.
-	Data []byte
+	// Open returns an [io.ReadCloser] that produces the content.
+	Open func() (io.ReadCloser, error)
 }
 
 // ContentMetaData contains information about input or output content.

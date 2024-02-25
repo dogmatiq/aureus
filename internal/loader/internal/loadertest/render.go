@@ -3,6 +3,7 @@ package loadertest
 import (
 	"bytes"
 	"fmt"
+	"io"
 
 	"github.com/dogmatiq/aureus/internal/test"
 )
@@ -70,7 +71,19 @@ func renderContent(label string, c test.Content) []byte {
 	if c.Language != "" {
 		fmt.Fprintf(&w, "    lang = %q\n", c.Language)
 	}
-	fmt.Fprintf(&w, "    data = %q\n", string(c.Data))
+
+	r, err := c.Open()
+	if err != nil {
+		panic(err)
+	}
+	defer r.Close()
+
+	data, err := io.ReadAll(r)
+	if err != nil {
+		panic(err)
+	}
+
+	fmt.Fprintf(&w, "    data = %q\n", string(data))
 
 	w.WriteString("}")
 

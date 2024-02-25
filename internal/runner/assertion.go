@@ -24,26 +24,32 @@ type assertionExecutor[T TestingT[T]] struct {
 }
 
 func (x *assertionExecutor[T]) generateOutput(in, out test.Content) (_ *os.File, err error) {
-	f, err := os.CreateTemp("", "aureus-")
+	w, err := os.CreateTemp("", "aureus-")
 	if err != nil {
 		return nil, fmt.Errorf("unable to create temporary file: %w", err)
 	}
 	defer func() {
 		if err != nil {
-			f.Close()
-			os.Remove(f.Name())
+			w.Close()
+			os.Remove(w.Name())
 		}
 	}()
+
+	r, err := in.Open()
+	if err != nil {
+		return nil, fmt.Errorf("unable to open input file: %w", err)
+	}
+	defer r.Close()
 
 	if err := x.Runner.GenerateOutput(
 		x.TestingT,
 		&input{
-			Reader: bytes.NewReader(in.Data),
+			Reader: r,
 			lang:   in.Language,
 			attrs:  in.Attributes,
 		},
 		&output{
-			Writer: f,
+			Writer: w,
 			lang:   out.Language,
 			attrs:  out.Attributes,
 		},
@@ -51,11 +57,11 @@ func (x *assertionExecutor[T]) generateOutput(in, out test.Content) (_ *os.File,
 		return nil, fmt.Errorf("unable to generate output: %w", err)
 	}
 
-	if _, err := f.Seek(0, io.SeekStart); err != nil {
+	if _, err := w.Seek(0, io.SeekStart); err != nil {
 		return nil, fmt.Errorf("unable to seek to beginning of output file: %w", err)
 	}
 
-	return f, nil
+	return w, nil
 }
 
 func (x *assertionExecutor[T]) log(fn func(w *strings.Builder)) {
@@ -66,22 +72,13 @@ func (x *assertionExecutor[T]) log(fn func(w *strings.Builder)) {
 	x.TestingT.Log(w.String())
 }
 
-func (x *assertionExecutor[T]) logSection(name string, data []byte, extra ...any) {
+func (x *assertionExecutor[T]) logSection(name string, data []byte) {
 	x.TestingT.Helper()
 
 	x.log(func(w *strings.Builder) {
 		w.WriteString(separator)
 		w.WriteString(" BEGIN ")
 		w.WriteString(name)
-
-		if len(extra) > 0 {
-			w.WriteString(" (")
-			for _, v := range extra {
-				fmt.Fprint(w, v)
-			}
-			w.WriteByte(')')
-		}
-
 		w.WriteByte(' ')
 		w.WriteString(separator)
 	})
