@@ -1,8 +1,4 @@
-// Copyright 2022 The Go Authors. All rights reserved.
-// Use of this source code is governed by a BSD-style
-// license that can be found in the LICENSE file.
-
-package diff_test
+package streamdiff_test
 
 import (
 	"bytes"
@@ -10,6 +6,7 @@ import (
 	"testing"
 
 	"github.com/dogmatiq/aureus/internal/diff"
+	"github.com/dogmatiq/aureus/internal/streamdiff"
 	"golang.org/x/tools/txtar"
 )
 
@@ -34,11 +31,26 @@ func Test(t *testing.T) {
 			if len(a.Files) != 3 || a.Files[2].Name != "diff" {
 				t.Fatalf("%s: want three files, third named \"diff\"", file)
 			}
-			diffs := diff.Diff(a.Files[0].Name, clean(a.Files[0].Data), a.Files[1].Name, clean(a.Files[1].Data))
+
+			var out bytes.Buffer
+			if _, err := streamdiff.Diff(
+				&out,
+				a.Files[0].Name,
+				bytes.NewReader(clean(a.Files[0].Data)),
+				a.Files[1].Name,
+				bytes.NewReader(clean(a.Files[1].Data)),
+				10,
+			); err != nil {
+				t.Fatal(err)
+			}
+
+			got := out.Bytes()
 			want := clean(a.Files[2].Data)
-			if !bytes.Equal(diffs, want) {
-				t.Fatalf("%s: have:\n%s\nwant:\n%s\n%s", file,
-					diffs, want, diff.Diff("have", diffs, "want", want))
+
+			if !bytes.Equal(got, want) {
+				t.Logf("=== GOT ===\n%s", got)
+				t.Logf("=== WANT ===\n%s", want)
+				t.Fatalf("=== DIFF ===\n%s", diff.Diff("GOT", got, "WANT", want))
 			}
 		})
 	}
