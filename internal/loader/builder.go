@@ -7,8 +7,8 @@ import (
 	"slices"
 	"strings"
 
-	"github.com/dogmatiq/aureus/internal/natsort"
 	"github.com/dogmatiq/aureus/internal/test"
+	"github.com/dogmatiq/jumble/natsort"
 )
 
 // TestBuilder builds [test.Test] values from groups of correlated inputs and
