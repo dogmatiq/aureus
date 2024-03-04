@@ -6,8 +6,8 @@ import (
 	"testing"
 
 	"github.com/dogmatiq/aureus/internal/loader/fileloader"
+	"github.com/dogmatiq/aureus/internal/runner"
 	. "github.com/dogmatiq/aureus/internal/runner"
-	"github.com/dogmatiq/aureus/internal/test"
 )
 
 func TestRunner(t *testing.T) {
@@ -23,11 +23,10 @@ func TestRunner(t *testing.T) {
 		runner := &Runner[*testing.T]{
 			GenerateOutput: func(
 				_ *testing.T,
-				w io.Writer,
-				in test.Content,
-				out test.ContentMetaData,
+				in runner.Input,
+				out runner.Output,
 			) error {
-				return prettyPrint(w, in, out)
+				return prettyPrint(in, out)
 			},
 		}
 
@@ -44,11 +43,10 @@ func TestRunner(t *testing.T) {
 		runner := &Runner[*testingT]{
 			GenerateOutput: func(
 				_ *testingT,
-				w io.Writer,
-				in test.Content,
-				out test.ContentMetaData,
+				in runner.Input,
+				out runner.Output,
 			) error {
-				return prettyPrint(w, in, out)
+				return prettyPrint(in, out)
 			},
 		}
 
@@ -107,20 +105,24 @@ func (t *testingT) leaves() []*testingT {
 }
 
 func prettyPrint(
-	w io.Writer,
-	in test.Content,
-	out test.ContentMetaData,
+	in runner.Input,
+	out runner.Output,
 ) error {
-	if len(in.Data) == 0 {
+	data, err := io.ReadAll(in)
+	if err != nil {
+		return err
+	}
+
+	if len(data) == 0 {
 		return nil
 	}
 
 	var v any
-	if err := json.Unmarshal(in.Data, &v); err != nil {
+	if err := json.Unmarshal(data, &v); err != nil {
 		return err
 	}
 
-	enc := json.NewEncoder(w)
+	enc := json.NewEncoder(out)
 	enc.SetIndent("", "  ")
 	return enc.Encode(v)
 }

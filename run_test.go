@@ -11,7 +11,7 @@ func prettyPrint(
 	t *testing.T,
 	in aureus.Input,
 	out aureus.Output,
-) {
+) error {
 	if in.Language() != "json" || out.Language() != "json" {
 		t.Fatal("the pretty-printer can only produce JSON output")
 	}
@@ -19,14 +19,16 @@ func prettyPrint(
 	var v any
 	dec := json.NewDecoder(in)
 	if err := dec.Decode(&v); err != nil {
-		t.Fatal(err)
+		return err
 	}
 
 	enc := json.NewEncoder(out)
 	enc.SetIndent("", "  ")
 	if err := enc.Encode(v); err != nil {
-		t.Fatal(err)
+		return err
 	}
+
+	return nil
 }
 
 func TestRun_flatFile(t *testing.T) {

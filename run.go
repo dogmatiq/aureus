@@ -1,20 +1,16 @@
 package aureus
 
 import (
-	"bytes"
-	"io"
-
 	"github.com/dogmatiq/aureus/internal/loader/fileloader"
 	"github.com/dogmatiq/aureus/internal/loader/markdownloader"
 	"github.com/dogmatiq/aureus/internal/runner"
-	"github.com/dogmatiq/aureus/internal/test"
 )
 
 // TestingT is a constraint for the subset of [testing.T] that is used by Aureus
 // to execute tests.
-type TestingT[T any] interface {
+type TestingT[Self any] interface {
 	Helper()
-	Run(string, func(T)) bool
+	Run(string, func(Self)) bool
 	Log(...any)
 	SkipNow()
 	Fail()
@@ -28,7 +24,11 @@ type TestingT[T any] interface {
 // g is an [OutputGenerator] that produces output from input values for each
 // test. If the output produced by g does not match the test's expected output
 // the test fails.
-func Run[T runner.TestingT[T]](t T, g OutputGenerator[T], options ...RunOption) {
+func Run[T runner.TestingT[T]](
+	t T,
+	g OutputGenerator[T],
+	options ...RunOption,
+) {
 	t.Helper()
 
 	opts := runOptions{
@@ -57,26 +57,8 @@ func Run[T runner.TestingT[T]](t T, g OutputGenerator[T], options ...RunOption) 
 	}
 
 	r := runner.Runner[T]{
-		GenerateOutput: func(
-			t T,
-			w io.Writer,
-			in test.Content,
-			out test.ContentMetaData,
-		) error {
-			g(
-				t,
-				&input{
-					Reader: bytes.NewReader(in.Data),
-					lang:   in.Language,
-					attrs:  in.Attributes,
-				},
-				&output{
-					Writer: w,
-					lang:   out.Language,
-					attrs:  out.Attributes,
-				},
-			)
-			return nil
+		GenerateOutput: func(t T, in runner.Input, out runner.Output) error {
+			return g(t, in, out)
 		},
 		TrimSpace: opts.TrimSpace,
 	}
