@@ -1,7 +1,7 @@
 test "nested-directory" {
     test "child" {
         test "test" {
-            equal {
+            assertion {
                 input "testdata/nested-directory/child/test.input" {
                     data = "CHILD INPUT\n"
                 }
@@ -12,7 +12,7 @@ test "nested-directory" {
         }
     }
     test "test" {
-        equal {
+        assertion {
             input "testdata/nested-directory/test.input" {
                 data = "INPUT\n"
             }

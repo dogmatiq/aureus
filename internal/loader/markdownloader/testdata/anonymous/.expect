@@ -1,7 +1,7 @@
 test "anonymous" {
     test "test" {
         test "anonymous test on line 5" {
-            equal {
+            assertion {
                 input "testdata/anonymous/test.md:1" {
                     lang = "text"
                     data = "INPUT1\n"
@@ -13,7 +13,7 @@ test "anonymous" {
             }
         }
         test "anonymous test on line 9" {
-            equal {
+            assertion {
                 input "testdata/anonymous/test.md:13" {
                     lang = "text"
                     data = "INPUT2\n"

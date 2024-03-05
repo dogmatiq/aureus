@@ -1,7 +1,7 @@
 test "without-language" {
     test "test" {
         test "grp" {
-            equal {
+            assertion {
                 input "testdata/without-language/test.md:1" {
                     data = "INPUT\n"
                 }

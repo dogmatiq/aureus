@@ -1,6 +1,6 @@
 test "skipped-input-file" {
     test "test" [skipped] {
-        equal {
+        assertion {
             input "testdata/skipped-input-file/_test.input" {
                 data = "INPUT\n"
             }

@@ -1,7 +1,10 @@
 package runner
 
 import (
+	"bytes"
+	"fmt"
 	"io"
+	"os"
 
 	"github.com/dogmatiq/aureus/internal/test"
 )
@@ -59,4 +62,41 @@ func (o *output) Language() string {
 
 func (o *output) Attributes() map[string]string {
 	return o.meta.Attributes
+}
+
+func generateOutput[T TestingT[T]](
+	t T,
+	gen OutputGenerator[T],
+	in, out test.Content,
+) (_ *os.File, err error) {
+	f, err := os.CreateTemp("", "aureus-")
+	if err != nil {
+		return nil, fmt.Errorf("unable to create temporary file: %w", err)
+	}
+	defer func() {
+		if err != nil {
+			f.Close()
+			os.Remove(f.Name())
+		}
+	}()
+
+	if err := gen(
+		t,
+		&input{
+			Reader: bytes.NewReader(in.Data),
+			meta:   in.ContentMetaData,
+		},
+		&output{
+			Writer: f,
+			meta:   out.ContentMetaData,
+		},
+	); err != nil {
+		return nil, fmt.Errorf("unable to generate output: %w", err)
+	}
+
+	if _, err := f.Seek(0, io.SeekStart); err != nil {
+		return nil, fmt.Errorf("unable to seek to beginning of output file: %w", err)
+	}
+
+	return f, nil
 }

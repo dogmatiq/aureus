@@ -214,7 +214,7 @@ func buildSingleTest(g *group) test.Test {
 		g.Name,
 		test.WithSkip(input.Skip || output.Skip),
 		test.WithAssertions(
-			test.EqualAssertion{
+			test.Assertion{
 				Input:  input.AsTestContent(),
 				Output: output.AsTestContent(),
 			},
@@ -245,7 +245,7 @@ func buildMatrixTest(g *group) test.Test {
 					testName(input, output),
 					test.WithSkip(input.Skip || output.Skip),
 					test.WithAssertions(
-						test.EqualAssertion{
+						test.Assertion{
 							Input:  input.AsTestContent(),
 							Output: output.AsTestContent(),
 						},

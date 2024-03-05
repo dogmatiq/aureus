@@ -1,7 +1,7 @@
 test "interleaved-content" {
     test "test" {
         test "grp" {
-            equal {
+            assertion {
                 input "testdata/interleaved-content/test.md:4" {
                     data = "INPUT\n"
                 }

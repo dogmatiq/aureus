@@ -1,7 +1,7 @@
 test "matrix" {
     test "test" {
         test "one -> one" {
-            equal {
+            assertion {
                 input "testdata/matrix/test.input.one" {
                     lang = "one"
                     data = "INPUT 1\n"
@@ -13,7 +13,7 @@ test "matrix" {
             }
         }
         test "two -> one" {
-            equal {
+            assertion {
                 input "testdata/matrix/test.input.two" {
                     lang = "two"
                     data = "INPUT 2\n"
@@ -25,7 +25,7 @@ test "matrix" {
             }
         }
         test "one -> two" {
-            equal {
+            assertion {
                 input "testdata/matrix/test.input.one" {
                     lang = "one"
                     data = "INPUT 1\n"
@@ -37,7 +37,7 @@ test "matrix" {
             }
         }
         test "two -> two" {
-            equal {
+            assertion {
                 input "testdata/matrix/test.input.two" {
                     lang = "two"
                     data = "INPUT 2\n"

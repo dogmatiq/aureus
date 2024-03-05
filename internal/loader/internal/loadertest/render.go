@@ -22,11 +22,8 @@ func RenderTest(t test.Test) []byte {
 		indent(&w, RenderTest(s))
 	}
 
-	var r assertionRenderer
 	for _, a := range t.Assertions {
-		r.w.Reset()
-		a.AcceptVisitor(&r)
-		indent(&w, r.w.Bytes())
+		indent(&w, renderAssertion(a))
 	}
 
 	w.WriteString("}")
@@ -34,24 +31,13 @@ func RenderTest(t test.Test) []byte {
 	return w.Bytes()
 }
 
-func indent(w *bytes.Buffer, data []byte) {
-	lines := bytes.Split(data, []byte("\n"))
-	for _, line := range lines {
-		w.WriteString("    ")
-		w.Write(line)
-		w.WriteString("\n")
-	}
-}
-
-type assertionRenderer struct {
-	w bytes.Buffer
-}
-
-func (r *assertionRenderer) VisitEqualAssertion(a test.EqualAssertion) {
-	r.w.WriteString("equal {\n")
-	indent(&r.w, renderContent("input", a.Input))
-	indent(&r.w, renderContent("output", a.Output))
-	r.w.WriteString("}")
+func renderAssertion(a test.Assertion) []byte {
+	var w bytes.Buffer
+	w.WriteString("assertion {\n")
+	indent(&w, renderContent("input", a.Input))
+	indent(&w, renderContent("output", a.Output))
+	w.WriteString("}")
+	return w.Bytes()
 }
 
 func renderContent(label string, c test.Content) []byte {
@@ -76,4 +62,13 @@ func renderContent(label string, c test.Content) []byte {
 	w.WriteString("}")
 
 	return w.Bytes()
+}
+
+func indent(w *bytes.Buffer, data []byte) {
+	lines := bytes.Split(data, []byte("\n"))
+	for _, line := range lines {
+		w.WriteString("    ")
+		w.Write(line)
+		w.WriteString("\n")
+	}
 }

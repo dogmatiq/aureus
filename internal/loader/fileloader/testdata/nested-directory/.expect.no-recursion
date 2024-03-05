@@ -1,6 +1,6 @@
 test "nested-directory" {
     test "test" {
-        equal {
+        assertion {
             input "testdata/nested-directory/test.input" {
                 data = "INPUT\n"
             }

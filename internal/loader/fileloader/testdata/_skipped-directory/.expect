@@ -1,6 +1,6 @@
 test "skipped-directory" [skipped] {
     test "test" {
-        equal {
+        assertion {
             input "testdata/_skipped-directory/test.input" {
                 data = "INPUT\n"
             }

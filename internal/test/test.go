@@ -8,6 +8,12 @@ type Test struct {
 	Assertions []Assertion
 }
 
+// Assertion represents a requirement that an input match a specific output.
+type Assertion struct {
+	Input  Content
+	Output Content
+}
+
 // New creates a new [Test].
 //
 // It returns the test and the set of flags that should be inherited by any
@@ -34,16 +40,16 @@ func WithSkip(skip bool) Option {
 	}
 }
 
-// WithAssertions is a [TestOption] thatadds assertions to the test.
-func WithAssertions(assertions ...Assertion) Option {
-	return func(opts *Test) {
-		opts.Assertions = append(opts.Assertions, assertions...)
-	}
-}
-
 // WithSubTests is a [TestOption] that adds sub-tests to the test.
 func WithSubTests(subTests ...Test) Option {
 	return func(t *Test) {
 		t.SubTests = append(t.SubTests, subTests...)
+	}
+}
+
+// WithAssertions is a [TestOption] thatadds assertions to the test.
+func WithAssertions(assertions ...Assertion) Option {
+	return func(opts *Test) {
+		opts.Assertions = append(opts.Assertions, assertions...)
 	}
 }

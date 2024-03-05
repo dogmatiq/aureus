@@ -1,6 +1,6 @@
 test "multiple-tests" {
     test "test1" {
-        equal {
+        assertion {
             input "testdata/multiple-tests/test1.input" {
                 data = "INPUT 1\n"
             }
@@ -10,7 +10,7 @@ test "multiple-tests" {
         }
     }
     test "test2" {
-        equal {
+        assertion {
             input "testdata/multiple-tests/test2.input" {
                 data = "INPUT 2\n"
             }

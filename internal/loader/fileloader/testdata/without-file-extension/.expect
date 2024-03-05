@@ -1,6 +1,6 @@
 test "without-file-extension" {
     test "test" {
-        equal {
+        assertion {
             input "testdata/without-file-extension/test.input" {
                 data = "INPUT\n"
             }
