@@ -28,7 +28,7 @@ type group struct {
 //
 // Empty tests are ignored.
 func (b *TestBuilder) AddTest(t test.Test) {
-	if len(t.SubTests) > 0 || t.Assertion != nil {
+	if len(t.SubTests) > 0 || len(t.Assertions) > 0 {
 		b.tests = append(b.tests, t)
 	}
 }
@@ -115,13 +115,7 @@ func (b *TestBuilder) Build() ([]test.Test, error) {
 	slices.SortFunc(
 		tests,
 		func(a, b test.Test) int {
-			if natsort.Less(a.Name, b.Name) {
-				return -1
-			} else if natsort.Less(b.Name, a.Name) {
-				return 1
-			} else {
-				return 0
-			}
+			return natsort.Compare(a.Name, b.Name)
 		},
 	)
 
@@ -199,13 +193,17 @@ func buildTest(g *group) (test.Test, error) {
 
 	if inputs == 0 {
 		return test.Test{}, NoInputsError{g.Outputs}
-	} else if outputs == 0 {
-		return test.Test{}, NoOutputsError{g.Inputs}
-	} else if inputs == 1 && outputs == 1 {
-		return buildSingleTest(g), nil
-	} else {
-		return buildMatrixTest(g), nil
 	}
+
+	if outputs == 0 {
+		return test.Test{}, NoOutputsError{g.Inputs}
+	}
+
+	if inputs == 1 && outputs == 1 {
+		return buildSingleTest(g), nil
+	}
+
+	return buildMatrixTest(g), nil
 }
 
 func buildSingleTest(g *group) test.Test {
@@ -215,7 +213,7 @@ func buildSingleTest(g *group) test.Test {
 	return test.New(
 		g.Name,
 		test.WithSkip(input.Skip || output.Skip),
-		test.WithAssertion(
+		test.WithAssertions(
 			test.EqualAssertion{
 				Input:  input.AsTestContent(),
 				Output: output.AsTestContent(),
@@ -246,7 +244,7 @@ func buildMatrixTest(g *group) test.Test {
 				test.New(
 					testName(input, output),
 					test.WithSkip(input.Skip || output.Skip),
-					test.WithAssertion(
+					test.WithAssertions(
 						test.EqualAssertion{
 							Input:  input.AsTestContent(),
 							Output: output.AsTestContent(),

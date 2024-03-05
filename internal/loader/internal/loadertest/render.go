@@ -22,9 +22,10 @@ func RenderTest(t test.Test) []byte {
 		indent(&w, RenderTest(s))
 	}
 
-	if t.Assertion != nil {
-		var r assertionRenderer
-		t.Assertion.AcceptVisitor(&r)
+	var r assertionRenderer
+	for _, a := range t.Assertions {
+		r.w.Reset()
+		a.AcceptVisitor(&r)
 		indent(&w, r.w.Bytes())
 	}
 

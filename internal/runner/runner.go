@@ -31,11 +31,9 @@ func (r *Runner[T]) Run(t T, x test.Test) {
 				r.Run(t, s)
 			}
 
-			if x.Assertion != nil {
-				x.Assertion.AcceptVisitor(
-					&assertionExecutor[T]{t, r},
-					test.WithT(t),
-				)
+			e := assertionExecutor[T]{t, r}
+			for _, a := range x.Assertions {
+				a.AcceptVisitor(&e, test.WithT(t))
 			}
 		},
 	)

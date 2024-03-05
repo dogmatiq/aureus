@@ -2,10 +2,10 @@ package test
 
 // Test is a (possibly nested) test.
 type Test struct {
-	Name      string
-	Skip      bool
-	SubTests  []Test
-	Assertion Assertion
+	Name       string
+	Skip       bool
+	SubTests   []Test
+	Assertions []Assertion
 }
 
 // New creates a new [Test].
@@ -34,10 +34,10 @@ func WithSkip(skip bool) Option {
 	}
 }
 
-// WithAssertion is a [TestOption] that sets the assertion on the test.
-func WithAssertion(a Assertion) Option {
+// WithAssertions is a [TestOption] thatadds assertions to the test.
+func WithAssertions(assertions ...Assertion) Option {
 	return func(opts *Test) {
-		opts.Assertion = a
+		opts.Assertions = append(opts.Assertions, assertions...)
 	}
 }
 
