@@ -1,0 +1,46 @@
+test "matrix" {
+    test "test" {
+        test "grp" {
+            test "test.md -> test.md" {
+                assertion {
+                    input "testdata/matrix/test.md:1" {
+                        data = "INPUT 1\n"
+                    }
+                    output "testdata/matrix/test.md:9" {
+                        data = "OUTPUT 1\n"
+                    }
+                }
+            }
+            test "test.md -> test.md" {
+                assertion {
+                    input "testdata/matrix/test.md:5" {
+                        data = "INPUT 2\n"
+                    }
+                    output "testdata/matrix/test.md:9" {
+                        data = "OUTPUT 1\n"
+                    }
+                }
+            }
+            test "test.md -> test.md" {
+                assertion {
+                    input "testdata/matrix/test.md:1" {
+                        data = "INPUT 1\n"
+                    }
+                    output "testdata/matrix/test.md:13" {
+                        data = "OUTPUT 2\n"
+                    }
+                }
+            }
+            test "test.md -> test.md" {
+                assertion {
+                    input "testdata/matrix/test.md:5" {
+                        data = "INPUT 2\n"
+                    }
+                    output "testdata/matrix/test.md:13" {
+                        data = "OUTPUT 2\n"
+                    }
+                }
+            }
+        }
+    }
+}

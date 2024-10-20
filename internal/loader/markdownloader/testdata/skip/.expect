@@ -1,0 +1,14 @@
+test "skip" {
+    test "test" {
+        test "grp" [skipped] {
+            assertion {
+                input "testdata/skip/test.md:1" {
+                    data = "INPUT\n"
+                }
+                output "testdata/skip/test.md:5" {
+                    data = "OUTPUT\n"
+                }
+            }
+        }
+    }
+}
