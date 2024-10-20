@@ -138,6 +138,7 @@ func logSection[T TestingT[T]](
 		w.WriteString(separator)
 		w.WriteString(" END ")
 		w.WriteString(name)
+		w.WriteByte(' ')
 		w.WriteString(separator)
 	})
 }
