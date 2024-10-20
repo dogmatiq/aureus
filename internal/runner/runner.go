@@ -81,7 +81,7 @@ func (r *Runner[T]) assert(t T, a test.Assertion) {
 	if diff == nil {
 		logSection(t, "OUTPUT", a.Output.Data, r.TrimSpace, location(a.Output))
 	} else {
-		logSection(t, "OUTPUT DIFF", diff, r.TrimSpace, "")
+		logSection(t, "OUTPUT DIFF", diff, r.TrimSpace)
 		t.Fail()
 		return // TODO: make stubbed fail panic
 	}
