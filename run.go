@@ -4,6 +4,7 @@ import (
 	"github.com/dogmatiq/aureus/internal/loader/fileloader"
 	"github.com/dogmatiq/aureus/internal/loader/markdownloader"
 	"github.com/dogmatiq/aureus/internal/runner"
+	"github.com/dogmatiq/aureus/internal/test"
 )
 
 // TestingT is a constraint for the subset of [testing.T] that is used by Aureus
@@ -62,8 +63,16 @@ func Run[T runner.TestingT[T]](
 		},
 		TrimSpace: opts.TrimSpace,
 	}
-	r.Run(t, fileTests)
-	r.Run(t, markdownTests)
+
+	tests := test.Merge(fileTests, markdownTests)
+
+	if len(tests) == 0 {
+		t.Log("no tests found")
+	} else {
+		for _, x := range tests {
+			r.Run(t, x)
+		}
+	}
 }
 
 // RunOption is an option that changes the behavior of [Run].

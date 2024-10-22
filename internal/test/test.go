@@ -8,6 +8,11 @@ type Test struct {
 	Assertions []Assertion
 }
 
+// IsEmpty returns true if the test has no sub-tests or assertions.
+func (t Test) IsEmpty() bool {
+	return len(t.SubTests) == 0 && len(t.Assertions) == 0
+}
+
 // Assertion represents a requirement that an input match a specific output.
 type Assertion struct {
 	Input  Content
