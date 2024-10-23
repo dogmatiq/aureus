@@ -191,21 +191,23 @@ func buildTest(g *group) (test.Test, error) {
 	inputs := len(g.Inputs)
 	outputs := len(g.Outputs)
 
-	if inputs == 0 {
+	switch {
+	case inputs == 0:
 		return test.Test{}, NoInputsError{g.Outputs}
-	}
-
-	if outputs == 0 {
+	case outputs == 0:
 		return test.Test{}, NoOutputsError{g.Inputs}
-	}
-
-	if inputs == 1 && outputs == 1 {
+	case inputs == 1 && outputs == 1:
 		return buildSingleTest(g), nil
+	case inputs == 1:
+		return buildMatrixTest(g, nameSIMO), nil
+	case outputs == 1:
+		return buildMatrixTest(g, nameMISO), nil
+	default:
+		return buildMatrixTest(g, nameMIMO), nil
 	}
-
-	return buildMatrixTest(g), nil
 }
 
+// buildSingleTest builds a test for a group with a single input and a single output.
 func buildSingleTest(g *group) test.Test {
 	input := g.Inputs[0]
 	output := g.Outputs[0]
@@ -222,22 +224,11 @@ func buildSingleTest(g *group) test.Test {
 	)
 }
 
-func buildMatrixTest(g *group) test.Test {
+func buildMatrixTest(
+	g *group,
+	testName func(input, output ContentEnvelope) string,
+) test.Test {
 	t := test.New(g.Name)
-
-	testName := func(input, output ContentEnvelope) string {
-		if input.Content.Language != "" && output.Content.Language != "" {
-			return fmt.Sprintf("%s -> %s", input.Content.Language, output.Content.Language)
-		}
-
-		return fmt.Sprintf(
-			"%s:%d -> %s:%d",
-			path.Base(input.File),
-			input.Line,
-			path.Base(output.File),
-			output.Line,
-		)
-	}
 
 	for _, output := range g.Outputs {
 		for _, input := range g.Inputs {
@@ -258,4 +249,61 @@ func buildMatrixTest(g *group) test.Test {
 	}
 
 	return t
+}
+
+// nameSIMO returns a name for a test that has a single input and multiple
+// outputs.
+func nameSIMO(input, output ContentEnvelope) string {
+	return nameMISO(output, input)
+}
+
+// nameMISO returns a name for a test that has multiple inputs and a single
+// output.
+func nameMISO(input, output ContentEnvelope) string {
+	if input.Content.Caption != "" && input.Content.Caption != output.Content.Caption {
+		return input.Content.Caption
+	}
+
+	if input.Content.Language != "" && input.Content.Language != output.Content.Language {
+		return input.Content.Language
+	}
+
+	if input.File == output.File {
+		return fmt.Sprintf("%d", input.Line)
+	}
+
+	return location(input, false)
+}
+
+// nameMIMO returns a name for a test that has multiple inputs and outputs.
+func nameMIMO(input, output ContentEnvelope) string {
+	if input.Content.Caption != "" && output.Content.Caption != "" {
+		return fmt.Sprintf(
+			"%s...%s",
+			input.Content.Caption,
+			output.Content.Caption,
+		)
+	}
+
+	if input.Content.Language != "" && output.Content.Language != "" {
+		return fmt.Sprintf(
+			"%s...%s",
+			input.Content.Language,
+			output.Content.Language,
+		)
+	}
+
+	if input.File == output.File {
+		return fmt.Sprintf(
+			"%s...%d",
+			location(input, false),
+			output.Line,
+		)
+	}
+
+	return fmt.Sprintf(
+		"%s...%s",
+		location(input, false),
+		location(output, false),
+	)
 }

@@ -30,6 +30,10 @@ type Content struct {
 	// outputs in the same group form a matrix of test cases.
 	Group string
 
+	// Caption is an optional disambiguating name, title or short description of
+	// the content.
+	Caption string
+
 	// Language is the language of the content, if known, e.g. "json", "yaml",
 	// etc. Content with an empty language is treated as plain text.
 	Language string

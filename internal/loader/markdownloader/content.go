@@ -12,14 +12,24 @@ import (
 // A ContentLoader is a function that returns content obtained from a fenced
 // code block.
 //
-// info is the "info string" of the code block, that is the line of text that
+// headings is a list of headings that precede the code block in the document,
+// which may be empty. The last element of the list is the heading that the code
+// block is "within".
+//
+// info is the "info string" of the code block, that is, the line of text that
 // contains the language and other loader-specific information.
 //
 // See https://spec.commonmark.org/0.31.2/#fenced-code-blocks
-type ContentLoader func(info, code string) (_ loader.Content, skip bool, _ error)
+type ContentLoader func(
+	headings []string,
+	info, code string,
+) (_ loader.Content, skip bool, _ error)
 
 // LoadContent is the default [ContentLoader] implementation.
-func LoadContent(info, code string) (loader.Content, bool, error) {
+func LoadContent(
+	headings []string,
+	info, code string,
+) (loader.Content, bool, error) {
 	lang, attrs, err := ParseInfoString(info)
 	if err != nil {
 		return loader.Content{}, false, err
@@ -64,6 +74,10 @@ func LoadContent(info, code string) (loader.Content, bool, error) {
 		Language:   lang,
 		Attributes: attrs,
 		Data:       []byte(code),
+	}
+
+	if len(headings) > 0 {
+		c.Caption = headings[len(headings)-1]
 	}
 
 	if isInput {

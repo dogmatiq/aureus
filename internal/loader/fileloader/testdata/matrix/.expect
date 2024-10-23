@@ -1,6 +1,6 @@
 test "matrix" {
     test "test" {
-        test "one -> one" {
+        test "one...one" {
             assertion {
                 input "testdata/matrix/test.input.one" {
                     lang = "one"
@@ -12,7 +12,7 @@ test "matrix" {
                 }
             }
         }
-        test "two -> one" {
+        test "two...one" {
             assertion {
                 input "testdata/matrix/test.input.two" {
                     lang = "two"
@@ -24,7 +24,7 @@ test "matrix" {
                 }
             }
         }
-        test "one -> two" {
+        test "one...two" {
             assertion {
                 input "testdata/matrix/test.input.one" {
                     lang = "one"
@@ -36,7 +36,7 @@ test "matrix" {
                 }
             }
         }
-        test "two -> two" {
+        test "two...two" {
             assertion {
                 input "testdata/matrix/test.input.two" {
                     lang = "two"

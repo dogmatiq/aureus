@@ -1,7 +1,6 @@
 package markdownloader
 
 import (
-	"bytes"
 	"io/fs"
 	"path"
 	"strings"
@@ -72,39 +71,82 @@ func loadFile(builder *loader.TestBuilder, opts loadOptions, filePath string) er
 		return err
 	}
 
-	var docBuilder loader.TestBuilder
-	doc := opts.Parser.Parse(
-		text.NewReader(source),
+	title, tests, err := loadDocument(
+		opts,
+		filePath,
+		source,
 	)
-
-	for node := doc.FirstChild(); node != nil; node = node.NextSibling() {
-		if block, ok := node.(*ast.FencedCodeBlock); ok {
-			if err := loadBlock(
-				&docBuilder,
-				opts,
-				filePath,
-				source,
-				block,
-			); err != nil {
-				return err
-			}
-		}
-	}
-
-	subTests, err := docBuilder.Build()
 	if err != nil {
 		return err
+	}
+
+	if title != "" {
+		name = title
 	}
 
 	builder.AddTest(
 		test.New(
 			name,
 			test.WithSkip(skip),
-			test.WithSubTests(subTests...),
+			test.WithSubTests(tests...),
 		),
 	)
 
 	return nil
+}
+
+func loadDocument(
+	opts loadOptions,
+	filePath string,
+	source []byte,
+) (string, []test.Test, error) {
+	doc := opts.Parser.Parse(
+		text.NewReader(source),
+	)
+
+	var (
+		b        loader.TestBuilder
+		title    string
+		headings []string
+	)
+
+	for n := doc.FirstChild(); n != nil; n = n.NextSibling() {
+		switch n := n.(type) {
+		case *ast.Heading:
+			if n.Level == 1 {
+				if n == doc.FirstChild() {
+					// If we have a level-one heading that's the first node in
+					// the document treat it as the title of the document.
+					title = linesOf(n, source)
+				} else {
+					// Unless there are other level-one headings later in the
+					// document.
+					title = ""
+				}
+			}
+
+			for len(headings) < n.Level {
+				headings = append(headings, "")
+			}
+			headings[n.Level-1] = linesOf(n, source)
+			headings = headings[:n.Level]
+
+		case *ast.FencedCodeBlock:
+			if err := loadBlock(
+				&b,
+				opts,
+				filePath,
+				source,
+				headings,
+				n,
+			); err != nil {
+				return "", nil, err
+			}
+		}
+	}
+
+	tests, err := b.Build()
+	return title, tests, err
 }
 
 func loadBlock(
@@ -112,6 +154,7 @@ func loadBlock(
 	opts loadOptions,
 	filePath string,
 	source []byte,
+	headings []string,
 	block *ast.FencedCodeBlock,
 ) error {
 	info := ""
@@ -119,12 +162,9 @@ func loadBlock(
 		info = string(block.Info.Value(source))
 	}
 
-	lines := block.Lines()
+	code := linesOf(block, source)
 
-	content, skip, err := opts.LoadContent(
-		info,
-		string(lines.Value(source)),
-	)
+	content, skip, err := opts.LoadContent(headings, info, code)
 	if err != nil {
 		return err
 	}
@@ -132,7 +172,7 @@ func loadBlock(
 	return builder.AddContent(
 		loader.ContentEnvelope{
 			File:    filePath,
-			Line:    bytes.Count(source[:lines.At(0).Start], []byte("\n")),
+			Line:    lineNumberOf(block, source),
 			Skip:    skip,
 			Content: content,
 		},

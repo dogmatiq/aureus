@@ -1,0 +1,26 @@
+test "matrix-simo-with-headings" {
+    test "Document Heading" {
+        test "grp" {
+            test "One" {
+                assertion {
+                    input "testdata/matrix-simo-with-headings/test.md:3" {
+                        data = "INPUT\n"
+                    }
+                    output "testdata/matrix-simo-with-headings/test.md:9" {
+                        data = "OUTPUT 1\n"
+                    }
+                }
+            }
+            test "Two" {
+                assertion {
+                    input "testdata/matrix-simo-with-headings/test.md:3" {
+                        data = "INPUT\n"
+                    }
+                    output "testdata/matrix-simo-with-headings/test.md:15" {
+                        data = "OUTPUT 2\n"
+                    }
+                }
+            }
+        }
+    }
+}

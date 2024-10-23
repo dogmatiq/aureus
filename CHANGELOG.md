@@ -10,6 +10,24 @@ The format is based on [Keep a Changelog], and this project adheres to
 [Keep a Changelog]: https://keepachangelog.com/en/1.0.0/
 [Semantic Versioning]: https://semver.org/spec/v2.0.0.html
 
+## [Unreleased]
+
+### Changed
+
+- `Run()` no longer separates the tests built from flat-files from those built
+  from Markdown documents. This provides a less surprising test heirarchy when
+  both types of tests are present in the same directory, and eliminates an empty
+  test when only one type of test is present.
+- Tests built from Markdown documents that contain a single top-level heading at
+  the top of the document are now named after that heading, rather than the
+  filename.
+- Matrix tests with inputs and outputs from codeblocks under Markdown headings
+  are now named after those headings, rather than the filename/line number.
+- Matrix tests that only have a single input or a single output no longer
+  include the name of that single input/output, producing shorter test names.
+- Tests with inputs and outputs sourced from the same file now only include the
+  filename in the test name once.
+
 ## [0.2.1] - 2024-10-20
 
 ### Fixed

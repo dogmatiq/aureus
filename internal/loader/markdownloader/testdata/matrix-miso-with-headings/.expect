@@ -1,0 +1,26 @@
+test "matrix-miso-with-headings" {
+    test "Document Heading" {
+        test "grp" {
+            test "One" {
+                assertion {
+                    input "testdata/matrix-miso-with-headings/test.md:9" {
+                        data = "INPUT 1\n"
+                    }
+                    output "testdata/matrix-miso-with-headings/test.md:3" {
+                        data = "OUTPUT\n"
+                    }
+                }
+            }
+            test "Two" {
+                assertion {
+                    input "testdata/matrix-miso-with-headings/test.md:15" {
+                        data = "INPUT 2\n"
+                    }
+                    output "testdata/matrix-miso-with-headings/test.md:3" {
+                        data = "OUTPUT\n"
+                    }
+                }
+            }
+        }
+    }
+}

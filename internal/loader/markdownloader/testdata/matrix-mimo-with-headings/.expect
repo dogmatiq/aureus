@@ -1,0 +1,46 @@
+test "matrix-mimo-with-headings" {
+    test "Document Heading" {
+        test "grp" {
+            test "Ones...Ones" {
+                assertion {
+                    input "testdata/matrix-mimo-with-headings/test.md:5" {
+                        data = "INPUT 1\n"
+                    }
+                    output "testdata/matrix-mimo-with-headings/test.md:9" {
+                        data = "OUTPUT 1\n"
+                    }
+                }
+            }
+            test "Twos...Ones" {
+                assertion {
+                    input "testdata/matrix-mimo-with-headings/test.md:15" {
+                        data = "INPUT 2\n"
+                    }
+                    output "testdata/matrix-mimo-with-headings/test.md:9" {
+                        data = "OUTPUT 1\n"
+                    }
+                }
+            }
+            test "Ones...Twos" {
+                assertion {
+                    input "testdata/matrix-mimo-with-headings/test.md:5" {
+                        data = "INPUT 1\n"
+                    }
+                    output "testdata/matrix-mimo-with-headings/test.md:19" {
+                        data = "OUTPUT 2\n"
+                    }
+                }
+            }
+            test "Twos...Twos" {
+                assertion {
+                    input "testdata/matrix-mimo-with-headings/test.md:15" {
+                        data = "INPUT 2\n"
+                    }
+                    output "testdata/matrix-mimo-with-headings/test.md:19" {
+                        data = "OUTPUT 2\n"
+                    }
+                }
+            }
+        }
+    }
+}

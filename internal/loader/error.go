@@ -1,6 +1,9 @@
 package loader
 
-import "fmt"
+import (
+	"fmt"
+	"path/filepath"
+)
 
 // NoInputsError is an error that occurs when a test cannot be built because it
 // has at least one input but no outputs.
@@ -9,7 +12,7 @@ type NoInputsError struct {
 }
 
 func (e NoInputsError) Error() string {
-	return fmt.Sprintf("output loaded from %s has no inputs", location(e.Outputs[0]))
+	return fmt.Sprintf("output loaded from %s has no inputs", location(e.Outputs[0], true))
 }
 
 // NoOutputsError is an error that occurs when a test cannot be built because it
@@ -19,13 +22,19 @@ type NoOutputsError struct {
 }
 
 func (e NoOutputsError) Error() string {
-	return fmt.Sprintf("input loaded from %s has no outputs", location(e.Inputs[0]))
+	return fmt.Sprintf("input loaded from %s has no outputs", location(e.Inputs[0], true))
 }
 
 // location returns a string that describes the location of the given content.
-func location(env ContentEnvelope) string {
-	if env.Line > 0 {
-		return fmt.Sprintf("%s:%d", env.File, env.Line)
+func location(env ContentEnvelope, qualified bool) string {
+	file := env.File
+	if !qualified {
+		file = filepath.Base(file)
 	}
-	return env.File
+
+	if env.Line == 0 {
+		return file
+	}
+
+	return fmt.Sprintf("%s:%d", file, env.Line)
 }
