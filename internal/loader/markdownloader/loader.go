@@ -1,6 +1,7 @@
 package markdownloader
 
 import (
+	"bytes"
 	"io/fs"
 	"path"
 	"strings"
@@ -115,11 +116,15 @@ func loadBlock(
 ) error {
 	info := ""
 	if block.Info != nil {
-		info = string(block.Info.Text(source))
+		info = string(block.Info.Value(source))
 	}
-	code := sourceOf(block, source)
 
-	c, skip, err := opts.LoadContent(info, code)
+	lines := block.Lines()
+
+	content, skip, err := opts.LoadContent(
+		info,
+		string(lines.Value(source)),
+	)
 	if err != nil {
 		return err
 	}
@@ -127,9 +132,9 @@ func loadBlock(
 	return builder.AddContent(
 		loader.ContentEnvelope{
 			File:    filePath,
-			Line:    lineNumberOf(block, source),
+			Line:    bytes.Count(source[:lines.At(0).Start], []byte("\n")),
 			Skip:    skip,
-			Content: c,
+			Content: content,
 		},
 	)
 }
