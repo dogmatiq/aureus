@@ -231,9 +231,11 @@ func buildMatrixTest(g *group) test.Test {
 		}
 
 		return fmt.Sprintf(
-			"%s -> %s",
+			"%s:%d -> %s:%d",
 			path.Base(input.File),
+			input.Line,
 			path.Base(output.File),
+			output.Line,
 		)
 	}
 
