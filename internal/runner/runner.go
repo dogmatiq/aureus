@@ -164,5 +164,5 @@ func computeDiff(
 		gotData = append(gotData, '\n')
 	}
 
-	return diff.Diff(wantLoc, wantData, gotLoc, gotData), nil
+	return diff.ColorDiff(wantLoc, wantData, gotLoc, gotData), nil
 }

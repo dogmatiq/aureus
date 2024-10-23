@@ -45,7 +45,10 @@ type pair struct{ x, y int }
 // Second, the name is frequently interpreted as meaning that you have
 // to wait longer (to be patient) for the diff, meaning that it is a slower algorithm,
 // when in fact the algorithm is faster than the standard one.
-func Diff(oldName string, old []byte, newName string, new []byte) []byte {
+func Diff(
+	oldName string, old []byte,
+	newName string, new []byte,
+) []byte {
 	if bytes.Equal(old, new) {
 		return nil
 	}
@@ -259,4 +262,56 @@ func tgs(x, y []string) []pair {
 	}
 	seq[0] = pair{0, 0} // sentinel at start
 	return seq
+}
+
+// ColorDiff is a variant of [Diff] that adds ANSI color codes.
+func ColorDiff(
+	oldName string, old []byte,
+	newName string, new []byte,
+) []byte {
+	diff := Diff(
+		oldName, old,
+		newName, new,
+	)
+
+	if len(diff) == 0 {
+		return nil
+	}
+
+	lines := bytes.Split(diff, newline)
+
+	for i, line := range lines {
+		if len(line) == 0 {
+			continue
+		}
+
+		marker := line[0]
+
+		switch {
+		case marker == ' ' || i <= 2: // note: header is always dimmed
+			lines[i] = colorize(dim, line)
+		case marker == '-':
+			lines[i] = colorize(red, line)
+		case marker == '+':
+			lines[i] = colorize(green, line)
+		}
+	}
+
+	return bytes.Join(lines, newline)
+}
+
+var (
+	newline = []byte("\n")
+	dim     = []byte("\x1b[2m")
+	red     = []byte("\x1b[31m")
+	green   = []byte("\x1b[32m")
+	reset   = []byte("\x1b[0m")
+)
+
+func colorize(color, line []byte) []byte {
+	buf := make([]byte, 0, len(color)+len(line)+len(reset))
+	buf = append(buf, color...)
+	buf = append(buf, line...)
+	buf = append(buf, reset...)
+	return buf
 }
