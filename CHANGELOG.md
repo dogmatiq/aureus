@@ -27,6 +27,7 @@ The format is based on [Keep a Changelog], and this project adheres to
   include the name of that single input/output, producing shorter test names.
 - Tests with inputs and outputs sourced from the same file now only include the
   filename in the test name once.
+- Diff output is now colorized.
 
 ## [0.2.1] - 2024-10-20
 
