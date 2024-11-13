@@ -56,7 +56,7 @@ func (r *Runner[T]) assert(t T, a test.Assertion) {
 
 	f, err := generateOutput(t, r.GenerateOutput, a.Input, a.Output)
 	if err != nil {
-		t.Log("unable to generate output:", err)
+		t.Log(err)
 		t.Fail()
 		return // TODO: make stubbed fail panic
 	}
