@@ -169,10 +169,14 @@ func loadBlock(
 		return err
 	}
 
+	line, begin, end := locationOf(block, source)
+
 	return builder.AddContent(
 		loader.ContentEnvelope{
 			File:    filePath,
-			Line:    lineNumberOf(block, source),
+			Line:    line,
+			Begin:   int64(begin),
+			End:     int64(end),
 			Skip:    skip,
 			Content: content,
 		},

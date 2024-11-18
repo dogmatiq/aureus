@@ -71,7 +71,7 @@ func (b *TestBuilder) addContent(env ContentEnvelope) error {
 func (b *TestBuilder) addAnonymousContent(env ContentEnvelope) error {
 	emit := func(in, out ContentEnvelope) {
 		name := fmt.Sprintf("anonymous test on line %d", out.Line)
-		if out.Line == 0 {
+		if out.IsEntireFile() {
 			name = fmt.Sprintf("anonymous test in %s", path.Base(out.File))
 		}
 

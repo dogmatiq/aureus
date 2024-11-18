@@ -32,7 +32,7 @@ func location(env ContentEnvelope, qualified bool) string {
 		file = filepath.Base(file)
 	}
 
-	if env.Line == 0 {
+	if env.IsEntireFile() {
 		return file
 	}
 

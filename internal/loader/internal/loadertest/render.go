@@ -46,7 +46,7 @@ func renderContent(label string, c test.Content) []byte {
 	w.WriteString(label)
 	w.WriteByte(' ')
 
-	if c.Line == 0 {
+	if c.IsEntireFile() {
 		fmt.Fprintf(&w, "%q", c.File)
 	} else {
 		fmt.Fprintf(&w, `"%s:%d"`, c.File, c.Line)

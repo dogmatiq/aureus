@@ -11,8 +11,16 @@ func linesOf(n ast.Node, source []byte) string {
 	return string(n.Lines().Value(source))
 }
 
-// lineNumberOf returns the first line number of n.
-func lineNumberOf(n ast.Node, source []byte) int {
-	i := n.Lines().At(0).Start
-	return bytes.Count(source[:i], []byte("\n"))
+var newline = []byte("\n")
+
+// locationOf returns the location of n within source.
+func locationOf(n ast.Node, source []byte) (line, begin, end int) {
+	lines := n.Lines()
+	count := lines.Len()
+
+	begin = lines.At(0).Start
+	end = lines.At(count - 1).Stop
+	line = bytes.Count(source[:begin], newline)
+
+	return line, begin, end
 }

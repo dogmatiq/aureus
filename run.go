@@ -1,6 +1,7 @@
 package aureus
 
 import (
+	"github.com/dogmatiq/aureus/internal/cliflags"
 	"github.com/dogmatiq/aureus/internal/loader/fileloader"
 	"github.com/dogmatiq/aureus/internal/loader/markdownloader"
 	"github.com/dogmatiq/aureus/internal/runner"
@@ -33,10 +34,16 @@ func Run[T runner.TestingT[T]](
 	t.Helper()
 
 	opts := runOptions{
-		Dir:       "./testdata",
-		Recursive: true,
-		TrimSpace: true,
+		Dir:           "./testdata",
+		Recursive:     true,
+		TrimSpace:     true,
+		BlessStrategy: &runner.BlessAvailable{},
 	}
+
+	if cliflags.Get().Bless {
+		Bless(true)(&opts)
+	}
+
 	for _, opt := range options {
 		opt(&opts)
 	}
@@ -61,7 +68,8 @@ func Run[T runner.TestingT[T]](
 		GenerateOutput: func(t T, in runner.Input, out runner.Output) error {
 			return g(t, in, out)
 		},
-		TrimSpace: opts.TrimSpace,
+		TrimSpace:     opts.TrimSpace,
+		BlessStrategy: opts.BlessStrategy,
 	}
 
 	tests := test.Merge(fileTests, markdownTests)
@@ -79,9 +87,10 @@ func Run[T runner.TestingT[T]](
 type RunOption func(*runOptions)
 
 type runOptions struct {
-	Dir       string
-	Recursive bool
-	TrimSpace bool
+	Dir           string
+	Recursive     bool
+	TrimSpace     bool
+	BlessStrategy runner.BlessStrategy
 }
 
 // FromDir is a [RunOption] that sets the directory to search for tests. By
@@ -105,5 +114,22 @@ func Recursive(on bool) RunOption {
 func TrimSpace(on bool) RunOption {
 	return func(o *runOptions) {
 		o.TrimSpace = on
+	}
+}
+
+// Bless is a [RunOption] that enables or disables "blessing" of failed tests.
+//
+// If blessing is enabled, the file containing the expected output of each
+// failed assertion is replaced with the actual output.
+//
+// By default blessing is disabled unless the -aureus.bless flag is set on the
+// command line.
+func Bless(on bool) RunOption {
+	return func(o *runOptions) {
+		if on {
+			o.BlessStrategy = &runner.BlessEnabled{}
+		} else {
+			o.BlessStrategy = &runner.BlessDisabled{}
+		}
 	}
 }

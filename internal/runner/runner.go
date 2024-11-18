@@ -16,6 +16,7 @@ import (
 type Runner[T TestingT[T]] struct {
 	GenerateOutput OutputGenerator[T]
 	TrimSpace      bool // TODO: make this a loader concern
+	BlessStrategy  BlessStrategy
 }
 
 // Run makes the assertions described by all documents within a [TestSuite].
@@ -58,7 +59,7 @@ func (r *Runner[T]) assert(t T, a test.Assertion) {
 	if err != nil {
 		t.Log(err)
 		t.Fail()
-		return // TODO: make stubbed fail panic
+		return
 	}
 	defer func() {
 		f.Close()
@@ -75,20 +76,27 @@ func (r *Runner[T]) assert(t T, a test.Assertion) {
 	if err != nil {
 		t.Log("unable to generate diff:", err)
 		t.Fail()
-		return // TODO: make stubbed fail panic
+		return
 	}
 
 	if diff == nil {
 		logSection(t, "OUTPUT", a.Output.Data, r.TrimSpace, location(a.Output))
-	} else {
-		logSection(t, "OUTPUT DIFF", diff, r.TrimSpace)
-		t.Fail()
-		return // TODO: make stubbed fail panic
+		return
 	}
+
+	if _, err := f.Seek(0, io.SeekStart); err != nil {
+		t.Log("unable to rewind output file:", err)
+		t.Fail()
+		return
+	}
+
+	logSection(t, "OUTPUT DIFF", diff, r.TrimSpace)
+	r.BlessStrategy.bless(t, a, f)
+	t.Fail()
 }
 
 func location(c test.Content) string {
-	if c.Line == 0 {
+	if c.IsEntireFile() {
 		return c.File
 	}
 	return fmt.Sprintf("%s:%d", c.File, c.Line)

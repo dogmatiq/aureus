@@ -56,6 +56,12 @@ type ContentEnvelope struct {
 	// the content represents the entire file.
 	Line int
 
+	// The half-open range [Begin, End) is the section within the file that
+	// contains the content, given in bytes.
+	//
+	// If the range is [0, 0), the content represents the entire file.
+	Begin, End int64
+
 	// Skip is a flag that indicates whether this content should be skipped when
 	// running tests.
 	Skip bool
@@ -70,11 +76,18 @@ func (e ContentEnvelope) AsTestContent() test.Content {
 		ContentMetaData: test.ContentMetaData{
 			File:       e.File,
 			Line:       e.Line,
+			Begin:      e.Begin,
+			End:        e.End,
 			Language:   e.Content.Language,
 			Attributes: e.Content.Attributes,
 		},
 		Data: e.Content.Data,
 	}
+}
+
+// IsEntireFile returns true if the content occupies the entire file.
+func (e ContentEnvelope) IsEntireFile() bool {
+	return e.Begin == 0 && e.End == 0
 }
 
 // SeparateContentByRole separates content into inputs and outputs.
