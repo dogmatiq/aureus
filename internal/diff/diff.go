@@ -281,7 +281,7 @@ func ColorDiff(
 	lines := bytes.Split(diff, newline)
 
 	for i, line := range lines {
-		if len(line) == 0 {
+		if len(bytes.TrimSpace(line)) == 0 {
 			continue
 		}
 

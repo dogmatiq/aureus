@@ -48,8 +48,18 @@ func (*BlessAvailable) bless(
 	pattern := strings.Join(atoms, "/")
 
 	t.Helper()
-	t.Log(`To accept the current output as correct, re-run this test with the -aureus.bless flag:`)
-	t.Log("  ", fmt.Sprintf("go test -aureus.bless -run %q ./...", pattern))
+
+	logSection(
+		t,
+		"BLESS",
+		fmt.Appendf(
+			nil,
+			"To accept the current output as correct, use the -aureus.bless flag:\n\n"+
+				"  go test -aureus.bless -run %q ./...",
+			pattern,
+		),
+		false,
+	)
 }
 
 // BlessEnabled is a [BlessStrategy] that explicitly enables blessing of failed
@@ -63,11 +73,18 @@ func (s *BlessEnabled) bless(
 ) {
 	t.Helper()
 
+	message := `The current output has been blessed. Future runs will consider this output correct.`
 	if err := edit(a, r); err != nil {
-		t.Log("Unable to bless output:", err)
-	} else {
-		t.Log(`The current output has been blessed. Future runs will consider this output correct.`)
+		message = "Unable to bless output: " + err.Error()
 	}
+
+	logSection(
+		t,
+		"BLESS",
+		[]byte(message),
+		false,
+	)
+
 }
 
 func edit(a test.Assertion, r *os.File) error {

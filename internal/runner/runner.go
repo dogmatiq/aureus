@@ -90,7 +90,7 @@ func (r *Runner[T]) assert(t T, a test.Assertion) {
 		return
 	}
 
-	logSection(t, "OUTPUT DIFF", diff, r.TrimSpace)
+	logSection(t, "OUTPUT DIFF", diff, true)
 	r.BlessStrategy.bless(t, a, f)
 	t.Fail()
 }
@@ -102,15 +102,15 @@ func location(c test.Content) string {
 	return fmt.Sprintf("%s:%d", c.File, c.Line)
 }
 
-func log[T TestingT[T]](t T, fn func(w *strings.Builder)) {
+func log(t LoggerT, fn func(w *strings.Builder)) {
 	t.Helper()
 	var w strings.Builder
 	fn(&w)
 	t.Log(w.String())
 }
 
-func logSection[T TestingT[T]](
-	t T,
+func logSection(
+	t LoggerT,
 	name string,
 	data []byte,
 	trimSpace bool,
@@ -119,8 +119,14 @@ func logSection[T TestingT[T]](
 	t.Helper()
 
 	log(t, func(w *strings.Builder) {
-		w.WriteString(separator)
-		w.WriteString(" BEGIN ")
+		w.WriteString("\n")
+		w.WriteString("\n")
+
+		w.WriteString("\x1b[1m")
+		w.WriteString("╭────")
+
+		w.WriteString("\x1b[7m") // inverse
+		w.WriteString(" ")
 		w.WriteString(name)
 
 		if len(extra) > 0 {
@@ -131,24 +137,24 @@ func logSection[T TestingT[T]](
 			w.WriteByte(')')
 		}
 
-		w.WriteByte(' ')
-		w.WriteString(separator)
-	})
+		w.WriteString(" ")
+		w.WriteString("\x1b[27m") // reset inverse
+		w.WriteString("────\x1b[0m────\x1b[2m──┈\x1b[0m\n")
 
-	if trimSpace {
-		data = bytes.TrimSpace(data)
-	}
-	for _, line := range bytes.Split(data, newLine) {
-		t.Log(string(line))
-	}
+		w.WriteString("\x1b[1m│\x1b[0m\n")
 
-	log(t, func(w *strings.Builder) {
-		w.WriteString(separator)
-		w.WriteString(" END ")
-		w.WriteString(name)
-		w.WriteByte(' ')
-		w.WriteString(separator)
-		w.WriteByte('\n')
+		if trimSpace {
+			data = bytes.TrimSpace(data)
+		}
+
+		for _, line := range bytes.Split(data, newLine) {
+			w.WriteString("\x1b[1m│\x1b[0m  ")
+			w.Write(line)
+			w.WriteByte('\n')
+		}
+
+		w.WriteString("\x1b[1m│\x1b[0m\n")
+		w.WriteString("\x1b[1m╰────\x1b[0m────\x1b[2m──┈\x1b[0m\n")
 	})
 }
 
