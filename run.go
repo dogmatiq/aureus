@@ -1,6 +1,10 @@
 package aureus
 
 import (
+	"path"
+	"runtime"
+	"strings"
+
 	"github.com/dogmatiq/aureus/internal/cliflags"
 	"github.com/dogmatiq/aureus/internal/loader/fileloader"
 	"github.com/dogmatiq/aureus/internal/loader/markdownloader"
@@ -34,10 +38,12 @@ func Run[T runner.TestingT[T]](
 	t.Helper()
 
 	opts := runOptions{
-		Dir:           "./testdata",
-		Recursive:     true,
-		TrimSpace:     true,
-		BlessStrategy: &runner.BlessAvailable{},
+		Dir:       "./testdata",
+		Recursive: true,
+		TrimSpace: true,
+		BlessStrategy: &runner.BlessAvailable{
+			PackagePath: guessPackagePath(),
+		},
 	}
 
 	if cliflags.Get().Bless {
@@ -130,6 +136,46 @@ func Bless(on bool) RunOption {
 			o.BlessStrategy = &runner.BlessEnabled{}
 		} else {
 			o.BlessStrategy = &runner.BlessDisabled{}
+		}
+	}
+}
+
+// guessPackagePath attempts to determine the fully-qualified package path of
+// the package that called [Run], assuming that this is the package being
+// tested.
+func guessPackagePath() string {
+	// skip Callers(), this function, and Run().
+	var pc [64]uintptr
+	count := runtime.Callers(3, pc[:])
+	frames := runtime.CallersFrames(pc[:count])
+
+	for {
+		fr, more := frames.Next()
+
+		// The function name is fully qualified, e.g.
+		// "example.com/repo/pkg.TestSomething.func1".
+		parent, fn := path.Split(fr.Function)
+
+		// Expect the function the be prefixed with the package name.
+		if n := strings.IndexByte(fn, '.'); n != -1 {
+			pkg := fn[:n]
+			fn = fn[n+1:]
+
+			// We're looking for the "Test*(t *testing.T)" function, ideally.
+			if !strings.HasPrefix(fn, "Test") {
+				continue
+			}
+
+			// We only packages named "*_test" even though it's possible to
+			// place tests in "regular packages". This accounts for some forms
+			// of test helpers that have been moved into other packages.
+			if pkg, ok := strings.CutSuffix(pkg, "_test"); ok {
+				return path.Join(parent, pkg)
+			}
+		}
+
+		if !more {
+			return ""
 		}
 	}
 }

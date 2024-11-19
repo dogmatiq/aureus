@@ -10,6 +10,16 @@ The format is based on [Keep a Changelog], and this project adheres to
 [Keep a Changelog]: https://keepachangelog.com/en/1.0.0/
 [Semantic Versioning]: https://semver.org/spec/v2.0.0.html
 
+## [0.2.5] - 2024-11-19
+
+### Fixed
+
+- Fixed order of parameters when suggesting `go test` commands to run.
+- Attempt to suggest a single package to run with `-aureus.bless`, instead of
+  `./...`. The latter works, but can produce error output messages if some
+  packages don't use Aureus.
+- Fixed escaping of shell parameters.
+
 ## [0.2.4] - 2024-11-18
 
 ### Added
@@ -81,6 +91,7 @@ The format is based on [Keep a Changelog], and this project adheres to
 [0.2.2]: https://github.com/dogmatiq/aureus/releases/tag/v0.2.2
 [0.2.3]: https://github.com/dogmatiq/aureus/releases/tag/v0.2.3
 [0.2.4]: https://github.com/dogmatiq/aureus/releases/tag/v0.2.4
+[0.2.5]: https://github.com/dogmatiq/aureus/releases/tag/v0.2.5
 
 <!-- version template
 ## [0.0.1] - YYYY-MM-DD

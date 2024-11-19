@@ -1,6 +1,7 @@
 package runner
 
 import (
+	"bytes"
 	"fmt"
 	"io"
 	"os"
@@ -34,30 +35,43 @@ func (*BlessDisabled) bless(LoggerT, test.Assertion, *os.File) {}
 
 // BlessAvailable is a [BlessStrategy] that instructs the user that blessing may
 // be activated by using the -aureus.bless flag on the command line.
-type BlessAvailable struct{}
+type BlessAvailable struct {
+	PackagePath string
+}
 
-func (*BlessAvailable) bless(
+func (s *BlessAvailable) bless(
 	t LoggerT,
 	_ test.Assertion,
 	_ *os.File,
 ) {
+	t.Helper()
+
 	atoms := strings.Split(t.Name(), "/")
 	for i, atom := range atoms {
 		atoms[i] = "^" + regexp.QuoteMeta(atom) + "$"
 	}
 	pattern := strings.Join(atoms, "/")
 
-	t.Helper()
+	var w bytes.Buffer
+	w.WriteString("To accept the current output as correct, use the -aureus.bless flag:")
+	w.WriteString("\n\n")
+	w.WriteString("  go test ")
+
+	if s.PackagePath == "" {
+		// this will work, typically, but some packages may complain about not
+		// understanding the -aureus.bless flag
+		w.WriteString("./...")
+	} else {
+		w.WriteString(shellQuote(s.PackagePath))
+	}
+
+	w.WriteString(" -aureus.bless -run ")
+	w.WriteString(shellQuote(pattern))
 
 	logSection(
 		t,
 		"BLESS",
-		fmt.Appendf(
-			nil,
-			"To accept the current output as correct, use the -aureus.bless flag:\n\n"+
-				"  go test -aureus.bless -run %q ./...",
-			pattern,
-		),
+		w.Bytes(),
 		false,
 	)
 }
@@ -214,4 +228,20 @@ func fileSize(f *os.File) (int64, error) {
 		return 0, fmt.Errorf("unable to determine file size of %s: %w", f.Name(), err)
 	}
 	return stat.Size(), nil
+}
+
+func shellQuote(s string) string {
+	var w strings.Builder
+	w.WriteByte('\'')
+
+	for _, r := range s {
+		if r == '\'' {
+			w.WriteString("'\"'\"'")
+		} else {
+			w.WriteRune(r)
+		}
+	}
+
+	w.WriteByte('\'')
+	return w.String()
 }
