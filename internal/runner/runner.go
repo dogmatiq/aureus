@@ -124,7 +124,7 @@ func (r *Runner[T]) assert(t T, a test.Assertion) {
 
 		messages = append(
 			messages,
-			"The current \x1b[33moutput has been blessed\x1b[0m. Future runs will consider this output correct.",
+			"\x1b[1mThe current \x1b[33moutput has been blessed\x1b[0m. Future runs will consider this output correct.\x1b[0m",
 		)
 	}
 

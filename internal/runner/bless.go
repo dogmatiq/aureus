@@ -116,19 +116,17 @@ func shrink(w *os.File, pos, before, after int64) error {
 
 func grow(w *os.File, pos, before, after int64) error {
 	delta := after - before
-	move := before - pos + 1
+	move := before - pos
 	size := min(move, 4096)
 	buf := make([]byte, size)
 
+	// (1) move the partial chunk that doesn't fill the entire buffer first.
 	n := move % size
 	if n == 0 {
 		n = size
 	}
 
-	cursor := before - n
-
-	// Move the rest in chunks of the full buffer size.
-	for cursor >= pos {
+	for cursor := before - n; cursor >= pos; cursor -= n {
 		_, err := w.ReadAt(buf[:n], cursor)
 		if err != nil {
 			return err
@@ -138,9 +136,7 @@ func grow(w *os.File, pos, before, after int64) error {
 			return err
 		}
 
-		fmt.Printf(">> moved %d byte from %d to %d (%q)\n", size, cursor, cursor+delta, string(buf[:n]))
-
-		cursor -= n
+		// (2) move the rest of the content in chunks of the full buffer size.
 		n = size
 	}
 
