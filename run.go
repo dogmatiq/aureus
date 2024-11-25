@@ -38,12 +38,10 @@ func Run[T runner.TestingT[T]](
 	t.Helper()
 
 	opts := runOptions{
-		Dir:       "./testdata",
-		Recursive: true,
-		TrimSpace: true,
-		BlessStrategy: &runner.BlessAvailable{
-			PackagePath: guessPackagePath(),
-		},
+		Dir:           "./testdata",
+		Recursive:     true,
+		TrimSpace:     true,
+		BlessStrategy: runner.BlessAvailable,
 	}
 
 	if cliflags.Get().Bless {
@@ -76,6 +74,7 @@ func Run[T runner.TestingT[T]](
 		},
 		TrimSpace:     opts.TrimSpace,
 		BlessStrategy: opts.BlessStrategy,
+		PackagePath:   guessPackagePath(),
 	}
 
 	tests := test.Merge(fileTests, markdownTests)
@@ -133,9 +132,9 @@ func TrimSpace(on bool) RunOption {
 func Bless(on bool) RunOption {
 	return func(o *runOptions) {
 		if on {
-			o.BlessStrategy = &runner.BlessEnabled{}
+			o.BlessStrategy = runner.BlessEnabled
 		} else {
-			o.BlessStrategy = &runner.BlessDisabled{}
+			o.BlessStrategy = runner.BlessDisabled
 		}
 	}
 }

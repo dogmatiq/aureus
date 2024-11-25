@@ -28,7 +28,7 @@ func TestRunner(t *testing.T) {
 			) error {
 				return prettyPrint(in, out)
 			},
-			BlessStrategy: &BlessDisabled{},
+			BlessStrategy: BlessDisabled,
 		}
 
 		runner.Run(t, tst)
@@ -49,7 +49,7 @@ func TestRunner(t *testing.T) {
 			) error {
 				return prettyPrint(in, out)
 			},
-			BlessStrategy: &BlessDisabled{},
+			BlessStrategy: BlessDisabled,
 		}
 
 		x := &testingT{T: t}

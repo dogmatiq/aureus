@@ -1,107 +1,32 @@
 package runner
 
 import (
-	"bytes"
 	"fmt"
 	"io"
 	"os"
-	"regexp"
-	"strings"
 
 	"github.com/dogmatiq/aureus/internal/test"
 )
 
-// BlessStrategy is a strategy for blessing failed tests.
-type BlessStrategy interface {
-	// bless updates the file containing an assertion's expected output to match
-	// its actual output.
-	//
-	// a is the assertion that failed. r is the file containing the blessed
-	// output that will replace the current expectation.
-	bless(
-		t LoggerT,
-		a test.Assertion,
-		r *os.File,
-	)
-}
+// BlessStrategy is a strategy for accepting failed test output as the new
+// expectation, known as "blessing" the output.
+type BlessStrategy int
 
-// BlessDisabled is a [BlessStrategy] that explicitly disables blessing of
-// failed tests.
-//
-// It implies that the -aureus.bless flag on the command line is ignored.
-type BlessDisabled struct{}
+const (
+	// BlessAvailable is a [BlessStrategy] that instructs the user that blessing
+	// may be activated by using the -aureus.bless flag on the command line.
+	BlessAvailable BlessStrategy = iota
 
-func (*BlessDisabled) bless(LoggerT, test.Assertion, *os.File) {}
+	// BlessEnabled is a [BlessStrategy] that explicitly enables blessing of
+	// failed tests.
+	BlessEnabled
 
-// BlessAvailable is a [BlessStrategy] that instructs the user that blessing may
-// be activated by using the -aureus.bless flag on the command line.
-type BlessAvailable struct {
-	PackagePath string
-}
+	// BlessDisabled is a [BlessStrategy] that explicitly disables blessing of
+	// failed tests.
+	BlessDisabled
+)
 
-func (s *BlessAvailable) bless(
-	t LoggerT,
-	_ test.Assertion,
-	_ *os.File,
-) {
-	t.Helper()
-
-	atoms := strings.Split(t.Name(), "/")
-	for i, atom := range atoms {
-		atoms[i] = "^" + regexp.QuoteMeta(atom) + "$"
-	}
-	pattern := strings.Join(atoms, "/")
-
-	var w bytes.Buffer
-	w.WriteString("To accept the current output as correct, use the -aureus.bless flag:")
-	w.WriteString("\n\n")
-	w.WriteString("  go test ")
-
-	if s.PackagePath == "" {
-		// this will work, typically, but some packages may complain about not
-		// understanding the -aureus.bless flag
-		w.WriteString("./...")
-	} else {
-		w.WriteString(shellQuote(s.PackagePath))
-	}
-
-	w.WriteString(" -aureus.bless -run ")
-	w.WriteString(shellQuote(pattern))
-
-	logSection(
-		t,
-		"BLESS",
-		w.Bytes(),
-		false,
-	)
-}
-
-// BlessEnabled is a [BlessStrategy] that explicitly enables blessing of failed
-// tests.
-type BlessEnabled struct{}
-
-func (s *BlessEnabled) bless(
-	t LoggerT,
-	a test.Assertion,
-	r *os.File,
-) {
-	t.Helper()
-
-	message := `The current output has been blessed. Future runs will consider this output correct.`
-	if err := edit(a, r); err != nil {
-		message = "Unable to bless output: " + err.Error()
-	}
-
-	logSection(
-		t,
-		"BLESS",
-		[]byte(message),
-		false,
-	)
-
-}
-
-func edit(a test.Assertion, r *os.File) error {
+func bless(a test.Assertion, r *os.File) error {
 	// TODO: Tests are loaded using an [fs.FS], so the file system is not
 	// necessarily the host file system.
 	//
@@ -228,20 +153,4 @@ func fileSize(f *os.File) (int64, error) {
 		return 0, fmt.Errorf("unable to determine file size of %s: %w", f.Name(), err)
 	}
 	return stat.Size(), nil
-}
-
-func shellQuote(s string) string {
-	var w strings.Builder
-	w.WriteByte('\'')
-
-	for _, r := range s {
-		if r == '\'' {
-			w.WriteString("'\"'\"'")
-		} else {
-			w.WriteRune(r)
-		}
-	}
-
-	w.WriteByte('\'')
-	return w.String()
 }

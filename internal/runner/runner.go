@@ -17,6 +17,7 @@ type Runner[T TestingT[T]] struct {
 	GenerateOutput OutputGenerator[T]
 	TrimSpace      bool // TODO: make this a loader concern
 	BlessStrategy  BlessStrategy
+	PackagePath    string
 }
 
 // Run makes the assertions described by all documents within a [TestSuite].
@@ -49,10 +50,10 @@ func (r *Runner[T]) assert(t T, a test.Assertion) {
 	t.Helper()
 	logSection(
 		t,
-		"INPUT",
+		fmt.Sprintf("INPUT (%s)", location(a.Input)),
 		a.Input.Data,
+		"\x1b[2m",
 		r.TrimSpace,
-		location(a.Input),
 	)
 
 	f, err := generateOutput(t, r.GenerateOutput, a.Input, a.Output)
@@ -79,8 +80,20 @@ func (r *Runner[T]) assert(t T, a test.Assertion) {
 		return
 	}
 
+	messages := []string{
+		"\x1b[1mTo run this test again, use:\n\n" +
+			"    \x1b[2m" + r.goTestCommand(t) + "\x1b[0m",
+	}
+
 	if diff == nil {
-		logSection(t, "OUTPUT", a.Output.Data, r.TrimSpace, location(a.Output))
+		logSection(
+			t,
+			fmt.Sprintf("OUTPUT (%s)", location(a.Output)),
+			a.Output.Data,
+			"\x1b[33;2m",
+			r.TrimSpace,
+			messages...,
+		)
 		return
 	}
 
@@ -90,9 +103,40 @@ func (r *Runner[T]) assert(t T, a test.Assertion) {
 		return
 	}
 
-	logSection(t, "OUTPUT DIFF", diff, true)
-	r.BlessStrategy.bless(t, a, f)
-	t.Fail()
+	switch r.BlessStrategy {
+	case BlessAvailable:
+		t.Fail()
+		messages = append(
+			messages,
+			"\x1b[1mTo \x1b[33maccept this output as correct\x1b[37m from now on, add the \x1b[33m-aureus.bless\x1b[37m flag:\n\n"+
+				"    \x1b[2m"+r.goTestCommand(t)+" -aureus.bless\x1b[0m",
+		)
+
+	case BlessDisabled:
+		t.Fail()
+
+	case BlessEnabled:
+		if err := bless(a, f); err != nil {
+			t.Log("unable to bless output:", err)
+			t.Fail()
+			return
+		}
+
+		messages = append(
+			messages,
+			"The current \x1b[33moutput has been blessed\x1b[0m. Future runs will consider this output correct.",
+		)
+	}
+
+	logSection(
+		t,
+		"OUTPUT DIFF",
+		diff,
+		"",
+		true,
+		messages...,
+	)
+
 }
 
 func location(c test.Content) string {
@@ -111,14 +155,17 @@ func log(t LoggerT, fn func(w *strings.Builder)) {
 
 func logSection(
 	t LoggerT,
-	name string,
-	data []byte,
+	title string,
+	body []byte,
+	bodyANSI string,
 	trimSpace bool,
-	extra ...any,
+	messages ...string,
 ) {
 	t.Helper()
 
 	log(t, func(w *strings.Builder) {
+		w.WriteString("\x1b[0m")
+
 		w.WriteString("\n")
 		w.WriteString("\n")
 
@@ -127,15 +174,7 @@ func logSection(
 
 		w.WriteString("\x1b[7m") // inverse
 		w.WriteString(" ")
-		w.WriteString(name)
-
-		if len(extra) > 0 {
-			w.WriteString(" (")
-			for _, v := range extra {
-				fmt.Fprint(w, v)
-			}
-			w.WriteByte(')')
-		}
+		w.WriteString(title)
 
 		w.WriteString(" ")
 		w.WriteString("\x1b[27m") // reset inverse
@@ -144,17 +183,25 @@ func logSection(
 		w.WriteString("\x1b[1m│\x1b[0m\n")
 
 		if trimSpace {
-			data = bytes.TrimSpace(data)
+			body = bytes.TrimSpace(body)
 		}
 
-		for _, line := range bytes.Split(data, newLine) {
+		for _, line := range bytes.Split(body, newLine) {
 			w.WriteString("\x1b[1m│\x1b[0m  ")
+			w.WriteString(bodyANSI)
 			w.Write(line)
-			w.WriteByte('\n')
+			w.WriteString("\x1b[0m\n")
 		}
 
 		w.WriteString("\x1b[1m│\x1b[0m\n")
 		w.WriteString("\x1b[1m╰────\x1b[0m────\x1b[2m──┈\x1b[0m\n")
+
+		for _, t := range messages {
+			w.WriteString("\n")
+			w.WriteString("\x1b[33m✦\x1b[0m ")
+			w.WriteString(t)
+			w.WriteString("\x1b[0m\n")
+		}
 	})
 }
 
@@ -180,3 +227,8 @@ func computeDiff(
 
 	return diff.ColorDiff(wantLoc, wantData, gotLoc, gotData), nil
 }
+
+var (
+	separator = strings.Repeat("=", 10)
+	newLine   = []byte("\n")
+)
