@@ -10,6 +10,13 @@ The format is based on [Keep a Changelog], and this project adheres to
 [Keep a Changelog]: https://keepachangelog.com/en/1.0.0/
 [Semantic Versioning]: https://semver.org/spec/v2.0.0.html
 
+## [0.2.8] - 2024-11-26
+
+### Fixed
+
+- Unnamed file-based tests are now treated as a group like all other tests,
+  allowing unnamed test matrices.
+
 ## [0.2.7] - 2024-11-26
 
 ### Changed
@@ -128,6 +135,7 @@ The format is based on [Keep a Changelog], and this project adheres to
 [0.2.5]: https://github.com/dogmatiq/aureus/releases/tag/v0.2.5
 [0.2.6]: https://github.com/dogmatiq/aureus/releases/tag/v0.2.6
 [0.2.7]: https://github.com/dogmatiq/aureus/releases/tag/v0.2.7
+[0.2.8]: https://github.com/dogmatiq/aureus/releases/tag/v0.2.8
 
 <!-- version template
 ## [0.0.1] - YYYY-MM-DD
