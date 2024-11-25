@@ -11,11 +11,16 @@ import (
 // a test.
 func RenderTest(t test.Test) []byte {
 	var w bytes.Buffer
+	w.WriteString("test")
 
-	fmt.Fprintf(&w, "test %q", t.Name)
+	if t.Name != "" {
+		fmt.Fprintf(&w, " %q", t.Name)
+	}
+
 	if t.Skip {
 		w.WriteString(" [skipped]")
 	}
+
 	w.WriteString(" {\n")
 
 	for _, s := range t.SubTests {

@@ -43,10 +43,23 @@ func LoadContent(name string, f fs.File) (loader.Content, error) {
 			lang = atoms[n]
 		}
 
+		var group *loader.Group
+		if i == 0 {
+			// If we're in the first "atom" of the filename it means there is no
+			// named portion (the filename starts with the input/output marker),
+			// but we still want to group the inputs and outputs into a test
+			// matrix.
+			group = loader.UnnamedGroup()
+		} else {
+			group = loader.NamedGroup(
+				strings.Join(atoms[:i], "."),
+			)
+		}
+
 		return loader.Content{
 			Language: lang,
 			Data:     data,
-			Group:    strings.Join(atoms[:i], "."),
+			Group:    group,
 			Role:     role,
 		}, nil
 	}

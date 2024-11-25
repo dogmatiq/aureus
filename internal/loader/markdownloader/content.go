@@ -70,10 +70,13 @@ func LoadContent(
 	}
 
 	c := loader.Content{
-		Group:      group,
 		Language:   lang,
 		Attributes: attrs,
 		Data:       []byte(code),
+	}
+
+	if group != "" {
+		c.Group = loader.NamedGroup(group)
 	}
 
 	if len(headings) > 0 {

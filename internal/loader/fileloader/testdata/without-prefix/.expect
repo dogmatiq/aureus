@@ -1,13 +1,51 @@
 test "without-prefix" {
-    test "anonymous test in output.txt" {
-        assertion {
-            input "testdata/without-prefix/input.txt" {
-                lang = "txt"
-                data = "INPUT\n"
+    test {
+        test "one...one" {
+            assertion {
+                input "testdata/without-prefix/input.one" {
+                    lang = "one"
+                    data = "INPUT 1\n"
+                }
+                output "testdata/without-prefix/output.one" {
+                    lang = "one"
+                    data = "OUTPUT 1\n"
+                }
             }
-            output "testdata/without-prefix/output.txt" {
-                lang = "txt"
-                data = "OUTPUT\n"
+        }
+        test "two...one" {
+            assertion {
+                input "testdata/without-prefix/input.two" {
+                    lang = "two"
+                    data = "INPUT 2\n"
+                }
+                output "testdata/without-prefix/output.one" {
+                    lang = "one"
+                    data = "OUTPUT 1\n"
+                }
+            }
+        }
+        test "one...two" {
+            assertion {
+                input "testdata/without-prefix/input.one" {
+                    lang = "one"
+                    data = "INPUT 1\n"
+                }
+                output "testdata/without-prefix/output.two" {
+                    lang = "two"
+                    data = "OUTPUT 2\n"
+                }
+            }
+        }
+        test "two...two" {
+            assertion {
+                input "testdata/without-prefix/input.two" {
+                    lang = "two"
+                    data = "INPUT 2\n"
+                }
+                output "testdata/without-prefix/output.two" {
+                    lang = "two"
+                    data = "OUTPUT 2\n"
+                }
             }
         }
     }

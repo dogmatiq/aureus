@@ -28,7 +28,7 @@ type Content struct {
 
 	// Group is the name of the group to which the content belongs. Inputs and
 	// outputs in the same group form a matrix of test cases.
-	Group string
+	Group *Group
 
 	// Caption is an optional disambiguating name, title or short description of
 	// the content.
@@ -102,4 +102,46 @@ func SeparateContentByRole(content []ContentEnvelope) (inputs, outputs []Content
 	}
 
 	return inputs, outputs
+}
+
+// Group is the group to which content belongs. Inputs and outputs in the same
+// group form a matrix of test cases.
+type Group struct {
+	name string
+}
+
+// IsNamed returns true if the group has a name.
+func (g *Group) IsNamed() bool {
+	return g.name != ""
+}
+
+// Name returns the name of the group.
+//
+// It panics if the group is unnamed.
+func (g *Group) Name() string {
+	if !g.IsNamed() {
+		panic("group is un-named")
+	}
+	return g.name
+}
+
+// NamedGroup returns a [Group] with the given name.
+func NamedGroup(name string) *Group {
+	if name == "" {
+		panic("group name must not be empty")
+	}
+	return &Group{name}
+}
+
+// UnnamedGroup returns a [Group] with no name.
+func UnnamedGroup() *Group {
+	return &Group{}
+}
+
+// groupName returns the name of g as a string.
+func groupName(g *Group) string {
+	if g == nil {
+		return ""
+	}
+	return g.name
 }

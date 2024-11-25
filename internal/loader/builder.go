@@ -41,7 +41,7 @@ func (b *TestBuilder) AddContent(env ContentEnvelope) error {
 		return nil
 	}
 
-	if env.Content.Group == "" {
+	if env.Content.Group == nil {
 		return b.addAnonymousContent(env)
 	}
 
@@ -58,10 +58,10 @@ func (b *TestBuilder) addContent(env ContentEnvelope) error {
 
 	switch env.Content.Role {
 	case Input:
-		g := b.group(env.Content.Group)
+		g := b.group(groupName(env.Content.Group))
 		g.Inputs = append(g.Inputs, env)
 	case Output:
-		g := b.group(env.Content.Group)
+		g := b.group(groupName(env.Content.Group))
 		g.Outputs = append(g.Outputs, env)
 	}
 
