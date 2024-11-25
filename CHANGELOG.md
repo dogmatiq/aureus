@@ -10,6 +10,33 @@ The format is based on [Keep a Changelog], and this project adheres to
 [Keep a Changelog]: https://keepachangelog.com/en/1.0.0/
 [Semantic Versioning]: https://semver.org/spec/v2.0.0.html
 
+## [0.2.6] - 2024-11-25
+
+### Added
+
+- Added a suggested `go test` command for re-running a failed test without
+  blessing it. There is nothing specific to Aureus about this command, but it's
+  useful considering the `-run` flag's pattern syntax can make it tricky to
+  isolate a single test.
+
+### Changed
+
+- `-aureus.bless` now prevents the blessed test from being marked as a failure.
+  This means you don't see the output of the test, so the `go test` command that
+  is suggested when a test may be blessed now includes `-v`.
+- Suggested `go test` commands now include `-count 1` to prevent the test cache
+  from preventing a re-run of the test, even if the input or output files have
+  changed.
+- A passing test now renders the golden file in dim yellow ("gold") color.
+  Failed tests continue to use a colorized diff.
+- Changed how suggested commands are rendered to make them occupy less visual
+  space.
+
+### Fixed
+
+- Fixed issue that could cause loss of trailing characters of fenced code blocks
+  when blessing markdown tests.
+
 ## [0.2.5] - 2024-11-19
 
 ### Fixed
@@ -92,6 +119,7 @@ The format is based on [Keep a Changelog], and this project adheres to
 [0.2.3]: https://github.com/dogmatiq/aureus/releases/tag/v0.2.3
 [0.2.4]: https://github.com/dogmatiq/aureus/releases/tag/v0.2.4
 [0.2.5]: https://github.com/dogmatiq/aureus/releases/tag/v0.2.5
+[0.2.6]: https://github.com/dogmatiq/aureus/releases/tag/v0.2.6
 
 <!-- version template
 ## [0.0.1] - YYYY-MM-DD
