@@ -24,13 +24,6 @@ func LoadContent(name string, f fs.File) (loader.Content, error) {
 	atoms := strings.Split(base, ".")
 
 	for i, x := range atoms {
-		if i == 0 {
-			// We don't look for the input/output marker in the first atom, as
-			// there must be at least one atom before it from which we deduce
-			// the test name.
-			continue
-		}
-
 		var role loader.ContentRole
 		if strings.EqualFold(x, "input") {
 			role = loader.Input

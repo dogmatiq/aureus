@@ -1,0 +1,14 @@
+test "without-prefix" {
+    test "anonymous test in output.txt" {
+        assertion {
+            input "testdata/without-prefix/input.txt" {
+                lang = "txt"
+                data = "INPUT\n"
+            }
+            output "testdata/without-prefix/output.txt" {
+                lang = "txt"
+                data = "OUTPUT\n"
+            }
+        }
+    }
+}
