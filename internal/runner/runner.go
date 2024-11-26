@@ -85,7 +85,7 @@ func (r *Runner[T]) assert(t T, a test.Assertion) {
 			"    \x1b[2m" + r.goTestCommand(t) + "\x1b[0m",
 	}
 
-	if diff == nil {
+	if len(diff) == 0 {
 		logSection(
 			t,
 			fmt.Sprintf("OUTPUT (%s)", location(a.Output)),
@@ -221,8 +221,8 @@ func computeDiff(
 	}
 
 	if trimSpace {
-		wantData = append(wantData, '\n')
-		gotData = append(gotData, '\n')
+		wantData = append(bytes.TrimRight(wantData, "\n"), '\n')
+		gotData = append(bytes.TrimRight(gotData, "\n"), '\n')
 	}
 
 	return diff.ColorDiff(wantLoc, wantData, gotLoc, gotData), nil
