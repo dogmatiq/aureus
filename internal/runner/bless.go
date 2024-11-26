@@ -90,54 +90,54 @@ func resize(a test.Assertion, r, w *os.File) error {
 	)
 }
 
-func shrink(w *os.File, pos, before, after int64) error {
-	delta := after - before
+func shrink(w *os.File, endOfContent, fileLengthBefore, fileLengthAfter int64) error {
+	moveDistance := fileLengthBefore - fileLengthAfter
 	buf := make([]byte, 4096)
 
 	for {
-		n, err := w.ReadAt(buf, pos)
+		n, err := w.ReadAt(buf, endOfContent)
 		if err != nil && err != io.EOF {
 			return err
 		}
 
 		if n > 0 {
-			if _, err := w.WriteAt(buf[:n], pos+delta); err != nil {
+			if _, err := w.WriteAt(buf[:n], endOfContent-moveDistance); err != nil {
 				return err
 			}
 
-			pos += int64(n)
+			endOfContent += int64(n)
 		}
 
 		if err == io.EOF {
-			return w.Truncate(after)
+			return w.Truncate(fileLengthAfter)
 		}
 	}
 }
 
-func grow(w *os.File, pos, before, after int64) error {
-	delta := after - before
-	move := before - pos
-	size := min(move, 4096)
-	buf := make([]byte, size)
+func grow(w *os.File, endOfContent, fileLengthBefore, fileLengthAfter int64) error {
+	moveDistance := fileLengthAfter - fileLengthBefore
+	moveLength := fileLengthBefore - endOfContent
+	bufSize := min(moveLength, 4096)
+	buf := make([]byte, bufSize)
 
 	// (1) move the partial chunk that doesn't fill the entire buffer first.
-	n := move % size
-	if n == 0 {
-		n = size
+	chunkSize := moveLength % bufSize
+	if chunkSize == 0 {
+		chunkSize = bufSize
 	}
 
-	for cursor := before - n; cursor >= pos; cursor -= n {
-		_, err := w.ReadAt(buf[:n], cursor)
+	for cursor := fileLengthBefore - chunkSize; cursor >= endOfContent; cursor -= chunkSize {
+		_, err := w.ReadAt(buf[:chunkSize], cursor)
 		if err != nil {
 			return err
 		}
 
-		if _, err := w.WriteAt(buf[:n], cursor+delta); err != nil {
+		if _, err := w.WriteAt(buf[:chunkSize], cursor+moveDistance); err != nil {
 			return err
 		}
 
 		// (2) move the rest of the content in chunks of the full buffer size.
-		n = size
+		chunkSize = bufSize
 	}
 
 	return nil
