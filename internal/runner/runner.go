@@ -14,10 +14,11 @@ import (
 // Runner executes tests under any test framework with an interface similar to
 // Go's native [*testing.T].
 type Runner[T TestingT[T]] struct {
-	GenerateOutput OutputGenerator[T]
-	TrimSpace      bool // TODO: make this a loader concern
-	BlessStrategy  BlessStrategy
-	PackagePath    string
+	GenerateOutput  OutputGenerator[T]
+	TrimSpace       bool // TODO: make this a loader concern
+	BlessStrategy   BlessStrategy
+	AssertionFilter func(test.Assertion) bool
+	PackagePath     string
 }
 
 // Run makes the assertions described by all documents within a [TestSuite].
@@ -55,6 +56,11 @@ func (r *Runner[T]) assert(t T, a test.Assertion) {
 		"\x1b[2m",
 		r.TrimSpace,
 	)
+
+	if r.AssertionFilter != nil && !r.AssertionFilter(a) {
+		t.SkipNow()
+		return
+	}
 
 	f, err := generateOutput(t, r.GenerateOutput, a.Input, a.Output)
 	if err != nil {

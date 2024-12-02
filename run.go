@@ -44,8 +44,17 @@ func Run[T runner.TestingT[T]](
 		BlessStrategy: runner.BlessAvailable,
 	}
 
-	if cliflags.Get().Bless {
+	flags := cliflags.Get()
+	if flags.Bless {
 		Bless(true)(&opts)
+	}
+
+	if flags.Lang != "" {
+		pred := func(a test.Assertion) bool {
+			return a.Input.Language == flags.Lang ||
+				a.Output.Language == flags.Lang
+		}
+		AssertionFilter(pred)(&opts)
 	}
 
 	for _, opt := range options {
@@ -72,9 +81,10 @@ func Run[T runner.TestingT[T]](
 		GenerateOutput: func(t T, in runner.Input, out runner.Output) error {
 			return g(t, in, out)
 		},
-		TrimSpace:     opts.TrimSpace,
-		BlessStrategy: opts.BlessStrategy,
-		PackagePath:   guessPackagePath(),
+		TrimSpace:       opts.TrimSpace,
+		BlessStrategy:   opts.BlessStrategy,
+		AssertionFilter: opts.AssertionFilter,
+		PackagePath:     guessPackagePath(),
 	}
 
 	tests := test.Merge(fileTests, markdownTests)
@@ -92,10 +102,11 @@ func Run[T runner.TestingT[T]](
 type RunOption func(*runOptions)
 
 type runOptions struct {
-	Dir           string
-	Recursive     bool
-	TrimSpace     bool
-	BlessStrategy runner.BlessStrategy
+	Dir             string
+	Recursive       bool
+	TrimSpace       bool
+	BlessStrategy   runner.BlessStrategy
+	AssertionFilter func(test.Assertion) bool
 }
 
 // FromDir is a [RunOption] that sets the directory to search for tests. By
@@ -136,6 +147,15 @@ func Bless(on bool) RunOption {
 		} else {
 			o.BlessStrategy = runner.BlessDisabled
 		}
+	}
+}
+
+// AssertionFilter is a [RunOption] limits test execution to those tests that
+// use a language that matches the given predicate function. It does not prevent
+// the tests from being loaded.
+func AssertionFilter(pred func(test.Assertion) bool) RunOption {
+	return func(o *runOptions) {
+		o.AssertionFilter = pred
 	}
 }
 

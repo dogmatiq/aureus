@@ -10,6 +10,13 @@ The format is based on [Keep a Changelog], and this project adheres to
 [Keep a Changelog]: https://keepachangelog.com/en/1.0.0/
 [Semantic Versioning]: https://semver.org/spec/v2.0.0.html
 
+## [Unreleased]
+
+### Added
+
+- Added `-aureus.lang` flag, which skips any test that does not use the
+  specified language as either an input or an output.
+
 ## [0.2.9] - 2024-11-27
 
 ### Fixed
