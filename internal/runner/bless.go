@@ -26,56 +26,53 @@ const (
 	BlessDisabled
 )
 
-func bless(a test.Assertion, r *os.File) error {
+func bless(output test.Content, blessed []byte) error {
 	// TODO: Tests are loaded using an [fs.FS], so the file system is not
 	// necessarily the host file system.
 	//
 	// Ultimately, we probably need to make it the loader's responsibility to
 	// bless tests, since it is the loader that knows where the tests came from.
 
-	w, err := os.OpenFile(a.Output.File, os.O_RDWR, 0644)
+	f, err := os.OpenFile(output.File, os.O_RDWR, 0644)
 	if err != nil {
 		return fmt.Errorf("unable to open file containing expected output: %w", err)
 	}
-	defer w.Close()
+	defer f.Close()
 
-	if a.Output.IsEntireFile() {
-		n, err := io.Copy(w, r)
+	if output.IsEntireFile() {
+		n, err := f.Write(blessed)
 		if err != nil {
 			return err
 		}
-		return w.Truncate(n)
+		return f.Truncate(int64(n))
 	}
 
-	if err := resize(a, r, w); err != nil {
+	if err := resize(f, output, blessed); err != nil {
 		return fmt.Errorf("unable to resize expected output: %w", err)
 	}
 
-	if _, err := w.Seek(a.Output.Begin, io.SeekStart); err != nil {
+	if _, err := f.Seek(output.Begin, io.SeekStart); err != nil {
 		return err
 	}
 
-	_, err = io.Copy(w, r)
+	_, err = f.Write(blessed)
 	return err
 }
 
-func resize(a test.Assertion, r, w *os.File) error {
-	sizeExpected := a.Output.End - a.Output.Begin
-	sizeActual, err := fileSize(r)
-	if err != nil {
-		return err
-	}
+func resize(f *os.File, output test.Content, blessed []byte) error {
+	sizeWithinFile := output.End - output.Begin
+	sizeBlessed := int64(len(blessed))
 
-	if sizeExpected == sizeActual {
+	if sizeWithinFile == sizeBlessed {
 		return nil
 	}
 
-	sizeBefore, err := fileSize(w)
+	sizeBefore, err := fileSize(f)
 	if err != nil {
 		return err
 	}
 
-	sizeAfter := sizeBefore - sizeExpected + sizeActual
+	sizeAfter := sizeBefore - sizeWithinFile + sizeBlessed
 
 	op := shrink
 	if sizeAfter > sizeBefore {
@@ -83,8 +80,8 @@ func resize(a test.Assertion, r, w *os.File) error {
 	}
 
 	return op(
-		w,
-		a.Output.End,
+		f,
+		output.End,
 		sizeBefore,
 		sizeAfter,
 	)

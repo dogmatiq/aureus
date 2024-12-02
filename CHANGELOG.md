@@ -10,12 +10,18 @@ The format is based on [Keep a Changelog], and this project adheres to
 [Keep a Changelog]: https://keepachangelog.com/en/1.0.0/
 [Semantic Versioning]: https://semver.org/spec/v2.0.0.html
 
-## [Unreleased]
+## [0.2.10] - 2024-12-03
 
 ### Added
 
 - Added `-aureus.lang` flag, which skips any test that does not use the
   specified language as either an input or an output.
+
+### Fixed
+
+- The `-aureus.bless` flag now replaces the file content with the "sanitized"
+  version of the test output (after any whitespace trimming that occurs before
+  computing the diff, etc), rather than the raw test output.
 
 ## [0.2.9] - 2024-11-27
 
@@ -150,6 +156,7 @@ The format is based on [Keep a Changelog], and this project adheres to
 [0.2.7]: https://github.com/dogmatiq/aureus/releases/tag/v0.2.7
 [0.2.8]: https://github.com/dogmatiq/aureus/releases/tag/v0.2.8
 [0.2.9]: https://github.com/dogmatiq/aureus/releases/tag/v0.2.9
+[0.2.10]: https://github.com/dogmatiq/aureus/releases/tag/v0.2.10
 
 <!-- version template
 ## [0.0.1] - YYYY-MM-DD

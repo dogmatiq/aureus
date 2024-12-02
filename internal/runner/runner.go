@@ -54,7 +54,6 @@ func (r *Runner[T]) assert(t T, a test.Assertion) {
 		fmt.Sprintf("INPUT (%s)", location(a.Input)),
 		a.Input.Data,
 		"\x1b[2m",
-		r.TrimSpace,
 	)
 
 	if r.AssertionFilter != nil && !r.AssertionFilter(a) {
@@ -75,16 +74,23 @@ func (r *Runner[T]) assert(t T, a test.Assertion) {
 		}
 	}()
 
-	diff, err := computeDiff(
-		r.TrimSpace,
-		location(a.Output), bytes.NewReader(a.Output.Data),
-		f.Name(), f,
-	)
+	want := a.Output.Data
+	got, err := io.ReadAll(f)
 	if err != nil {
-		t.Log("unable to generate diff:", err)
-		t.Fail()
-		return
+		t.Log("unable to read output file:", err)
 	}
+
+	if r.TrimSpace {
+		want = append(bytes.TrimRight(want, "\n"), '\n')
+		got = append(bytes.TrimRight(got, "\n"), '\n')
+	}
+
+	diff := diff.ColorDiff(
+		location(a.Output),
+		want,
+		f.Name(),
+		got,
+	)
 
 	messages := []string{
 		"\x1b[1mTo run this test again, use:\n\n" +
@@ -97,15 +103,8 @@ func (r *Runner[T]) assert(t T, a test.Assertion) {
 			fmt.Sprintf("OUTPUT (%s)", location(a.Output)),
 			a.Output.Data,
 			"\x1b[33;2m",
-			r.TrimSpace,
 			messages...,
 		)
-		return
-	}
-
-	if _, err := f.Seek(0, io.SeekStart); err != nil {
-		t.Log("unable to rewind output file:", err)
-		t.Fail()
 		return
 	}
 
@@ -122,7 +121,7 @@ func (r *Runner[T]) assert(t T, a test.Assertion) {
 		t.Fail()
 
 	case BlessEnabled:
-		if err := bless(a, f); err != nil {
+		if err := bless(a.Output, got); err != nil {
 			t.Log("unable to bless output:", err)
 			t.Fail()
 			return
@@ -139,7 +138,6 @@ func (r *Runner[T]) assert(t T, a test.Assertion) {
 		"OUTPUT DIFF",
 		diff,
 		"",
-		true,
 		messages...,
 	)
 
@@ -164,7 +162,6 @@ func logSection(
 	title string,
 	body []byte,
 	bodyANSI string,
-	trimSpace bool,
 	messages ...string,
 ) {
 	t.Helper()
@@ -188,10 +185,6 @@ func logSection(
 
 		w.WriteString("\x1b[1m│\x1b[0m\n")
 
-		if trimSpace {
-			body = bytes.TrimSpace(body)
-		}
-
 		for _, line := range bytes.Split(body, newLine) {
 			w.WriteString("\x1b[1m│\x1b[0m  ")
 			w.WriteString(bodyANSI)
@@ -211,27 +204,25 @@ func logSection(
 	})
 }
 
-func computeDiff(
-	trimSpace bool,
-	wantLoc string, want io.Reader,
-	gotLoc string, got io.Reader,
+func (r *Runner[T]) computeDiff(
+	want test.Content,
+	got *os.File,
 ) ([]byte, error) {
-	wantData, err := io.ReadAll(want)
+	data, err := io.ReadAll(got)
 	if err != nil {
-		return nil, fmt.Errorf("unable to read expected output: %w", err)
+		return nil, fmt.Errorf("unable to read output file: %w", err)
 	}
 
-	gotData, err := io.ReadAll(got)
-	if err != nil {
-		return nil, fmt.Errorf("unable to read output: %w", err)
+	if r.TrimSpace {
+		data = append(bytes.TrimSpace(data), '\n')
 	}
 
-	if trimSpace {
-		wantData = append(bytes.TrimRight(wantData, "\n"), '\n')
-		gotData = append(bytes.TrimRight(gotData, "\n"), '\n')
-	}
-
-	return diff.ColorDiff(wantLoc, wantData, gotLoc, gotData), nil
+	return diff.ColorDiff(
+		location(want),
+		want.Data,
+		got.Name(),
+		data,
+	), nil
 }
 
 var (
