@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"slices"
 	"strings"
 
 	"github.com/dogmatiq/aureus/internal/diff"
@@ -184,6 +185,12 @@ func logSection(
 		w.WriteString("────\x1b[0m────\x1b[2m──┈\x1b[0m\n")
 
 		w.WriteString("\x1b[1m│\x1b[0m\n")
+
+		body = slices.Clone(body)
+		body, ok := bytes.CutSuffix(body, newLine)
+		if !ok {
+			body = append(body, []byte("\n(no newline)")...)
+		}
 
 		for _, line := range bytes.Split(body, newLine) {
 			w.WriteString("\x1b[1m│\x1b[0m  ")
