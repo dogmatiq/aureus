@@ -3,6 +3,8 @@ package loadertest
 import (
 	"bytes"
 	"fmt"
+	"maps"
+	"slices"
 
 	"github.com/dogmatiq/aureus/internal/test"
 )
@@ -62,6 +64,15 @@ func renderContent(label string, c test.Content) []byte {
 	if c.Language != "" {
 		fmt.Fprintf(&w, "    lang = %q\n", c.Language)
 	}
+
+	if len(c.Attributes) != 0 {
+		w.WriteString("    attributes {\n")
+		for _, k := range slices.Sorted(maps.Keys(c.Attributes)) {
+			fmt.Fprintf(&w, "        %q = %q\n", k, c.Attributes[k])
+		}
+		w.WriteString("    }\n")
+	}
+
 	fmt.Fprintf(&w, "    data = %q\n", string(c.Data))
 
 	w.WriteString("}")

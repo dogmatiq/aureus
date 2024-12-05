@@ -1,0 +1,18 @@
+test "attr-with-file-extension" {
+    test "test" {
+        assertion {
+            input "testdata/attr-with-file-extension/test.input.@foo=bar.@tag.txt" {
+                lang = "txt"
+                attributes {
+                    "foo" = "bar"
+                    "tag" = ""
+                }
+                data = "INPUT\n"
+            }
+            output "testdata/attr-with-file-extension/test.output.txt" {
+                lang = "txt"
+                data = "OUTPUT\n"
+            }
+        }
+    }
+}

@@ -1,12 +1,12 @@
 test "with-file-extension" {
     test "test" {
         assertion {
-            input "testdata/with-file-extension/test.input.txt" {
-                lang = "txt"
+            input "testdata/with-file-extension/test.input.multiple.atoms" {
+                lang = "multiple.atoms"
                 data = "INPUT\n"
             }
-            output "testdata/with-file-extension/test.output.txt" {
-                lang = "txt"
+            output "testdata/with-file-extension/test.output.multiple.atoms" {
+                lang = "multiple.atoms"
                 data = "OUTPUT\n"
             }
         }
