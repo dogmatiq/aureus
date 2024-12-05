@@ -10,6 +10,13 @@ The format is based on [Keep a Changelog], and this project adheres to
 [Keep a Changelog]: https://keepachangelog.com/en/1.0.0/
 [Semantic Versioning]: https://semver.org/spec/v2.0.0.html
 
+## [0.2.12] - 2024-12-05
+
+### Added
+
+- File-based tests can now include test attributes in the filename. Any filename
+  atom (dot separated component) that begins with an `@` is an attribute.
+
 ## [0.2.11] - 2024-12-03
 
 ### Fixed
@@ -164,6 +171,7 @@ The format is based on [Keep a Changelog], and this project adheres to
 [0.2.9]: https://github.com/dogmatiq/aureus/releases/tag/v0.2.9
 [0.2.10]: https://github.com/dogmatiq/aureus/releases/tag/v0.2.10
 [0.2.11]: https://github.com/dogmatiq/aureus/releases/tag/v0.2.11
+[0.2.12]: https://github.com/dogmatiq/aureus/releases/tag/v0.2.12
 
 <!-- version template
 ## [0.0.1] - YYYY-MM-DD
