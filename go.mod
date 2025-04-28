@@ -6,7 +6,7 @@ toolchain go1.24.1
 
 require (
 	github.com/dogmatiq/jumble v0.1.0
-	github.com/yuin/goldmark v1.7.10
+	github.com/yuin/goldmark v1.7.11
 	golang.org/x/net v0.39.0
 	golang.org/x/tools v0.32.0
 )
