@@ -8,5 +8,5 @@ require (
 	github.com/dogmatiq/jumble v0.1.0
 	github.com/yuin/goldmark v1.7.12
 	golang.org/x/net v0.42.0
-	golang.org/x/tools v0.34.0
+	golang.org/x/tools v0.35.0
 )
