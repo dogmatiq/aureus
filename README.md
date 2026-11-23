@@ -1,13 +1,16 @@
 <div align="center">
 
-# Aureus
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="https://dogmatiq.io/res/img/dynamic/repo/aureus/banner/dark.svg">
+  <img alt="Dogmatiq aureus" src="https://dogmatiq.io/res/img/dynamic/repo/aureus/banner/light.svg" height="44">
+</picture>
 
 A test runner for executing "golden file" tests in Go.
 
-[![Documentation](https://img.shields.io/badge/go.dev-documentation-007d9c?&style=for-the-badge)](https://pkg.go.dev/github.com/dogmatiq/aureus)
-[![Latest Version](https://img.shields.io/github/tag/dogmatiq/aureus.svg?&style=for-the-badge&label=semver)](https://github.com/dogmatiq/aureus/releases)
-[![Build Status](https://img.shields.io/github/actions/workflow/status/dogmatiq/aureus/ci.yml?style=for-the-badge&branch=main)](https://github.com/dogmatiq/aureus/actions/workflows/ci.yml)
-[![Code Coverage](https://img.shields.io/codecov/c/github/dogmatiq/aureus/main.svg?style=for-the-badge)](https://codecov.io/github/dogmatiq/aureus)
+[![API reference](https://dogmatiq.io/res/img/dynamic/repo/aureus/badge/docs.svg)](https://pkg.go.dev/github.com/dogmatiq/aureus)
+[![Latest version](https://dogmatiq.io/res/img/dynamic/repo/aureus/badge/semver.svg)](https://github.com/dogmatiq/aureus/releases)
+[![Build status](https://dogmatiq.io/res/img/dynamic/repo/aureus/badge/build.svg)](https://github.com/dogmatiq/aureus/actions/workflows/ci.yml)
+[![Code coverage](https://dogmatiq.io/res/img/dynamic/repo/aureus/badge/coverage.svg)](https://codecov.io/github/dogmatiq/aureus)
 
 </div>
 
