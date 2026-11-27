@@ -1,3 +1,3 @@
-~~~sql au:fixture
-SELECT 1;
-~~~
+```text au:fixture
+FIXTURE
+```

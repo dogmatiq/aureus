@@ -84,9 +84,11 @@ func Run[T runner.TestingT[T]](
 				Input:  a.Input,
 				Output: a.Output,
 			}
+
 			for _, fixture := range a.Fixtures {
 				assertion.Fixtures = append(assertion.Fixtures, fixture)
 			}
+
 			return g(t, assertion)
 		},
 		TrimSpace:       opts.TrimSpace,

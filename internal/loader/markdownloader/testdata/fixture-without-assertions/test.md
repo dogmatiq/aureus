@@ -1,3 +1,3 @@
-~~~sql au:fixture au:group=example
-SELECT 1;
-~~~
+```text au:fixture au:group=example
+FIXTURE
+```

@@ -104,6 +104,7 @@ func generateOutput[T TestingT[T]](
 			meta:   a.Output.ContentMetaData,
 		},
 	}
+
 	for _, fixture := range a.Fixtures {
 		assertion.Fixtures = append(
 			assertion.Fixtures,

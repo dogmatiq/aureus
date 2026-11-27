@@ -20,6 +20,7 @@ func prettyPrint(
 	}{
 		Indent: "  ",
 	}
+
 	for _, fixture := range a.Fixtures {
 		if fixture.Language() != "json" || fixture.Attributes()["role"] != "format" {
 			t.Fatal("the pretty-printer only accepts JSON format fixtures")

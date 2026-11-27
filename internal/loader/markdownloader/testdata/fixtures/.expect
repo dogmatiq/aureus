@@ -3,26 +3,26 @@ test "fixtures" {
         test "grp" {
             assertion {
                 fixture "testdata/fixtures/test.md:1" {
-                    lang = "sql"
+                    lang = "text"
                     attributes {
-                        "role" = "schema"
+                        "foo" = "bar"
                     }
-                    data = "CREATE TABLE example (value INTEGER);\n"
+                    data = "FIXTURE 1\n"
                 }
                 fixture "testdata/fixtures/test.md:5" {
-                    lang = "json"
+                    lang = "text"
                     attributes {
-                        "role" = "events"
+                        "foo" = "baz"
                     }
-                    data = "[{\"value\":1}]\n"
+                    data = "FIXTURE 2\n"
                 }
                 input "testdata/fixtures/test.md:9" {
-                    lang = "sql"
-                    data = "SELECT value FROM example;\n"
+                    lang = "text"
+                    data = "INPUT\n"
                 }
                 output "testdata/fixtures/test.md:13" {
-                    lang = "json"
-                    data = "[{\"value\":1}]\n"
+                    lang = "text"
+                    data = "OUTPUT\n"
                 }
             }
         }

@@ -1,15 +1,15 @@
-```sql au:fixture au:group=grp role=schema
-CREATE TABLE example (value INTEGER);
+```text au:fixture au:group=grp foo=bar
+FIXTURE 1
 ```
 
-```json au:fixture au:group=grp role=events
-[{"value":1}]
+```text au:fixture au:group=grp foo=baz
+FIXTURE 2
 ```
 
-```sql au:input au:group=grp
-SELECT value FROM example;
+```text au:input au:group=grp
+INPUT
 ```
 
-```json au:output au:group=grp
-[{"value":1}]
+```text au:output au:group=grp
+OUTPUT
 ```

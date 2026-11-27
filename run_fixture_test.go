@@ -13,28 +13,28 @@ import (
 
 func TestRun_fixtures(t *testing.T) {
 	t.Run("it supplies fresh fixtures to every input and output combination", func(t *testing.T) {
-		document := `~~~sql au:fixture au:group=example role=first
-first
+		document := `~~~text au:fixture au:group=example foo=bar
+FIXTURE 1
 ~~~
 
 ~~~text au:input au:group=example
-VALUE
+INPUT
 ~~~
 
 ~~~text au:input au:group=example
-value
+input
 ~~~
 
 ~~~text au:output au:group=example
-first|second|value
+FIXTURE 1|FIXTURE 2|INPUT
 ~~~
 
 ~~~text au:output au:group=example
-first|second|value
+FIXTURE 1|FIXTURE 2|INPUT
 ~~~
 
-~~~text au:fixture au:group=example role=second
-second
+~~~text au:fixture au:group=example foo=baz
+FIXTURE 2
 ~~~
 `
 		dir := writeTestDocument(t, document)
@@ -50,11 +50,11 @@ second
 				}
 
 				first := a.Fixtures[0]
-				if first.Language() != "sql" || first.Attributes()["role"] != "first" {
+				if first.Language() != "text" || first.Attributes()["foo"] != "bar" {
 					t.Fatal("expected the first fixture's language and attributes")
 				}
 				second := a.Fixtures[1]
-				if second.Language() != "text" || second.Attributes()["role"] != "second" {
+				if second.Language() != "text" || second.Attributes()["foo"] != "baz" {
 					t.Fatal("expected the second fixture's language and attributes")
 				}
 
@@ -76,7 +76,7 @@ second
 					"%s|%s|%s\n",
 					strings.TrimSpace(string(prefix)),
 					strings.TrimSpace(string(suffix)),
-					strings.ToLower(strings.TrimSpace(string(input))),
+					strings.ToUpper(strings.TrimSpace(string(input))),
 				)
 				return err
 			},
@@ -92,27 +92,27 @@ second
 func TestRun_fixtureGroups(t *testing.T) {
 	t.Run("it only supplies fixtures from the assertion's group", func(t *testing.T) {
 		dir := writeTestDocument(t, `~~~text au:fixture au:group=first
-first
+FIXTURE 1
 ~~~
 
 ~~~text au:fixture au:group=second
-second
+FIXTURE 2
 ~~~
 
 ~~~text au:input au:group=first
-value
+INPUT
 ~~~
 
 ~~~text au:output au:group=first
-first|value
+FIXTURE 1|INPUT
 ~~~
 
 ~~~text au:input au:group=second
-value
+INPUT
 ~~~
 
 ~~~text au:output au:group=second
-second|value
+FIXTURE 2|INPUT
 ~~~
 `)
 
@@ -154,15 +154,15 @@ second|value
 func TestRun_skippedFixture(t *testing.T) {
 	t.Run("it does not invoke the generator when a required fixture is skipped", func(t *testing.T) {
 		dir := writeTestDocument(t, `~~~text au:fixture au:group=example au:skip
-unavailable fixture
+FIXTURE
 ~~~
 
 ~~~text au:input au:group=example
-input
+INPUT
 ~~~
 
 ~~~text au:output au:group=example
-output
+OUTPUT
 ~~~
 `)
 
@@ -180,19 +180,19 @@ output
 func TestRun_blessWithFixtures(t *testing.T) {
 	t.Run("it replaces only the expected output when fixtures surround an assertion", func(t *testing.T) {
 		document := `~~~text au:fixture au:group=example
-first fixture
+FIXTURE 1
 ~~~
 
 ~~~text au:input au:group=example
-input
+INPUT
 ~~~
 
 ~~~text au:output au:group=example
-old output
+OUTPUT
 ~~~
 
 ~~~text au:fixture au:group=example
-second fixture
+FIXTURE 2
 ~~~
 `
 		dir := writeTestDocument(t, document)
@@ -200,7 +200,7 @@ second fixture
 		Run(
 			t,
 			func(_ *testing.T, a Assertion) error {
-				_, err := io.WriteString(a.Output, "new, longer output\n")
+				_, err := io.WriteString(a.Output, "LONGER OUTPUT\n")
 				return err
 			},
 			FromDir(dir),
@@ -212,7 +212,7 @@ second fixture
 			t.Fatal(err)
 		}
 
-		want := strings.Replace(document, "old output\n", "new, longer output\n", 1)
+		want := strings.Replace(document, "OUTPUT\n", "LONGER OUTPUT\n", 1)
 		if string(got) != want {
 			t.Fatalf("expected only the output block to change:\n%s", got)
 		}

@@ -267,6 +267,7 @@ func buildAssertion(
 	}
 
 	skip := input.Skip || output.Skip
+
 	for _, fixture := range g.Fixtures {
 		a.Fixtures = append(a.Fixtures, fixture.AsTestContent())
 		skip = skip || fixture.Skip
