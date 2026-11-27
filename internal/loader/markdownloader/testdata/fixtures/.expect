@@ -26,5 +26,21 @@ test "fixtures" {
                 }
             }
         }
+        test "other" {
+            assertion {
+                fixture "testdata/fixtures/test.md:17" {
+                    lang = "text"
+                    data = "FIXTURE 3\n"
+                }
+                input "testdata/fixtures/test.md:21" {
+                    lang = "text"
+                    data = "INPUT\n"
+                }
+                output "testdata/fixtures/test.md:25" {
+                    lang = "text"
+                    data = "OUTPUT\n"
+                }
+            }
+        }
     }
 }

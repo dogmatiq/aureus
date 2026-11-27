@@ -13,3 +13,15 @@ INPUT
 ```text au:output au:group=grp
 OUTPUT
 ```
+
+```text au:fixture au:group=other
+FIXTURE 3
+```
+
+```text au:input au:group=other
+INPUT
+```
+
+```text au:output au:group=other
+OUTPUT
+```

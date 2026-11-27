@@ -3,9 +3,13 @@ package runner_test
 import (
 	"encoding/json"
 	"io"
+	"os"
+	"path/filepath"
 	"testing"
 
+	"github.com/dogmatiq/aureus/internal/diff"
 	"github.com/dogmatiq/aureus/internal/loader/fileloader"
+	"github.com/dogmatiq/aureus/internal/loader/markdownloader"
 	"github.com/dogmatiq/aureus/internal/runner"
 	. "github.com/dogmatiq/aureus/internal/runner"
 )
@@ -57,6 +61,48 @@ func TestRunner(t *testing.T) {
 			if !leaf.Failed() {
 				x.Errorf("expected %q to fail", leaf.Name())
 			}
+		}
+	}
+
+	// expected to be blessed without changing the surrounding fixtures
+	{
+		dir := t.TempDir()
+		if err := os.CopyFS(dir, os.DirFS("testdata/bless")); err != nil {
+			t.Fatal(err)
+		}
+
+		loader := markdownloader.NewLoader()
+		tst, err := loader.Load(dir)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		runner := &Runner[*testing.T]{
+			GenerateOutput: func(
+				_ *testing.T,
+				a runner.Assertion,
+			) error {
+				return prettyPrint(a.Input, a.Output)
+			},
+			BlessStrategy: BlessEnabled,
+		}
+
+		runner.Run(t, tst)
+
+		actualFile := filepath.Join(dir, "test.md")
+		actual, err := os.ReadFile(actualFile)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		expectFile := "testdata/bless/.expect"
+		expect, err := os.ReadFile(expectFile)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		if d := diff.Diff(expectFile, expect, actualFile, actual); d != nil {
+			t.Fatal(string(d))
 		}
 	}
 }
