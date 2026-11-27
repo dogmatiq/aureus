@@ -50,7 +50,15 @@ func LoadContent(
 		return loader.Content{}, false, err
 	}
 
-	if (isInput && isOutput) || (isInput && isFixture) || (isOutput && isFixture) {
+	roleCount := 0
+
+	for _, selected := range []bool{isInput, isOutput, isFixture} {
+		if selected {
+			roleCount++
+		}
+	}
+
+	if roleCount > 1 {
 		return loader.Content{}, false, fmt.Errorf(
 			"only one of '%s%s', '%s%s' and '%s%s' may be specified",
 			attrPrefix, inputAttr,
