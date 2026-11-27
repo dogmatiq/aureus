@@ -62,7 +62,16 @@ func (r *Runner[T]) assert(t T, a test.Assertion) {
 		return
 	}
 
-	f, err := generateOutput(t, r.GenerateOutput, a.Input, a.Output)
+	for _, fixture := range a.Fixtures {
+		logSection(
+			t,
+			fmt.Sprintf("FIXTURE (%s)", location(fixture)),
+			fixture.Data,
+			"\x1b[2m",
+		)
+	}
+
+	f, err := generateOutput(t, r.GenerateOutput, a)
 	if err != nil {
 		t.Log(err)
 		t.Fail()

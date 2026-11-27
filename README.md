@@ -68,6 +68,59 @@ View the [README source] to see how the code blocks are annotated for use with
 Aureus, and [`run_test.go`] to see how to execute the
 tests.
 
+### Fixtures
+
+Fixtures supply content used to prepare each assertion. They belong to a named
+group, alongside its inputs and expected outputs.
+
+For example, this fixture configures the JSON pretty-printer's indentation:
+
+```json au:fixture au:group=custom-indent role=format
+{"indent": "    "}
+```
+
+Given this input:
+
+```json au:input au:group=custom-indent
+{"one": 1, "two": 2}
+```
+
+We expect four spaces of indentation:
+
+```json au:output au:group=custom-indent
+{
+    "one": 1,
+    "two": 2
+}
+```
+
+The generator receives one `Assertion` containing `Fixtures`, `Input` and
+`Output`. Each fixture exposes its content as a reader, plus its `Language()`
+and custom `Attributes()`. Here, `role=format` is a custom attribute interpreted
+by the pretty-printer. Aureus supplies the content; the generator decides how
+to prepare the assertion and clean up any resources.
+
+Every input/output combination in the group receives all its fixtures, with
+fresh readers for each assertion. Fixtures do not add combinations to the test
+matrix. Markdown fixtures are supplied in document order, and apply to their
+entire group regardless of where they appear in the document.
+
+Flat-file tests use `<group>.fixture[.<extension>]`. Custom attributes use the
+same filename syntax as inputs and outputs, for example
+`example.fixture.@role=format.json`. Multiple fixture files are supplied in
+filename order. The group prefix is required.
+
+Groups are local to a Markdown document or a directory of flat-file tests.
+Fixtures are not inherited by other documents or directories. A fixture without
+an assertion is an error. Skipping a fixture with `au:skip`, or a leading
+underscore on its filename, skips every assertion that requires it.
+
+### Updating existing generators
+
+Generators now accept `func(t T, a Assertion) error` instead of separate input
+and output arguments. Read from `a.Input` and write to `a.Output`. Existing
+tests without fixtures receive an empty `a.Fixtures` slice.
+
 [`testdata`]: testdata
 [`run_test.go`]: run_test.go
 [readme source]: https://github.com/dogmatiq/aureus/blob/main/README.md?plain=1

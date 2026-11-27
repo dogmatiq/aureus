@@ -1,0 +1,28 @@
+test "fixtures" {
+    test "test" {
+        assertion {
+            fixture "testdata/fixtures/test.fixture.@role=events.json" {
+                lang = "json"
+                attributes {
+                    "role" = "events"
+                }
+                data = "[{\"value\":1}]\n"
+            }
+            fixture "testdata/fixtures/test.fixture.@role=schema.sql" {
+                lang = "sql"
+                attributes {
+                    "role" = "schema"
+                }
+                data = "CREATE TABLE example (value INTEGER);\n"
+            }
+            input "testdata/fixtures/test.input.sql" {
+                lang = "sql"
+                data = "SELECT value FROM example;\n"
+            }
+            output "testdata/fixtures/test.output.json" {
+                lang = "json"
+                data = "[{\"value\":1}]\n"
+            }
+        }
+    }
+}

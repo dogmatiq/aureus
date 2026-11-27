@@ -20,8 +20,8 @@ type TestBuilder struct {
 }
 
 type group struct {
-	Name            string
-	Inputs, Outputs []ContentEnvelope
+	Name                      string
+	Fixtures, Inputs, Outputs []ContentEnvelope
 }
 
 // AddTest adds a pre-built test to the builder.
@@ -41,6 +41,10 @@ func (b *TestBuilder) AddContent(env ContentEnvelope) error {
 		return nil
 	}
 
+	if env.Content.Role == Fixture && (env.Content.Group == nil || !env.Content.Group.IsNamed()) {
+		return fmt.Errorf("fixture loaded from %s must belong to a named group", location(env, true))
+	}
+
 	if env.Content.Group == nil {
 		return b.addAnonymousContent(env)
 	}
@@ -57,6 +61,9 @@ func (b *TestBuilder) addContent(env ContentEnvelope) error {
 	}
 
 	switch env.Content.Role {
+	case Fixture:
+		g := b.group(groupName(env.Content.Group))
+		g.Fixtures = append(g.Fixtures, env)
 	case Input:
 		g := b.group(groupName(env.Content.Group))
 		g.Inputs = append(g.Inputs, env)
@@ -192,6 +199,11 @@ func buildTest(g *group) (test.Test, error) {
 	outputs := len(g.Outputs)
 
 	switch {
+	case inputs == 0 && outputs == 0:
+		return test.Test{}, fmt.Errorf(
+			"fixture loaded from %s has no inputs or outputs",
+			location(g.Fixtures[0], true),
+		)
 	case inputs == 0:
 		return test.Test{}, NoInputsError{g.Outputs}
 	case outputs == 0:
@@ -211,16 +223,12 @@ func buildTest(g *group) (test.Test, error) {
 func buildSingleTest(g *group) test.Test {
 	input := g.Inputs[0]
 	output := g.Outputs[0]
+	assertion, skip := buildAssertion(g, input, output)
 
 	return test.New(
 		g.Name,
-		test.WithSkip(input.Skip || output.Skip),
-		test.WithAssertions(
-			test.Assertion{
-				Input:  input.AsTestContent(),
-				Output: output.AsTestContent(),
-			},
-		),
+		test.WithSkip(skip),
+		test.WithAssertions(assertion),
 	)
 }
 
@@ -232,23 +240,39 @@ func buildMatrixTest(
 
 	for _, output := range g.Outputs {
 		for _, input := range g.Inputs {
+			assertion, skip := buildAssertion(g, input, output)
+
 			t.SubTests = append(
 				t.SubTests,
 				test.New(
 					testName(input, output),
-					test.WithSkip(input.Skip || output.Skip),
-					test.WithAssertions(
-						test.Assertion{
-							Input:  input.AsTestContent(),
-							Output: output.AsTestContent(),
-						},
-					),
+					test.WithSkip(skip),
+					test.WithAssertions(assertion),
 				),
 			)
 		}
 	}
 
 	return t
+}
+
+// buildAssertion attaches the group's fixtures without adding matrix dimensions.
+func buildAssertion(
+	g *group,
+	input, output ContentEnvelope,
+) (test.Assertion, bool) {
+	a := test.Assertion{
+		Input:  input.AsTestContent(),
+		Output: output.AsTestContent(),
+	}
+
+	skip := input.Skip || output.Skip
+	for _, fixture := range g.Fixtures {
+		a.Fixtures = append(a.Fixtures, fixture.AsTestContent())
+		skip = skip || fixture.Skip
+	}
+
+	return a, skip
 }
 
 // nameSIMO returns a name for a test that has a single input and multiple

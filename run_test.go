@@ -9,21 +9,35 @@ import (
 
 func prettyPrint(
 	t *testing.T,
-	in aureus.Input,
-	out aureus.Output,
+	a aureus.Assertion,
 ) error {
-	if in.Language() != "json" || out.Language() != "json" {
+	if a.Input.Language() != "json" || a.Output.Language() != "json" {
 		t.Fatal("the pretty-printer can only produce JSON output")
 	}
 
+	format := struct {
+		Indent string `json:"indent"`
+	}{
+		Indent: "  ",
+	}
+	for _, fixture := range a.Fixtures {
+		if fixture.Language() != "json" || fixture.Attributes()["role"] != "format" {
+			t.Fatal("the pretty-printer only accepts JSON format fixtures")
+		}
+
+		if err := json.NewDecoder(fixture).Decode(&format); err != nil {
+			return err
+		}
+	}
+
 	var v any
-	dec := json.NewDecoder(in)
+	dec := json.NewDecoder(a.Input)
 	if err := dec.Decode(&v); err != nil {
 		return err
 	}
 
-	enc := json.NewEncoder(out)
-	enc.SetIndent("", "  ")
+	enc := json.NewEncoder(a.Output)
+	enc.SetIndent("", format.Indent)
 	if err := enc.Encode(v); err != nil {
 		return err
 	}

@@ -10,7 +10,21 @@ import (
 )
 
 // OutputGenerator produces the output of a specific test.
-type OutputGenerator[T TestingT[T]] func(T, Input, Output) error
+type OutputGenerator[T TestingT[T]] func(T, Assertion) error
+
+// Assertion is the content supplied to a generator for one comparison.
+type Assertion struct {
+	Fixtures []Fixture
+	Input    Input
+	Output   Output
+}
+
+// Fixture is content used to prepare an assertion.
+type Fixture interface {
+	io.Reader
+	Language() string
+	Attributes() map[string]string
+}
 
 // Input is an interface for the input to a test.
 type Input interface {
@@ -38,17 +52,17 @@ type Output interface {
 	Attributes() map[string]string
 }
 
-type input struct {
+type content struct {
 	io.Reader
 	meta test.ContentMetaData
 }
 
-func (i *input) Language() string {
-	return i.meta.Language
+func (c *content) Language() string {
+	return c.meta.Language
 }
 
-func (i *input) Attributes() map[string]string {
-	return i.meta.Attributes
+func (c *content) Attributes() map[string]string {
+	return c.meta.Attributes
 }
 
 type output struct {
@@ -67,7 +81,7 @@ func (o *output) Attributes() map[string]string {
 func generateOutput[T TestingT[T]](
 	t T,
 	gen OutputGenerator[T],
-	in, out test.Content,
+	a test.Assertion,
 ) (_ *os.File, err error) {
 	f, err := os.CreateTemp("", "aureus-")
 	if err != nil {
@@ -80,17 +94,27 @@ func generateOutput[T TestingT[T]](
 		}
 	}()
 
-	if err := gen(
-		t,
-		&input{
-			Reader: bytes.NewReader(in.Data),
-			meta:   in.ContentMetaData,
+	assertion := Assertion{
+		Input: &content{
+			Reader: bytes.NewReader(a.Input.Data),
+			meta:   a.Input.ContentMetaData,
 		},
-		&output{
+		Output: &output{
 			Writer: f,
-			meta:   out.ContentMetaData,
+			meta:   a.Output.ContentMetaData,
 		},
-	); err != nil {
+	}
+	for _, fixture := range a.Fixtures {
+		assertion.Fixtures = append(
+			assertion.Fixtures,
+			&content{
+				Reader: bytes.NewReader(fixture.Data),
+				meta:   fixture.ContentMetaData,
+			},
+		)
+	}
+
+	if err := gen(t, assertion); err != nil {
 		return nil, fmt.Errorf("unable to generate output: %w", err)
 	}
 

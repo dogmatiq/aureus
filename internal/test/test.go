@@ -15,8 +15,9 @@ func (t Test) IsEmpty() bool {
 
 // Assertion represents a requirement that an input match a specific output.
 type Assertion struct {
-	Input  Content
-	Output Content
+	Fixtures []Content
+	Input    Content
+	Output   Content
 }
 
 // New creates a new [Test].

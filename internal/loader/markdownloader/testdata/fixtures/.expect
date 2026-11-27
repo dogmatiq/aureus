@@ -1,0 +1,30 @@
+test "fixtures" {
+    test "test" {
+        test "grp" {
+            assertion {
+                fixture "testdata/fixtures/test.md:1" {
+                    lang = "sql"
+                    attributes {
+                        "role" = "schema"
+                    }
+                    data = "CREATE TABLE example (value INTEGER);\n"
+                }
+                fixture "testdata/fixtures/test.md:5" {
+                    lang = "json"
+                    attributes {
+                        "role" = "events"
+                    }
+                    data = "[{\"value\":1}]\n"
+                }
+                input "testdata/fixtures/test.md:9" {
+                    lang = "sql"
+                    data = "SELECT value FROM example;\n"
+                }
+                output "testdata/fixtures/test.md:13" {
+                    lang = "json"
+                    data = "[{\"value\":1}]\n"
+                }
+            }
+        }
+    }
+}

@@ -23,10 +23,9 @@ func TestRunner(t *testing.T) {
 		runner := &Runner[*testing.T]{
 			GenerateOutput: func(
 				_ *testing.T,
-				in runner.Input,
-				out runner.Output,
+				a runner.Assertion,
 			) error {
-				return prettyPrint(in, out)
+				return prettyPrint(a.Input, a.Output)
 			},
 			BlessStrategy: BlessDisabled,
 		}
@@ -44,10 +43,9 @@ func TestRunner(t *testing.T) {
 		runner := &Runner[*testingT]{
 			GenerateOutput: func(
 				_ *testingT,
-				in runner.Input,
-				out runner.Output,
+				a runner.Assertion,
 			) error {
-				return prettyPrint(in, out)
+				return prettyPrint(a.Input, a.Output)
 			},
 			BlessStrategy: BlessDisabled,
 		}

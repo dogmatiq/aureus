@@ -35,6 +35,8 @@ func LoadContent(name string, f fs.File) (loader.Content, error) {
 			content.Role = loader.Input
 		} else if strings.EqualFold(atom, "output") {
 			content.Role = loader.Output
+		} else if strings.EqualFold(atom, "fixture") {
+			content.Role = loader.Fixture
 		} else {
 			continue
 		}

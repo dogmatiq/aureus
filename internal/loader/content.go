@@ -17,6 +17,9 @@ const (
 
 	// Output indicates that the content is the expected output from a test.
 	Output
+
+	// Fixture indicates content used to prepare each assertion in a group.
+	Fixture
 )
 
 // Content is a specialization of [test.Content] that includes meta-data about

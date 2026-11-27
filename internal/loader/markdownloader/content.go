@@ -45,11 +45,17 @@ func LoadContent(
 		return loader.Content{}, false, err
 	}
 
-	if isInput && isOutput {
+	isFixture, err := extractFlag(attrs, fixtureAttr)
+	if err != nil {
+		return loader.Content{}, false, err
+	}
+
+	if (isInput && isOutput) || (isInput && isFixture) || (isOutput && isFixture) {
 		return loader.Content{}, false, fmt.Errorf(
-			"only one of '%s%s' and '%s%s' may be specified",
+			"only one of '%s%s', '%s%s' and '%s%s' may be specified",
 			attrPrefix, inputAttr,
 			attrPrefix, outputAttr,
+			attrPrefix, fixtureAttr,
 		)
 	}
 
@@ -87,6 +93,8 @@ func LoadContent(
 		c.Role = loader.Input
 	} else if isOutput {
 		c.Role = loader.Output
+	} else if isFixture {
+		c.Role = loader.Fixture
 	} else {
 		return loader.Content{}, false, nil
 	}
@@ -120,11 +128,12 @@ func ParseInfoString(info string) (lang string, attrs map[string]string, err err
 }
 
 const (
-	attrPrefix = "au:"
-	inputAttr  = "input"
-	outputAttr = "output"
-	groupAttr  = "group"
-	skipAttr   = "skip"
+	attrPrefix  = "au:"
+	inputAttr   = "input"
+	outputAttr  = "output"
+	fixtureAttr = "fixture"
+	groupAttr   = "group"
+	skipAttr    = "skip"
 )
 
 func extractFlag(attrs map[string]string, k string) (bool, error) {

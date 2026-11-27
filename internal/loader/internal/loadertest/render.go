@@ -41,6 +41,9 @@ func RenderTest(t test.Test) []byte {
 func renderAssertion(a test.Assertion) []byte {
 	var w bytes.Buffer
 	w.WriteString("assertion {\n")
+	for _, fixture := range a.Fixtures {
+		indent(&w, renderContent("fixture", fixture))
+	}
 	indent(&w, renderContent("input", a.Input))
 	indent(&w, renderContent("output", a.Output))
 	w.WriteString("}")
