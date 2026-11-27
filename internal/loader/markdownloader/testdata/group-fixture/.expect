@@ -8,15 +8,20 @@ test "group-fixture" {
                     data = "FIXTURE 1\n"
                 }
                 fixture "testdata/group-fixture/test.md:5" {
+                    name = "third"
+                    lang = "text"
+                    data = "FIXTURE 3\n"
+                }
+                fixture "testdata/group-fixture/test.md:9" {
                     name = "second"
                     lang = "text"
                     data = "FIXTURE 2\n"
                 }
-                input "testdata/group-fixture/test.md:9" {
+                input "testdata/group-fixture/test.md:13" {
                     lang = "text"
                     data = "INPUT\n"
                 }
-                output "testdata/group-fixture/test.md:13" {
+                output "testdata/group-fixture/test.md:17" {
                     lang = "text"
                     data = "OUTPUT\n"
                 }

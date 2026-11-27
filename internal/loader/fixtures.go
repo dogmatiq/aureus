@@ -56,11 +56,11 @@ func resolveFixtures(
 			}
 
 			if slices.Contains(path, name) {
-				cycle := append(slices.Clone(path), name)
 				return fmt.Errorf(
-					"fixture dependency cycle at %s: %s",
+					"fixture dependency cycle at %s: %s -> %s",
 					location(source, true),
-					strings.Join(cycle, " -> "),
+					strings.Join(path, " -> "),
+					name,
 				)
 			}
 
