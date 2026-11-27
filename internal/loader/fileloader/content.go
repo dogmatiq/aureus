@@ -1,6 +1,7 @@
 package fileloader
 
 import (
+	"fmt"
 	"io"
 	"io/fs"
 	"path"
@@ -78,6 +79,17 @@ func LoadContent(name string, f fs.File) (loader.Content, error) {
 	}
 
 	content.Language = strings.Join(atoms, ".")
+
+	if content.Role == loader.Fixture {
+		if group, ok := content.Attributes["group"]; ok {
+			delete(content.Attributes, "group")
+			if group == "" {
+				return loader.Content{}, fmt.Errorf("fixture group in %q must not be empty", name)
+			}
+
+			content.Group = loader.NamedGroup(group)
+		}
+	}
 
 	var err error
 	if requires, ok := content.Attributes["requires"]; ok {

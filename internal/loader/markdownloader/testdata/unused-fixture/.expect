@@ -1,16 +1,1 @@
-test "unused-fixture" {
-    test "test" {
-        test "grp" {
-            assertion {
-                input "testdata/unused-fixture/test.md:5" {
-                    lang = "text"
-                    data = "INPUT\n"
-                }
-                output "testdata/unused-fixture/test.md:9" {
-                    lang = "text"
-                    data = "OUTPUT\n"
-                }
-            }
-        }
-    }
-}
+fixture "grp" loaded from testdata/unused-fixture/test.md:1 is not used

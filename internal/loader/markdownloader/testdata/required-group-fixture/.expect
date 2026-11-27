@@ -1,0 +1,1 @@
+testdata/required-group-fixture/test.md:5 requires fixture "fixture", which belongs to group "grp"

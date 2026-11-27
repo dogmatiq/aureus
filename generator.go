@@ -11,7 +11,8 @@ type OutputGenerator[T TestingT[T]] func(T, Assertion) error
 
 // Assertion is the content supplied to an [OutputGenerator] for one comparison.
 type Assertion struct {
-	// Fixtures contains the explicitly required fixtures in dependency order.
+	// Fixtures contains the group's fixtures and any required fixtures in
+	// dependency order.
 	// Each fixture appears once, with a fresh reader for each assertion.
 	Fixtures []Fixture
 
@@ -28,14 +29,17 @@ type Assertion struct {
 // them. The generator can use their languages and attributes to prepare state.
 //
 // Fixture names are local to one Markdown document or directory of flat-file
-// tests. Inputs, outputs and fixtures declare their dependencies using
-// au:requires (or @requires in filenames). Names are comma-separated.
+// tests. A fixture annotated with au:group (or @group in its filename) is
+// supplied to every assertion in that group. Inputs, outputs and fixtures can
+// also require ungrouped fixtures using au:requires (or @requires in filenames).
+// Names are comma-separated.
 //
 // Dependencies are supplied before their dependants, following the listed
-// requirements from the input, then the output. Missing required fixtures,
-// dependency cycles and duplicate declarations are errors. Unused fixtures
-// are not included. Skipping a fixture skips assertions that require it,
-// including through another fixture.
+// requirements from the group's fixtures, then the input and output. Group
+// fixtures are visited in declaration order. Missing required fixtures,
+// references to grouped fixtures, dependency cycles and duplicate declarations
+// are errors. Every fixture must be used by at least one assertion, directly or
+// through another fixture. Skipping a fixture skips assertions that use it.
 type Fixture interface {
 	io.Reader
 

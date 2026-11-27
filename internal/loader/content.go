@@ -30,7 +30,8 @@ type Content struct {
 	Role ContentRole
 
 	// Group is the name of the group to which the content belongs. Inputs and
-	// outputs in the same group form a matrix of test cases.
+	// outputs in the same group form a matrix of test cases. Fixtures in the
+	// group are supplied to each test case.
 	Group *Group
 
 	// FixtureName identifies a fixture independently of input/output groups.

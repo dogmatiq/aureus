@@ -1,2 +1,1 @@
-test "fixture-without-assertions" {
-}
+fixture "fixture" loaded from testdata/fixture-without-assertions/test.md:1 is not used

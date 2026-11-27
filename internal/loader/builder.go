@@ -14,15 +14,17 @@ import (
 // TestBuilder builds [test.Test] values from groups of correlated inputs and
 // outputs.
 type TestBuilder struct {
-	tests    []test.Test
-	groups   map[string]*group
-	fixtures map[string]ContentEnvelope
-	anon     ContentEnvelope
+	tests        []test.Test
+	groups       map[string]*group
+	fixtures     map[string]ContentEnvelope
+	fixtureOrder []string
+	usedFixtures map[string]bool
+	anon         ContentEnvelope
 }
 
 type group struct {
-	Name            string
-	Inputs, Outputs []ContentEnvelope
+	Name                      string
+	Fixtures, Inputs, Outputs []ContentEnvelope
 }
 
 // AddTest adds a pre-built test to the builder.
@@ -62,6 +64,13 @@ func (b *TestBuilder) AddContent(env ContentEnvelope) error {
 		}
 
 		b.fixtures[name] = env
+		b.fixtureOrder = append(b.fixtureOrder, name)
+
+		if name := groupName(env.Content.Group); name != "" {
+			g := b.group(name)
+			g.Fixtures = append(g.Fixtures, env)
+		}
+
 		return nil
 	}
 
@@ -125,6 +134,8 @@ func (b *TestBuilder) addAnonymousContent(env ContentEnvelope) error {
 
 // Build returns tests built from the inputs and outputs, sorted by name.
 func (b *TestBuilder) Build() ([]test.Test, error) {
+	b.usedFixtures = make(map[string]bool)
+
 	tests := make([]test.Test, 0, len(b.groups)+len(b.tests))
 	tests = append(tests, b.tests...)
 
@@ -134,6 +145,16 @@ func (b *TestBuilder) Build() ([]test.Test, error) {
 			return nil, err
 		}
 		tests = append(tests, t)
+	}
+
+	// Check declaration order so unused-fixture diagnostics are deterministic.
+	for _, name := range b.fixtureOrder {
+		if b.usedFixtures[name] {
+			continue
+		}
+
+		fixture := b.fixtures[name]
+		return nil, fmt.Errorf("fixture %q loaded from %s is not used", name, location(fixture, true))
 	}
 
 	slices.SortFunc(
@@ -216,6 +237,14 @@ func (b *TestBuilder) buildTest(g *group) (test.Test, error) {
 	outputs := len(g.Outputs)
 
 	switch {
+	case inputs == 0 && outputs == 0:
+		fixture := g.Fixtures[0]
+		return test.Test{}, fmt.Errorf(
+			"fixture %q loaded from %s belongs to group %q, which has no assertions",
+			fixture.Content.FixtureName,
+			location(fixture, true),
+			g.Name,
+		)
 	case inputs == 0:
 		return test.Test{}, NoInputsError{g.Outputs}
 	case outputs == 0:
@@ -235,7 +264,7 @@ func (b *TestBuilder) buildTest(g *group) (test.Test, error) {
 func (b *TestBuilder) buildSingleTest(g *group) (test.Test, error) {
 	input := g.Inputs[0]
 	output := g.Outputs[0]
-	assertion, skip, err := b.buildAssertion(input, output)
+	assertion, skip, err := b.buildAssertion(g, input, output)
 	if err != nil {
 		return test.Test{}, err
 	}
@@ -255,7 +284,7 @@ func (b *TestBuilder) buildMatrixTest(
 
 	for _, output := range g.Outputs {
 		for _, input := range g.Inputs {
-			assertion, skip, err := b.buildAssertion(input, output)
+			assertion, skip, err := b.buildAssertion(g, input, output)
 			if err != nil {
 				return test.Test{}, err
 			}
@@ -276,9 +305,10 @@ func (b *TestBuilder) buildMatrixTest(
 
 // buildAssertion resolves the fixtures required by this input/output pair.
 func (b *TestBuilder) buildAssertion(
+	g *group,
 	input, output ContentEnvelope,
 ) (test.Assertion, bool, error) {
-	fixtures, err := resolveFixtures(b.fixtures, input, output)
+	fixtures, err := resolveFixtures(b.fixtures, g.Fixtures, input, output)
 	if err != nil {
 		return test.Assertion{}, false, err
 	}
@@ -291,6 +321,7 @@ func (b *TestBuilder) buildAssertion(
 	skip := input.Skip || output.Skip
 
 	for _, fixture := range fixtures {
+		b.usedFixtures[fixture.Content.FixtureName] = true
 		a.Fixtures = append(a.Fixtures, fixture.AsTestContent())
 
 		if fixture.Skip {

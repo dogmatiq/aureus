@@ -16,10 +16,13 @@ The format is based on [Keep a Changelog], and this project adheres to
 ### Added
 
 - Added named fixtures using `au:fixture=name` Markdown blocks and
-  `<name>.fixture[.<extension>]` files. Inputs, outputs and fixtures reference
-  them using `au:requires=a,b` or `@requires=a,b` filename attributes.
+  `<name>.fixture[.<extension>]` files. Fixtures annotated with `au:group` (or
+  `@group` in filenames) are supplied to every assertion in that group.
+  Inputs, outputs and fixtures reference ungrouped fixtures using
+  `au:requires=a,b` or `@requires=a,b` filename attributes.
   Each assertion receives fresh readers in dependency order, including names,
   languages and custom attributes. Shared dependencies are included once.
+  Fixtures that are not used by any assertion are rejected.
 
 ### Changed
 

@@ -1,12 +1,12 @@
-```au:fixture=fixture
+```au:fixture=fixture au:group=grp
 FIXTURE
 ```
 
-```au:input au:group=grp au:requires=fixture
+```au:input au:group=grp
 INPUT 1
 ```
 
-```au:input au:group=grp au:requires=fixture
+```au:input au:group=grp
 INPUT 2
 ```
 

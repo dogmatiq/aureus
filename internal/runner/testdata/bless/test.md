@@ -2,7 +2,7 @@
 { "one": 1 }
 ```
 
-```json au:input au:group=grp au:requires=second
+```json au:input au:group=grp
 { "one": 1, "two": 2 }
 ```
 
@@ -10,6 +10,6 @@
 { "one": 1, "two": 2 }
 ```
 
-```json au:fixture=second au:requires=first
+```json au:fixture=second au:group=grp au:requires=first
 { "two": 2 }
 ```
