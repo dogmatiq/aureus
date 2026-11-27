@@ -11,8 +11,8 @@ import (
 	"github.com/dogmatiq/jumble/natsort"
 )
 
-// TestBuilder builds [test.Test] values from groups of correlated inputs and
-// outputs.
+// TestBuilder builds [test.Test] values from groups of correlated fixtures,
+// inputs and outputs.
 type TestBuilder struct {
 	tests        []test.Test
 	groups       map[string]*group
@@ -71,7 +71,7 @@ func (b *TestBuilder) addFixture(env ContentEnvelope) error {
 	}
 
 	if b.fixtures == nil {
-		b.fixtures = make(map[string]ContentEnvelope)
+		b.fixtures = map[string]ContentEnvelope{}
 	}
 
 	b.fixtures[name] = env
@@ -138,7 +138,7 @@ func (b *TestBuilder) addAnonymousContent(env ContentEnvelope) error {
 
 // Build returns tests built from the inputs and outputs, sorted by name.
 func (b *TestBuilder) Build() ([]test.Test, error) {
-	b.usedFixtures = make(map[string]bool)
+	b.usedFixtures = map[string]bool{}
 
 	tests := make([]test.Test, 0, len(b.groups)+len(b.tests))
 	tests = append(tests, b.tests...)

@@ -5,15 +5,13 @@ import (
 )
 
 // OutputGenerator produces the output of a specific test.
-//
-// Implementations prepare and clean up any state needed for an assertion.
 type OutputGenerator[T TestingT[T]] func(T, Assertion) error
 
 // Assertion is the content supplied to an [OutputGenerator] for one comparison.
 type Assertion struct {
 	// Fixtures contains the group's fixtures and any required fixtures in
-	// dependency order.
-	// Each fixture appears once, with a fresh reader for each assertion.
+	// dependency order. Each fixture appears once, with a fresh reader for each
+	// assertion.
 	Fixtures []Fixture
 
 	// Input is the value from which the generator produces output.
@@ -23,7 +21,7 @@ type Assertion struct {
 	Output Output
 }
 
-// Fixture is content used to prepare an assertion.
+// Fixture is an interface for content used to prepare a test.
 //
 // Aureus supplies fixtures to the generator; it does not interpret or execute
 // them. The generator can use their languages and attributes to prepare state.
@@ -34,7 +32,7 @@ type Assertion struct {
 // also require ungrouped fixtures using au:requires (or @requires in filenames).
 // Names are comma-separated.
 //
-// Dependencies are supplied before their dependants, following the listed
+// Dependencies are supplied before their dependents, following the listed
 // requirements from the group's fixtures, then the input and output. Group
 // fixtures are visited in declaration order. Missing required fixtures,
 // references to grouped fixtures, dependency cycles and duplicate declarations
@@ -46,10 +44,12 @@ type Fixture interface {
 	// Name returns the name used to declare and reference the fixture.
 	Name() string
 
-	// Language returns the language of the fixture, if known.
+	// Language returns the language of the fixture, if known, e.g. "json",
+	// "yaml", etc.
 	Language() string
 
-	// Attributes returns loader-specific information about the fixture.
+	// Attributes returns a set of key-value pairs that provide additional
+	// loader-specific information about the fixture.
 	Attributes() map[string]string
 }
 

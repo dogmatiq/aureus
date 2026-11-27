@@ -18,7 +18,7 @@ const (
 	// Output indicates that the content is the expected output from a test.
 	Output
 
-	// Fixture indicates named content used to prepare assertions that require it.
+	// Fixture indicates that the content is a fixture used to prepare a test.
 	Fixture
 )
 
@@ -34,10 +34,10 @@ type Content struct {
 	// group are supplied to each test case.
 	Group *Group
 
-	// FixtureName identifies a fixture independently of input/output groups.
+	// FixtureName is the name of the fixture, if Role is [Fixture].
 	FixtureName string
 
-	// Requires names the fixtures that this content depends on.
+	// Requires is a list of ungrouped fixture names that this content depends on.
 	Requires []string
 
 	// Caption is an optional disambiguating name, title or short description of

@@ -26,7 +26,8 @@ func prettyPrint(
 			t.Fatal("the pretty-printer only accepts JSON format fixtures")
 		}
 
-		if err := json.NewDecoder(fixture).Decode(&format); err != nil {
+		dec := json.NewDecoder(fixture)
+		if err := dec.Decode(&format); err != nil {
 			return err
 		}
 	}

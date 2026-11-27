@@ -11,7 +11,7 @@ type Content struct {
 
 // ContentMetaData contains information about fixture, input or output content.
 type ContentMetaData struct {
-	// Name identifies a fixture. It is empty for inputs and outputs.
+	// Name is the name of the fixture. It is empty for inputs and outputs.
 	Name string
 
 	// File is the path of the file from which the content was loaded.

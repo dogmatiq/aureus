@@ -12,18 +12,26 @@ import (
 // OutputGenerator produces the output of a specific test.
 type OutputGenerator[T TestingT[T]] func(T, Assertion) error
 
-// Assertion is the content supplied to a generator for one comparison.
+// Assertion is the content supplied to an [OutputGenerator] for one comparison.
 type Assertion struct {
 	Fixtures []Fixture
 	Input    Input
 	Output   Output
 }
 
-// Fixture is content used to prepare an assertion.
+// Fixture is an interface for content used to prepare a test.
 type Fixture interface {
 	io.Reader
+
+	// Name returns the name used to declare and reference the fixture.
 	Name() string
+
+	// Language returns the language of the fixture, if known, e.g. "json",
+	// "yaml", etc.
 	Language() string
+
+	// Attributes returns a set of key-value pairs that provide additional
+	// loader-specific information about the fixture.
 	Attributes() map[string]string
 }
 

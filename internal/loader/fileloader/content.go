@@ -43,11 +43,11 @@ func LoadContent(name string, f fs.File) (loader.Content, error) {
 		}
 
 		if idx > 0 {
-			group := strings.Join(atoms[:idx], ".")
+			prefix := strings.Join(atoms[:idx], ".")
 			if content.Role == loader.Fixture {
-				content.FixtureName = group
+				content.FixtureName = prefix
 			} else {
-				content.Group = loader.NamedGroup(group)
+				content.Group = loader.NamedGroup(prefix)
 			}
 		}
 
