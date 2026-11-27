@@ -1,0 +1,3 @@
+```text au:fixture
+FIXTURE
+```

@@ -1,0 +1,1 @@
+fixture "fixture" loaded from testdata/duplicate-fixture/test.md:5 is already declared at testdata/duplicate-fixture/test.md:1

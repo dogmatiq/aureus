@@ -1,0 +1,30 @@
+test "group-fixture" {
+    test "test" {
+        assertion {
+            fixture "testdata/group-fixture/first.fixture.@foo=bar.txt" {
+                name = "first"
+                lang = "txt"
+                attributes {
+                    "foo" = "bar"
+                }
+                data = "FIXTURE 1\n"
+            }
+            fixture "testdata/group-fixture/second.fixture.@foo=baz.@group=test.@requires=first.txt" {
+                name = "second"
+                lang = "txt"
+                attributes {
+                    "foo" = "baz"
+                }
+                data = "FIXTURE 2\n"
+            }
+            input "testdata/group-fixture/test.input.txt" {
+                lang = "txt"
+                data = "INPUT\n"
+            }
+            output "testdata/group-fixture/test.output.txt" {
+                lang = "txt"
+                data = "OUTPUT\n"
+            }
+        }
+    }
+}

@@ -1,0 +1,21 @@
+test "skipped-fixture" {
+    test "test" {
+        test "grp" [skipped] {
+            assertion {
+                fixture "testdata/skipped-fixture/test.md:1" {
+                    name = "fixture"
+                    lang = "text"
+                    data = "FIXTURE\n"
+                }
+                input "testdata/skipped-fixture/test.md:5" {
+                    lang = "text"
+                    data = "INPUT\n"
+                }
+                output "testdata/skipped-fixture/test.md:9" {
+                    lang = "text"
+                    data = "OUTPUT\n"
+                }
+            }
+        }
+    }
+}

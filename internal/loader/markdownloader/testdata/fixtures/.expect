@@ -1,0 +1,49 @@
+test "fixtures" {
+    test "test" {
+        test "grp" {
+            assertion {
+                fixture "testdata/fixtures/test.md:1" {
+                    name = "first"
+                    lang = "text"
+                    attributes {
+                        "foo" = "bar"
+                    }
+                    data = "FIXTURE 1\n"
+                }
+                fixture "testdata/fixtures/test.md:5" {
+                    name = "second"
+                    lang = "text"
+                    attributes {
+                        "foo" = "baz"
+                    }
+                    data = "FIXTURE 2\n"
+                }
+                input "testdata/fixtures/test.md:9" {
+                    lang = "text"
+                    data = "INPUT\n"
+                }
+                output "testdata/fixtures/test.md:13" {
+                    lang = "text"
+                    data = "OUTPUT\n"
+                }
+            }
+        }
+        test "other" {
+            assertion {
+                fixture "testdata/fixtures/test.md:17" {
+                    name = "third"
+                    lang = "text"
+                    data = "FIXTURE 3\n"
+                }
+                input "testdata/fixtures/test.md:21" {
+                    lang = "text"
+                    data = "INPUT\n"
+                }
+                output "testdata/fixtures/test.md:25" {
+                    lang = "text"
+                    data = "OUTPUT\n"
+                }
+            }
+        }
+    }
+}

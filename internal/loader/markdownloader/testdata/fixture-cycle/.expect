@@ -1,0 +1,1 @@
+fixture dependency cycle at testdata/fixture-cycle/test.md:5: first -> second -> first

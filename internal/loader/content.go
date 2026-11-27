@@ -17,6 +17,9 @@ const (
 
 	// Output indicates that the content is the expected output from a test.
 	Output
+
+	// Fixture indicates that the content is a fixture used to prepare a test.
+	Fixture
 )
 
 // Content is a specialization of [test.Content] that includes meta-data about
@@ -27,8 +30,15 @@ type Content struct {
 	Role ContentRole
 
 	// Group is the name of the group to which the content belongs. Inputs and
-	// outputs in the same group form a matrix of test cases.
+	// outputs in the same group form a matrix of test cases. Fixtures in the
+	// group are supplied to each test case.
 	Group *Group
+
+	// FixtureName is the name of the fixture, if Role is [Fixture].
+	FixtureName string
+
+	// Requires is a list of ungrouped fixture names that this content depends on.
+	Requires []string
 
 	// Caption is an optional disambiguating name, title or short description of
 	// the content.
@@ -78,6 +88,7 @@ func (e ContentEnvelope) AsTestContent() test.Content {
 			Line:       e.Line,
 			Begin:      e.Begin,
 			End:        e.End,
+			Name:       e.Content.FixtureName,
 			Language:   e.Content.Language,
 			Attributes: e.Content.Attributes,
 		},

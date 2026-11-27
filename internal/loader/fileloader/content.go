@@ -1,6 +1,7 @@
 package fileloader
 
 import (
+	"fmt"
 	"io"
 	"io/fs"
 	"path"
@@ -35,13 +36,19 @@ func LoadContent(name string, f fs.File) (loader.Content, error) {
 			content.Role = loader.Input
 		} else if strings.EqualFold(atom, "output") {
 			content.Role = loader.Output
+		} else if strings.EqualFold(atom, "fixture") {
+			content.Role = loader.Fixture
 		} else {
 			continue
 		}
 
 		if idx > 0 {
-			group := strings.Join(atoms[:idx], ".")
-			content.Group = loader.NamedGroup(group)
+			prefix := strings.Join(atoms[:idx], ".")
+			if content.Role == loader.Fixture {
+				content.FixtureName = prefix
+			} else {
+				content.Group = loader.NamedGroup(prefix)
+			}
 		}
 
 		atoms = atoms[idx+1:]
@@ -73,7 +80,26 @@ func LoadContent(name string, f fs.File) (loader.Content, error) {
 
 	content.Language = strings.Join(atoms, ".")
 
+	if content.Role == loader.Fixture {
+		if group, ok := content.Attributes["group"]; ok {
+			delete(content.Attributes, "group")
+			if group == "" {
+				return loader.Content{}, fmt.Errorf("fixture group in %q must not be empty", name)
+			}
+
+			content.Group = loader.NamedGroup(group)
+		}
+	}
+
 	var err error
+	if requires, ok := content.Attributes["requires"]; ok {
+		delete(content.Attributes, "requires")
+		content.Requires, err = loader.ParseRequirements(requires)
+		if err != nil {
+			return loader.Content{}, err
+		}
+	}
+
 	content.Data, err = io.ReadAll(f)
 	if err != nil {
 		return loader.Content{}, err

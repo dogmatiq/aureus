@@ -1,0 +1,62 @@
+test "fixtures-matrix" {
+    test "test" {
+        test "grp" {
+            test "test.md:5...13" {
+                assertion {
+                    fixture "testdata/fixtures-matrix/test.md:1" {
+                        name = "fixture"
+                        data = "FIXTURE\n"
+                    }
+                    input "testdata/fixtures-matrix/test.md:5" {
+                        data = "INPUT 1\n"
+                    }
+                    output "testdata/fixtures-matrix/test.md:13" {
+                        data = "OUTPUT 1\n"
+                    }
+                }
+            }
+            test "test.md:9...13" {
+                assertion {
+                    fixture "testdata/fixtures-matrix/test.md:1" {
+                        name = "fixture"
+                        data = "FIXTURE\n"
+                    }
+                    input "testdata/fixtures-matrix/test.md:9" {
+                        data = "INPUT 2\n"
+                    }
+                    output "testdata/fixtures-matrix/test.md:13" {
+                        data = "OUTPUT 1\n"
+                    }
+                }
+            }
+            test "test.md:5...17" {
+                assertion {
+                    fixture "testdata/fixtures-matrix/test.md:1" {
+                        name = "fixture"
+                        data = "FIXTURE\n"
+                    }
+                    input "testdata/fixtures-matrix/test.md:5" {
+                        data = "INPUT 1\n"
+                    }
+                    output "testdata/fixtures-matrix/test.md:17" {
+                        data = "OUTPUT 2\n"
+                    }
+                }
+            }
+            test "test.md:9...17" {
+                assertion {
+                    fixture "testdata/fixtures-matrix/test.md:1" {
+                        name = "fixture"
+                        data = "FIXTURE\n"
+                    }
+                    input "testdata/fixtures-matrix/test.md:9" {
+                        data = "INPUT 2\n"
+                    }
+                    output "testdata/fixtures-matrix/test.md:17" {
+                        data = "OUTPUT 2\n"
+                    }
+                }
+            }
+        }
+    }
+}

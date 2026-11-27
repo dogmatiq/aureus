@@ -27,9 +27,10 @@ type TestingT[Self any] interface {
 // By default it searches the ./testdata directory; use the [FromDir] option to
 // search a different directory.
 //
-// g is an [OutputGenerator] that produces output from input values for each
-// test. If the output produced by g does not match the test's expected output
-// the test fails.
+// g is an [OutputGenerator] that receives the fixtures, input and output for
+// each assertion. It prepares any state using the fixtures and writes the
+// actual output. If that output does not match the expected output, the test
+// fails.
 func Run[T runner.TestingT[T]](
 	t T,
 	g OutputGenerator[T],
@@ -78,8 +79,17 @@ func Run[T runner.TestingT[T]](
 	}
 
 	r := runner.Runner[T]{
-		GenerateOutput: func(t T, in runner.Input, out runner.Output) error {
-			return g(t, in, out)
+		GenerateOutput: func(t T, a runner.Assertion) error {
+			assertion := Assertion{
+				Input:  a.Input,
+				Output: a.Output,
+			}
+
+			for _, fixture := range a.Fixtures {
+				assertion.Fixtures = append(assertion.Fixtures, fixture)
+			}
+
+			return g(t, assertion)
 		},
 		TrimSpace:       opts.TrimSpace,
 		BlessStrategy:   opts.BlessStrategy,

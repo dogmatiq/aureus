@@ -45,17 +45,45 @@ func LoadContent(
 		return loader.Content{}, false, err
 	}
 
-	if isInput && isOutput {
+	fixtureName, err := extractValue(attrs, fixtureAttr)
+	if err != nil {
+		return loader.Content{}, false, err
+	}
+
+	roleCount := 0
+	isFixture := fixtureName != ""
+
+	for _, selected := range []bool{isInput, isOutput, isFixture} {
+		if selected {
+			roleCount++
+		}
+	}
+
+	if roleCount > 1 {
 		return loader.Content{}, false, fmt.Errorf(
-			"only one of '%s%s' and '%s%s' may be specified",
+			"only one of '%s%s', '%s%s' and '%s%s' may be specified",
 			attrPrefix, inputAttr,
 			attrPrefix, outputAttr,
+			attrPrefix, fixtureAttr,
 		)
 	}
 
 	group, err := extractValue(attrs, groupAttr)
 	if err != nil {
 		return loader.Content{}, false, err
+	}
+
+	requires, err := extractValue(attrs, requiresAttr)
+	if err != nil {
+		return loader.Content{}, false, err
+	}
+
+	var requirements []string
+	if requires != "" {
+		requirements, err = loader.ParseRequirements(requires)
+		if err != nil {
+			return loader.Content{}, false, err
+		}
 	}
 
 	skip, err := extractFlag(attrs, skipAttr)
@@ -70,9 +98,11 @@ func LoadContent(
 	}
 
 	c := loader.Content{
-		Language:   lang,
-		Attributes: attrs,
-		Data:       []byte(code),
+		Language:    lang,
+		Attributes:  attrs,
+		Data:        []byte(code),
+		FixtureName: fixtureName,
+		Requires:    requirements,
 	}
 
 	if group != "" {
@@ -87,6 +117,8 @@ func LoadContent(
 		c.Role = loader.Input
 	} else if isOutput {
 		c.Role = loader.Output
+	} else if isFixture {
+		c.Role = loader.Fixture
 	} else {
 		return loader.Content{}, false, nil
 	}
@@ -120,11 +152,13 @@ func ParseInfoString(info string) (lang string, attrs map[string]string, err err
 }
 
 const (
-	attrPrefix = "au:"
-	inputAttr  = "input"
-	outputAttr = "output"
-	groupAttr  = "group"
-	skipAttr   = "skip"
+	attrPrefix   = "au:"
+	inputAttr    = "input"
+	outputAttr   = "output"
+	fixtureAttr  = "fixture"
+	groupAttr    = "group"
+	requiresAttr = "requires"
+	skipAttr     = "skip"
 )
 
 func extractFlag(attrs map[string]string, k string) (bool, error) {

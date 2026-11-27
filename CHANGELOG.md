@@ -7,8 +7,32 @@ The format is based on [Keep a Changelog], and this project adheres to
 
 <!-- references -->
 
+[BC]: https://github.com/dogmatiq/.github/blob/main/VERSIONING.md#changelogs
 [Keep a Changelog]: https://keepachangelog.com/en/1.0.0/
 [Semantic Versioning]: https://semver.org/spec/v2.0.0.html
+
+## [Unreleased]
+
+### Added
+
+- Added named fixtures using `au:fixture=name` Markdown blocks and
+  `<name>.fixture[.<extension>]` files. Fixtures annotated with `au:group` (or
+  `@group` in filenames) are supplied to every assertion in that group.
+  Inputs, outputs and fixtures reference ungrouped fixtures using
+  `au:requires=a,b` or `@requires=a,b` filename attributes.
+  Each assertion receives fresh readers in dependency order, including names,
+  languages and custom attributes. Shared dependencies are included once.
+  Fixtures that are not used by any assertion are rejected.
+
+### Changed
+
+- **[BC]** Changed `OutputGenerator` to accept `(t T, a Assertion)` instead of
+  `(t T, in Input, out Output)`. The assertion contains `Fixtures`, `Input` and
+  `Output`. Update callbacks to read from `a.Input` and write to `a.Output`.
+- **[BC]** Recognized `fixture` as a filename role marker alongside `input`
+  and `output`. Files previously ignored, or grouped using a prefix containing
+  `fixture`, may now be interpreted as fixtures.
+- **[BC]** Reserved the `@requires` filename attribute for fixture references.
 
 ## [0.2.12] - 2024-12-05
 
