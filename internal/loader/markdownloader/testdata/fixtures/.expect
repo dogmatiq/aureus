@@ -3,6 +3,7 @@ test "fixtures" {
         test "grp" {
             assertion {
                 fixture "testdata/fixtures/test.md:1" {
+                    name = "first"
                     lang = "text"
                     attributes {
                         "foo" = "bar"
@@ -10,6 +11,7 @@ test "fixtures" {
                     data = "FIXTURE 1\n"
                 }
                 fixture "testdata/fixtures/test.md:5" {
+                    name = "second"
                     lang = "text"
                     attributes {
                         "foo" = "baz"
@@ -29,6 +31,7 @@ test "fixtures" {
         test "other" {
             assertion {
                 fixture "testdata/fixtures/test.md:17" {
+                    name = "third"
                     lang = "text"
                     data = "FIXTURE 3\n"
                 }

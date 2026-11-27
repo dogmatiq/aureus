@@ -18,7 +18,7 @@ const (
 	// Output indicates that the content is the expected output from a test.
 	Output
 
-	// Fixture indicates content used to prepare each assertion in a group.
+	// Fixture indicates named content used to prepare assertions that require it.
 	Fixture
 )
 
@@ -32,6 +32,12 @@ type Content struct {
 	// Group is the name of the group to which the content belongs. Inputs and
 	// outputs in the same group form a matrix of test cases.
 	Group *Group
+
+	// FixtureName identifies a fixture independently of input/output groups.
+	FixtureName string
+
+	// Requires names the fixtures that this content depends on.
+	Requires []string
 
 	// Caption is an optional disambiguating name, title or short description of
 	// the content.
@@ -81,6 +87,7 @@ func (e ContentEnvelope) AsTestContent() test.Content {
 			Line:       e.Line,
 			Begin:      e.Begin,
 			End:        e.End,
+			Name:       e.Content.FixtureName,
 			Language:   e.Content.Language,
 			Attributes: e.Content.Attributes,
 		},

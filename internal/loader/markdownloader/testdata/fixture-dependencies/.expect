@@ -1,0 +1,26 @@
+test "fixture-dependencies" {
+    test "test" {
+        test "grp" {
+            assertion {
+                fixture "testdata/fixture-dependencies/test.md:13" {
+                    name = "first"
+                    lang = "text"
+                    data = "FIXTURE 1\n"
+                }
+                fixture "testdata/fixture-dependencies/test.md:1" {
+                    name = "second"
+                    lang = "text"
+                    data = "FIXTURE 2\n"
+                }
+                input "testdata/fixture-dependencies/test.md:5" {
+                    lang = "text"
+                    data = "INPUT\n"
+                }
+                output "testdata/fixture-dependencies/test.md:9" {
+                    lang = "text"
+                    data = "OUTPUT\n"
+                }
+            }
+        }
+    }
+}

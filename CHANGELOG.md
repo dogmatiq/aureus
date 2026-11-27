@@ -15,10 +15,11 @@ The format is based on [Keep a Changelog], and this project adheres to
 
 ### Added
 
-- Added group fixtures using `au:fixture` Markdown blocks and
-  `<group>.fixture[.<extension>]` files. Each assertion receives fresh readers
-  for all fixtures in its group, including their languages and custom
-  attributes.
+- Added named fixtures using `au:fixture=name` Markdown blocks and
+  `<name>.fixture[.<extension>]` files. Inputs, outputs and fixtures reference
+  them using `au:requires=a,b` or `@requires=a,b` filename attributes.
+  Each assertion receives fresh readers in dependency order, including names,
+  languages and custom attributes. Shared dependencies are included once.
 
 ### Changed
 
@@ -28,6 +29,7 @@ The format is based on [Keep a Changelog], and this project adheres to
 - **[BC]** Recognized `fixture` as a filename role marker alongside `input`
   and `output`. Files previously ignored, or grouped using a prefix containing
   `fixture`, may now be interpreted as fixtures.
+- **[BC]** Reserved the `@requires` filename attribute for fixture references.
 
 ## [0.2.12] - 2024-12-05
 

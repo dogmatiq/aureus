@@ -1,0 +1,40 @@
+test "per-pair-fixtures" {
+    test "test" {
+        test "grp" {
+            test "9" {
+                assertion {
+                    fixture "testdata/per-pair-fixtures/test.md:1" {
+                        name = "first"
+                        lang = "text"
+                        data = "FIXTURE 1\n"
+                    }
+                    input "testdata/per-pair-fixtures/test.md:9" {
+                        lang = "text"
+                        data = "INPUT 1\n"
+                    }
+                    output "testdata/per-pair-fixtures/test.md:17" {
+                        lang = "text"
+                        data = "OUTPUT\n"
+                    }
+                }
+            }
+            test "13" {
+                assertion {
+                    fixture "testdata/per-pair-fixtures/test.md:5" {
+                        name = "second"
+                        lang = "text"
+                        data = "FIXTURE 2\n"
+                    }
+                    input "testdata/per-pair-fixtures/test.md:13" {
+                        lang = "text"
+                        data = "INPUT 2\n"
+                    }
+                    output "testdata/per-pair-fixtures/test.md:17" {
+                        lang = "text"
+                        data = "OUTPUT\n"
+                    }
+                }
+            }
+        }
+    }
+}

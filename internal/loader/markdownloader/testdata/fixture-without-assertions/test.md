@@ -1,3 +1,3 @@
-```text au:fixture au:group=example
+```text au:fixture=fixture
 FIXTURE
 ```

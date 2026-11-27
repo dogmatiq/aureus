@@ -30,8 +30,8 @@ flat files, or as code blocks within Markdown documents. By default it scans the
 
 Files with names matching the `<group>.input[.<extension>]` and
 `<group>.output[.<extension> ` patterns are treated as test inputs and outputs,
-respectively. Files named `<group>.fixture[.<extension>]` provide fixtures for
-each test in the same group.
+respectively. Files named `<name>.fixture[.<extension>]` provide named fixtures.
+Inputs and outputs reference them using `@requires=name` filename attributes.
 
 For each pair of input and output files with the same `<group>` prefix, a
 user-defined function is invoked. The function must produce output that matches
@@ -47,20 +47,21 @@ inputs and outputs from [fenced code blocks] within Markdown documents.
 
 Code blocks annotated with the `au:input` or `au:output` attribute are treated
 as a test input or output, respectively. The `au:group` attribute is used to
-group the inputs and outputs. Blocks annotated with `au:fixture` supply content
-used to prepare each test in the named group.
+group the inputs and outputs. Blocks annotated with `au:fixture=name` declare
+named fixtures. Inputs, outputs and other fixtures reference them using
+`au:requires=name`.
 
 This file is itself an example of a Markdown-based test. It confirms the
 behavior of a basic JSON pretty-printer. This fixture configures the formatter
 to use four spaces of indentation:
 
-```json au:fixture au:group=json-pretty-printer role=format
+```json au:fixture=format role=format
 { "indent": "    " }
 ```
 
 Given this unformatted JSON value:
 
-```json au:input au:group=json-pretty-printer
+```json au:input au:group=json-pretty-printer au:requires=format
 { "one": 1, "two": 2 }
 ```
 

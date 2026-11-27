@@ -3,6 +3,7 @@ test "skipped-fixture" {
         test "grp" [skipped] {
             assertion {
                 fixture "testdata/skipped-fixture/test.md:1" {
+                    name = "fixture"
                     lang = "text"
                     data = "FIXTURE\n"
                 }

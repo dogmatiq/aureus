@@ -1,0 +1,24 @@
+test "output-fixture" {
+    test "test" {
+        test "grp" {
+            assertion {
+                fixture "testdata/output-fixture/test.md:1" {
+                    name = "fixture"
+                    lang = "text"
+                    attributes {
+                        "foo" = "bar"
+                    }
+                    data = "FIXTURE\n"
+                }
+                input "testdata/output-fixture/test.md:5" {
+                    lang = "text"
+                    data = "INPUT\n"
+                }
+                output "testdata/output-fixture/test.md:9" {
+                    lang = "text"
+                    data = "OUTPUT\n"
+                }
+            }
+        }
+    }
+}

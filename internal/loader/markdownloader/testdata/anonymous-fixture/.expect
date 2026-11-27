@@ -1,0 +1,21 @@
+test "anonymous-fixture" {
+    test "test" {
+        test "anonymous test on line 9" {
+            assertion {
+                fixture "testdata/anonymous-fixture/test.md:5" {
+                    name = "fixture"
+                    lang = "text"
+                    data = "FIXTURE\n"
+                }
+                input "testdata/anonymous-fixture/test.md:1" {
+                    lang = "text"
+                    data = "INPUT\n"
+                }
+                output "testdata/anonymous-fixture/test.md:9" {
+                    lang = "text"
+                    data = "OUTPUT\n"
+                }
+            }
+        }
+    }
+}

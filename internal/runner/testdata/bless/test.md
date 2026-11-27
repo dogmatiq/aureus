@@ -1,8 +1,8 @@
-```json au:fixture au:group=grp
+```json au:fixture=first
 { "one": 1 }
 ```
 
-```json au:input au:group=grp
+```json au:input au:group=grp au:requires=second
 { "one": 1, "two": 2 }
 ```
 
@@ -10,6 +10,6 @@
 { "one": 1, "two": 2 }
 ```
 
-```json au:fixture au:group=grp
+```json au:fixture=second au:requires=first
 { "two": 2 }
 ```

@@ -1,12 +1,12 @@
-```text au:fixture au:group=grp foo=bar
+```text au:fixture=first foo=bar
 FIXTURE 1
 ```
 
-```text au:fixture au:group=grp foo=baz
+```text au:fixture=second foo=baz
 FIXTURE 2
 ```
 
-```text au:input au:group=grp
+```text au:input au:group=grp au:requires=first,second
 INPUT
 ```
 
@@ -14,11 +14,11 @@ INPUT
 OUTPUT
 ```
 
-```text au:fixture au:group=other
+```text au:fixture=third
 FIXTURE 3
 ```
 
-```text au:input au:group=other
+```text au:input au:group=other au:requires=third
 INPUT
 ```
 

@@ -43,7 +43,11 @@ func LoadContent(name string, f fs.File) (loader.Content, error) {
 
 		if idx > 0 {
 			group := strings.Join(atoms[:idx], ".")
-			content.Group = loader.NamedGroup(group)
+			if content.Role == loader.Fixture {
+				content.FixtureName = group
+			} else {
+				content.Group = loader.NamedGroup(group)
+			}
 		}
 
 		atoms = atoms[idx+1:]
@@ -76,6 +80,14 @@ func LoadContent(name string, f fs.File) (loader.Content, error) {
 	content.Language = strings.Join(atoms, ".")
 
 	var err error
+	if requires, ok := content.Attributes["requires"]; ok {
+		delete(content.Attributes, "requires")
+		content.Requires, err = loader.ParseRequirements(requires)
+		if err != nil {
+			return loader.Content{}, err
+		}
+	}
+
 	content.Data, err = io.ReadAll(f)
 	if err != nil {
 		return loader.Content{}, err

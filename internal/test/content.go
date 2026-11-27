@@ -1,6 +1,6 @@
 package test
 
-// Content is data used as input or output in tests.
+// Content is data used as a fixture, input or output in tests.
 type Content struct {
 	// ContentMetaData is additional information about the content.
 	ContentMetaData
@@ -9,8 +9,11 @@ type Content struct {
 	Data []byte
 }
 
-// ContentMetaData contains information about input or output content.
+// ContentMetaData contains information about fixture, input or output content.
 type ContentMetaData struct {
+	// Name identifies a fixture. It is empty for inputs and outputs.
+	Name string
+
 	// File is the path of the file from which the content was loaded.
 	File string
 

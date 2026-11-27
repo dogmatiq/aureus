@@ -1,3 +1,3 @@
-```text au:fixture au:output au:group=grp
+```text au:fixture=fixture au:output au:group=grp
 FIXTURE
 ```

@@ -45,12 +45,13 @@ func LoadContent(
 		return loader.Content{}, false, err
 	}
 
-	isFixture, err := extractFlag(attrs, fixtureAttr)
+	fixtureName, err := extractValue(attrs, fixtureAttr)
 	if err != nil {
 		return loader.Content{}, false, err
 	}
 
 	roleCount := 0
+	isFixture := fixtureName != ""
 
 	for _, selected := range []bool{isInput, isOutput, isFixture} {
 		if selected {
@@ -72,6 +73,19 @@ func LoadContent(
 		return loader.Content{}, false, err
 	}
 
+	requires, err := extractValue(attrs, requiresAttr)
+	if err != nil {
+		return loader.Content{}, false, err
+	}
+
+	var requirements []string
+	if requires != "" {
+		requirements, err = loader.ParseRequirements(requires)
+		if err != nil {
+			return loader.Content{}, false, err
+		}
+	}
+
 	skip, err := extractFlag(attrs, skipAttr)
 	if err != nil {
 		return loader.Content{}, false, err
@@ -84,9 +98,11 @@ func LoadContent(
 	}
 
 	c := loader.Content{
-		Language:   lang,
-		Attributes: attrs,
-		Data:       []byte(code),
+		Language:    lang,
+		Attributes:  attrs,
+		Data:        []byte(code),
+		FixtureName: fixtureName,
+		Requires:    requirements,
 	}
 
 	if group != "" {
@@ -136,12 +152,13 @@ func ParseInfoString(info string) (lang string, attrs map[string]string, err err
 }
 
 const (
-	attrPrefix  = "au:"
-	inputAttr   = "input"
-	outputAttr  = "output"
-	fixtureAttr = "fixture"
-	groupAttr   = "group"
-	skipAttr    = "skip"
+	attrPrefix   = "au:"
+	inputAttr    = "input"
+	outputAttr   = "output"
+	fixtureAttr  = "fixture"
+	groupAttr    = "group"
+	requiresAttr = "requires"
+	skipAttr     = "skip"
 )
 
 func extractFlag(attrs map[string]string, k string) (bool, error) {

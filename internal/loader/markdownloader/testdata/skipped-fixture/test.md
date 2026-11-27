@@ -1,8 +1,8 @@
-```text au:fixture au:group=grp au:skip
+```text au:fixture=fixture au:skip
 FIXTURE
 ```
 
-```text au:input au:group=grp
+```text au:input au:group=grp au:requires=fixture
 INPUT
 ```
 

@@ -22,6 +22,7 @@ type Assertion struct {
 // Fixture is content used to prepare an assertion.
 type Fixture interface {
 	io.Reader
+	Name() string
 	Language() string
 	Attributes() map[string]string
 }
@@ -55,6 +56,10 @@ type Output interface {
 type content struct {
 	io.Reader
 	meta test.ContentMetaData
+}
+
+func (c *content) Name() string {
+	return c.meta.Name
 }
 
 func (c *content) Language() string {

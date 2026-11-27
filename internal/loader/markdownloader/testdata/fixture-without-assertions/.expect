@@ -1,1 +1,2 @@
-fixture loaded from testdata/fixture-without-assertions/test.md:1 has no inputs or outputs
+test "fixture-without-assertions" {
+}

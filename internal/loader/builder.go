@@ -14,14 +14,15 @@ import (
 // TestBuilder builds [test.Test] values from groups of correlated inputs and
 // outputs.
 type TestBuilder struct {
-	tests  []test.Test
-	groups map[string]*group
-	anon   ContentEnvelope
+	tests    []test.Test
+	groups   map[string]*group
+	fixtures map[string]ContentEnvelope
+	anon     ContentEnvelope
 }
 
 type group struct {
-	Name                      string
-	Fixtures, Inputs, Outputs []ContentEnvelope
+	Name            string
+	Inputs, Outputs []ContentEnvelope
 }
 
 // AddTest adds a pre-built test to the builder.
@@ -41,8 +42,27 @@ func (b *TestBuilder) AddContent(env ContentEnvelope) error {
 		return nil
 	}
 
-	if env.Content.Role == Fixture && (env.Content.Group == nil || !env.Content.Group.IsNamed()) {
-		return fmt.Errorf("fixture loaded from %s must belong to a named group", location(env, true))
+	if env.Content.Role == Fixture {
+		name := env.Content.FixtureName
+		if name == "" {
+			return fmt.Errorf("fixture loaded from %s must have a name", location(env, true))
+		}
+
+		if previous, ok := b.fixtures[name]; ok {
+			return fmt.Errorf(
+				"fixture %q loaded from %s is already declared at %s",
+				name,
+				location(env, true),
+				location(previous, true),
+			)
+		}
+
+		if b.fixtures == nil {
+			b.fixtures = make(map[string]ContentEnvelope)
+		}
+
+		b.fixtures[name] = env
+		return nil
 	}
 
 	if env.Content.Group == nil {
@@ -61,9 +81,6 @@ func (b *TestBuilder) addContent(env ContentEnvelope) error {
 	}
 
 	switch env.Content.Role {
-	case Fixture:
-		g := b.group(groupName(env.Content.Group))
-		g.Fixtures = append(g.Fixtures, env)
 	case Input:
 		g := b.group(groupName(env.Content.Group))
 		g.Inputs = append(g.Inputs, env)
@@ -112,7 +129,7 @@ func (b *TestBuilder) Build() ([]test.Test, error) {
 	tests = append(tests, b.tests...)
 
 	for _, g := range b.groups {
-		t, err := buildTest(g)
+		t, err := b.buildTest(g)
 		if err != nil {
 			return nil, err
 		}
@@ -194,53 +211,54 @@ func (b *TestBuilder) group(name string) *group {
 }
 
 // buildTest builds a test for the given group.
-func buildTest(g *group) (test.Test, error) {
+func (b *TestBuilder) buildTest(g *group) (test.Test, error) {
 	inputs := len(g.Inputs)
 	outputs := len(g.Outputs)
 
 	switch {
-	case inputs == 0 && outputs == 0:
-		return test.Test{}, fmt.Errorf(
-			"fixture loaded from %s has no inputs or outputs",
-			location(g.Fixtures[0], true),
-		)
 	case inputs == 0:
 		return test.Test{}, NoInputsError{g.Outputs}
 	case outputs == 0:
 		return test.Test{}, NoOutputsError{g.Inputs}
 	case inputs == 1 && outputs == 1:
-		return buildSingleTest(g), nil
+		return b.buildSingleTest(g)
 	case inputs == 1:
-		return buildMatrixTest(g, nameSIMO), nil
+		return b.buildMatrixTest(g, nameSIMO)
 	case outputs == 1:
-		return buildMatrixTest(g, nameMISO), nil
+		return b.buildMatrixTest(g, nameMISO)
 	default:
-		return buildMatrixTest(g, nameMIMO), nil
+		return b.buildMatrixTest(g, nameMIMO)
 	}
 }
 
 // buildSingleTest builds a test for a group with a single input and a single output.
-func buildSingleTest(g *group) test.Test {
+func (b *TestBuilder) buildSingleTest(g *group) (test.Test, error) {
 	input := g.Inputs[0]
 	output := g.Outputs[0]
-	assertion, skip := buildAssertion(g, input, output)
+	assertion, skip, err := b.buildAssertion(input, output)
+	if err != nil {
+		return test.Test{}, err
+	}
 
 	return test.New(
 		g.Name,
 		test.WithSkip(skip),
 		test.WithAssertions(assertion),
-	)
+	), nil
 }
 
-func buildMatrixTest(
+func (b *TestBuilder) buildMatrixTest(
 	g *group,
 	testName func(input, output ContentEnvelope) string,
-) test.Test {
+) (test.Test, error) {
 	t := test.New(g.Name)
 
 	for _, output := range g.Outputs {
 		for _, input := range g.Inputs {
-			assertion, skip := buildAssertion(g, input, output)
+			assertion, skip, err := b.buildAssertion(input, output)
+			if err != nil {
+				return test.Test{}, err
+			}
 
 			t.SubTests = append(
 				t.SubTests,
@@ -253,14 +271,18 @@ func buildMatrixTest(
 		}
 	}
 
-	return t
+	return t, nil
 }
 
-// buildAssertion attaches the group's fixtures without adding matrix dimensions.
-func buildAssertion(
-	g *group,
+// buildAssertion resolves the fixtures required by this input/output pair.
+func (b *TestBuilder) buildAssertion(
 	input, output ContentEnvelope,
-) (test.Assertion, bool) {
+) (test.Assertion, bool, error) {
+	fixtures, err := resolveFixtures(b.fixtures, input, output)
+	if err != nil {
+		return test.Assertion{}, false, err
+	}
+
 	a := test.Assertion{
 		Input:  input.AsTestContent(),
 		Output: output.AsTestContent(),
@@ -268,7 +290,7 @@ func buildAssertion(
 
 	skip := input.Skip || output.Skip
 
-	for _, fixture := range g.Fixtures {
+	for _, fixture := range fixtures {
 		a.Fixtures = append(a.Fixtures, fixture.AsTestContent())
 
 		if fixture.Skip {
@@ -276,7 +298,7 @@ func buildAssertion(
 		}
 	}
 
-	return a, skip
+	return a, skip, nil
 }
 
 // nameSIMO returns a name for a test that has a single input and multiple

@@ -66,6 +66,10 @@ func renderContent(label string, c test.Content) []byte {
 
 	w.WriteString(" {\n")
 
+	if c.Name != "" {
+		fmt.Fprintf(&w, "    name = %q\n", c.Name)
+	}
+
 	if c.Language != "" {
 		fmt.Fprintf(&w, "    lang = %q\n", c.Language)
 	}
