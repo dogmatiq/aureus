@@ -32,67 +32,64 @@ func resolveFixtures(
 	included := make(map[string]bool)
 	var path []string
 
-	// Group fixtures are included directly. References may only select
-	// ungrouped fixtures, even if a grouped fixture is already included.
-	var include func(ContentEnvelope) error
-	require := func(name string, source ContentEnvelope) error {
-		fixture, ok := definitions[name]
-		if !ok {
-			return fmt.Errorf("%s requires unknown fixture %q", location(source, true), name)
-		}
+	// Visit requirements before including the fixture that declares them.
+	// The active path distinguishes a cycle from a shared dependency.
+	var visit func(ContentEnvelope) error
+	visit = func(source ContentEnvelope) error {
+		for _, name := range source.Content.Requires {
+			fixture, ok := definitions[name]
+			if !ok {
+				return fmt.Errorf("%s requires unknown fixture %q", location(source, true), name)
+			}
 
-		if group := groupName(fixture.Content.Group); group != "" {
-			return fmt.Errorf(
-				"%s requires fixture %q, which belongs to group %q",
-				location(source, true),
-				name,
-				group,
-			)
-		}
+			if group := groupName(fixture.Content.Group); group != "" {
+				return fmt.Errorf(
+					"%s requires fixture %q, which belongs to group %q",
+					location(source, true),
+					name,
+					group,
+				)
+			}
 
-		if slices.Contains(path, name) {
-			cycle := append(slices.Clone(path), name)
-			return fmt.Errorf(
-				"fixture dependency cycle at %s: %s",
-				location(source, true),
-				strings.Join(cycle, " -> "),
-			)
-		}
+			if included[name] {
+				continue
+			}
 
-		return include(fixture)
-	}
+			if slices.Contains(path, name) {
+				cycle := append(slices.Clone(path), name)
+				return fmt.Errorf(
+					"fixture dependency cycle at %s: %s",
+					location(source, true),
+					strings.Join(cycle, " -> "),
+				)
+			}
 
-	include = func(fixture ContentEnvelope) error {
-		name := fixture.Content.FixtureName
-		if included[name] {
-			return nil
-		}
-
-		path = append(path, name)
-
-		for _, dependency := range fixture.Content.Requires {
-			if err := require(dependency, fixture); err != nil {
+			path = append(path, name)
+			if err := visit(fixture); err != nil {
 				return err
 			}
+			path = path[:len(path)-1]
+
+			resolved = append(resolved, fixture)
+			included[name] = true
 		}
 
-		path = path[:len(path)-1]
-		included[name] = true
-		resolved = append(resolved, fixture)
 		return nil
 	}
 
+	// Group fixtures are included directly; requirements can only refer to
+	// ungrouped fixtures, so no group fixture can have been included already.
 	for _, fixture := range groupFixtures {
-		if err := include(fixture); err != nil {
+		if err := visit(fixture); err != nil {
 			return nil, err
 		}
+
+		resolved = append(resolved, fixture)
 	}
 
 	for _, source := range []ContentEnvelope{input, output} {
-		for _, name := range source.Content.Requires {
-			if err := require(name, source); err != nil {
-				return nil, err
-			}
+		if err := visit(source); err != nil {
+			return nil, err
 		}
 	}
 

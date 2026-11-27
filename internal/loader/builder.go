@@ -45,33 +45,7 @@ func (b *TestBuilder) AddContent(env ContentEnvelope) error {
 	}
 
 	if env.Content.Role == Fixture {
-		name := env.Content.FixtureName
-		if name == "" {
-			return fmt.Errorf("fixture loaded from %s must have a name", location(env, true))
-		}
-
-		if previous, ok := b.fixtures[name]; ok {
-			return fmt.Errorf(
-				"fixture %q loaded from %s is already declared at %s",
-				name,
-				location(env, true),
-				location(previous, true),
-			)
-		}
-
-		if b.fixtures == nil {
-			b.fixtures = make(map[string]ContentEnvelope)
-		}
-
-		b.fixtures[name] = env
-		b.fixtureOrder = append(b.fixtureOrder, name)
-
-		if name := groupName(env.Content.Group); name != "" {
-			g := b.group(name)
-			g.Fixtures = append(g.Fixtures, env)
-		}
-
-		return nil
+		return b.addFixture(env)
 	}
 
 	if env.Content.Group == nil {
@@ -79,6 +53,36 @@ func (b *TestBuilder) AddContent(env ContentEnvelope) error {
 	}
 
 	return b.addContent(env)
+}
+
+func (b *TestBuilder) addFixture(env ContentEnvelope) error {
+	name := env.Content.FixtureName
+	if name == "" {
+		return fmt.Errorf("fixture loaded from %s must have a name", location(env, true))
+	}
+
+	if previous, ok := b.fixtures[name]; ok {
+		return fmt.Errorf(
+			"fixture %q loaded from %s is already declared at %s",
+			name,
+			location(env, true),
+			location(previous, true),
+		)
+	}
+
+	if b.fixtures == nil {
+		b.fixtures = make(map[string]ContentEnvelope)
+	}
+
+	b.fixtures[name] = env
+	b.fixtureOrder = append(b.fixtureOrder, name)
+
+	if name := groupName(env.Content.Group); name != "" {
+		g := b.group(name)
+		g.Fixtures = append(g.Fixtures, env)
+	}
+
+	return nil
 }
 
 func (b *TestBuilder) addContent(env ContentEnvelope) error {
