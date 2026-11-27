@@ -24,7 +24,7 @@ The format is based on [Keep a Changelog], and this project adheres to
 
 - **[BC]** Changed `OutputGenerator` to accept `(t T, a Assertion)` instead of
   `(t T, in Input, out Output)`. The assertion contains `Fixtures`, `Input` and
-  `Output`.
+  `Output`. Update callbacks to read from `a.Input` and write to `a.Output`.
 - **[BC]** Recognized `fixture` as a filename role marker alongside `input`
   and `output`. Files previously ignored, or grouped using a prefix containing
   `fixture`, may now be interpreted as fixtures.

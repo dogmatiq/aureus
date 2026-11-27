@@ -5,6 +5,8 @@ import (
 )
 
 // OutputGenerator produces the output of a specific test.
+//
+// Implementations prepare and clean up any state needed for an assertion.
 type OutputGenerator[T TestingT[T]] func(T, Assertion) error
 
 // Assertion is the content supplied to an [OutputGenerator] for one comparison.
@@ -25,6 +27,12 @@ type Assertion struct {
 //
 // Aureus supplies fixtures to the generator; it does not interpret or execute
 // them. The generator can use their languages and attributes to prepare state.
+//
+// Fixtures belong to a named group within one Markdown document or directory
+// of flat-file tests. Each input/output pair receives the group's fixtures;
+// fixtures do not add combinations to the test matrix. A fixture without an
+// input/output pair is an error. Skipping a fixture skips every assertion in
+// its group.
 type Fixture interface {
 	io.Reader
 
